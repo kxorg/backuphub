@@ -1,0 +1,50 @@
+version: '3.9'
+
+networks:
+  bh-network:
+    name: bh-network
+    driver: bridge
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: compose/Dockerfile
+    container_name: bh_app
+    restart: always
+    env_file:
+      - env
+    volumes:
+      - ./app:/opt/bh/
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - bh-network
+
+  postgres:
+    image: postgres:13-alpine
+    container_name: bh_postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - env
+    environment:
+      - TZ=Europe/Moscow
+    networks:
+      - bh-network
+
+  redis:
+    image: valkey/valkey:7.2.5-alpine3.19
+    container_name: bh_redis
+    restart: always
+    networks:
+      - bh-network
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data: {}
+  redis_data: {}
