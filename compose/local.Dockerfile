@@ -20,7 +20,7 @@ RUN mkdir -p /opt/bh/logs/app && \
 
 ENV PATH="/opt/py/bin:$PATH"
 
-COPY ./app /opt/bh/
+COPY ./app /opt/bh/app/
 WORKDIR /opt/bh/
 
-CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
+CMD ["sh", "-c", "python app/manage.py migrate && python app/manage.py runserver 0.0.0.0:8000"]
