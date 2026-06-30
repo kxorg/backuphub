@@ -9,11 +9,11 @@ services:
   app:
     build:
       context: .
-      dockerfile: compose/Dockerfile
+      dockerfile: compose/local.Dockerfile
     container_name: bh_app
     restart: always
     env_file:
-      - env
+      - local.env
     volumes:
       - ./app:/opt/bh/
     ports:
@@ -30,7 +30,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
-      - env
+      - local.env
     environment:
       - TZ=Europe/Moscow
     networks:
