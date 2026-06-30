@@ -15,7 +15,7 @@ services:
     env_file:
       - local.env
     volumes:
-      - ./app:/opt/bh/
+      - ./app:/opt/bh/app/
     ports:
       - "8000:8000"
     depends_on:
@@ -33,6 +33,7 @@ services:
       - local.env
     environment:
       - TZ=Europe/Moscow
+      - POSTGRES_HOST_AUTH_METHOD=trust
     networks:
       - bh-network
 
