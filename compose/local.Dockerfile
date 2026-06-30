@@ -10,12 +10,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt /opt/requirements.txt
+COPY local.requirements.txt /opt/local.requirements.txt
 
 RUN mkdir -p /opt/bh/logs/app && \
     python3 -m venv /opt/py && \
     /opt/py/bin/python3 -m pip install --upgrade pip && \
-    /opt/py/bin/python3 -m pip install -r /opt/requirements.txt --disable-pip-version-check && \
+    /opt/py/bin/python3 -m pip install -r /opt/local.requirements.txt --disable-pip-version-check && \
     chmod -R 777 /opt
 
 ENV PATH="/opt/py/bin:$PATH"
