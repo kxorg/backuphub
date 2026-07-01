@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import TargetSystem, Host, BackupJob
+from .models import TargetSystem, Host, Backup
 
 
 # ============================================
@@ -25,7 +25,7 @@ class BackupJobSerializer(serializers.ModelSerializer):
     system_name = serializers.CharField(source='host.target_system.name', read_only=True)
 
     class Meta:
-        model = BackupJob
+        model = Backup
         fields = [
             'id', 'host', 'hostname', 'system_name', 
             'started_at', 'finished_at', 'type', 'status', 'meta_data'

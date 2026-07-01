@@ -5,7 +5,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
-from .models import TargetSystem, Host, BackupJob
+from .models import TargetSystem, Host, Backup
 from .serializers import (
     TargetSystemSerializer, 
     HostSerializer, 
@@ -26,7 +26,7 @@ class BackupCreateView(APIView):
 
         host = Host.objects.get(id=serializer.validated_data['host_id'])
 
-        backup_job = BackupJob.objects.create(
+        backup_job = Backup.objects.create(
             host=host,
             type=serializer.validated_data.get('type', 'full'),
             status='running'
@@ -42,7 +42,7 @@ class BackupCreateView(APIView):
 # ============================================
 class BackupUpdateView(APIView):
     def patch(self, request, backup_id):
-        backup_job = get_object_or_404(BackupJob, id=backup_id)
+        backup_job = get_object_or_404(Backup, id=backup_id)
 
         serializer = BackupUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -74,7 +74,7 @@ class HostViewSet(ModelViewSet):
     serializer_class = HostSerializer
 
 class BackupJobViewSet(ModelViewSet):
-    queryset = BackupJob.objects.select_related('host', 'host__target_system').all()
+    queryset = Backup.objects.select_related('host', 'host__target_system').all()
     serializer_class = BackupJobSerializer
     # Разрешаем только чтение через этот ViewSet, 
     # так как создание/изменение идет через специальные эндпоинты выше
