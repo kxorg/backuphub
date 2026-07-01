@@ -4,26 +4,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}BackupHub{% endblock %}</title>
-    <!-- Подключаем ваш локальный Bootstrap CSS -->
+    <title>{% block title %}BackupHub — Мониторинг резервного копирования{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'style/bootstrap.min.css' %}">
-</head>
-<body class="bg-light d-flex flex-column min-vh-100">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <style>
+        :root {
+            --primary-color: #2c5aa0;
+            --secondary-color: #34495e;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --info-color: #3498db;
+            --light-bg: #f8f9fa;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        body {
+            background-color: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        /* Этот блок отвечает за отображение синей шапки */
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%) !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: white !important;
+        }
+        .navbar-brand i {
+            color: #74b9ff;
+        }
+        .nav-link {
+            color: rgba(255,255,255,0.9) !important;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #74b9ff !important;
+        }
+    </style>
 
-    <!-- Навигационная панель Bootstrap (Темная тема) -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
-        <div class="container">
-            <a class="navbar-brand text-info fw-bold" href="{% url 'index' %}">💾 BackupHub</a>
+
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid px-4">
+            <!-- Логотип сайта -->
+            <a class="navbar-brand" href="{% url 'index' %}">
+                <i class="bi bi-hdd-stack"></i> BackupHub 
+            </a>
+            
+            <!-- Кнопка бургер-меню для мобильной версии -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
+            
+            <!-- Пункты навигации -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'index' %}">Дашборд</a>
+                        <a class="nav-link" href="{% url 'index' %}">
+                            <i class="bi bi-speedometer2"></i> Главная
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'settings' %}">Настройки</a>
+                        <a class="nav-link" href="{% url 'settings' %}">
+                            <i class="bi bi-gear"></i> Настройки
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'servers' %}">
+                            <i class="bi bi-server"></i> Серверы
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'magazineHub' %}">
+                            <i class="bi bi-journal-text"></i> Журнал
+                    </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'api' %}">
+                            <i class="bi bi-file-code"></i> API
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -31,19 +97,23 @@
     </nav>
 
     <!-- Основной контент -->
-    <main class="container my-4 flex-grow-1">
+    <main class="container-fluid px-4 my-4 flex-grow-1">
         {% block content %}
         {% endblock %}
     </main>
 
-    <!-- Подвал -->
-    <footer class="bg-dark text-secondary text-center py-3 mt-auto">
-        <div class="container">
-            <p class="mb-0">&copy; 2026 BackupHub &bull; Система мониторинга и учета резервного копирования</p>
+        <!-- Подвал (Footer) в едином стиле сайта -->
+    <footer class="text-center py-4 mt-auto" style="background-color: #ffffff; border-top: 2px solid #ecf0f1;">
+        <div class="container-fluid px-4">
+            <p class="mb-0 small" style="color: #7f8c8d; font-weight: 500;">
+                &copy; 2026 <span style="color: var(--primary-color); font-weight: 600;">BackupHub</span> 
+                &bull; Система мониторинга и учета резервного копирования
+            </p>
         </div>
     </footer>
 
-    <!-- Подключаем ваш локальный Bootstrap JS -->
+
+    <!-- Подключаем ваш локальный Bootstrap JS из папки static -->
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 </body>
 </html>

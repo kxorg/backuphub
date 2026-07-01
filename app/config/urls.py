@@ -21,5 +21,8 @@ from core import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name="index"),
-    path('settings/', views.settings, name="settings")
+    path('settings/', views.settings, name="settings"),
+    path('servers/', views.servers, name="servers"),
+    path('magazineHub/', views.magazineHub, name="magazineHub"),
+    path('api/', views.api, name="api")
 ]
