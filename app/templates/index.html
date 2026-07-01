@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Главная | BackupHub{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-100">
+        <div class="card shadow-sm p-4 mb-4 bg-white rounded">
+            <h1 class="display-6 fw-bold">Централизованный мониторинг бэкапов</h1>
+            <p class="lead">Добро пожаловать в <strong>BackupHub</strong> — единую панель контроля за состоянием резервного копирования во всей вашей инфраструктуре.</p>
+            
+            <div class="alert alert-success d-flex align-items-center" role="alert">
+                <div>
+                    <strong>Как это работает:</strong> Система агрегирует статусы, историю операций и метаданные от внешних серверов и скриптов через REST API, предоставляя вам удобный интерфейс для аудита.
+                </div>
+            </div>
+
+            <div class="alert alert-warning d-flex align-items-center" role="alert">
+                <div>
+                    <strong>Обратите внимание:</strong> BackupHub является панелью учета и контроля. Система самостоятельно не запускает бэкапы и не хранит архивы данных.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Заглушка для будущей таблицы со статусами -->
+<div class="card shadow-sm p-4 bg-white rounded">
+    <h2 class="h4 mb-3 fw-bold text-secondary">Последние события</h2>
+    <div class="p-3 bg-light border rounded text-center text-muted fst-italic">
+        Данные с внешних инструментов пока не поступали. Настройте отправку логов через API.
+    </div>
+</div>
+{% endblock %}
