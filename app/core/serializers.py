@@ -37,18 +37,18 @@ class BackupSerializer(serializers.ModelSerializer):
 
 
 class BackupCreateSerializer(serializers.Serializer):
-    host_id = serializers.IntegerField(help_text="ID хоста, на котором запускается бэкап")
+    host_id = serializers.IntegerField(help_text="Host ID, on which the backup is launched")
     target_system_id = serializers.IntegerField(help_text="ID системы", required=False)
     storage = serializers.CharField(max_length=255, required=False, allow_blank=True)
 
     def validate_host_id(self, value):
         if not Host.objects.filter(id=value).exists():
-            raise serializers.ValidationError("Хост с указанным ID не найден в базе данных.")
+            raise serializers.ValidationError("Host with this ID not found in DB.")
         return value
 
     def validate_target_system_id(self, value):
         if value and not TargetSystem.objects.filter(id=value).exists():
-            raise serializers.ValidationError("Система с указанным ID не найдена в базе данных.")
+            raise serializers.ValidationError("System with this ID not found in DB.")
         return value
 
 
@@ -60,5 +60,5 @@ class BackupUpdateSerializer(serializers.Serializer):
     end_time = serializers.DateTimeField(required=False)
     backup_size = serializers.IntegerField(required=False, min_value=0)
     storage = serializers.CharField(max_length=255, required=False, allow_blank=True)
-    meta_data = serializers.JSONField(required=False, help_text="Технические данные в формате JSON")
+    meta_data = serializers.JSONField(required=False, help_text="Tech Data in JSON")
     error_message = serializers.CharField(required=False, allow_blank=True)

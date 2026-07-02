@@ -33,23 +33,22 @@ def api(request):
     return render(request, "api.html")
 
 
-
 class BackupCreateView(APIView):
     """
-    POST /api/v1/backups/ - Регистрация начала резервного копирования
+    POST /api/v1/backups/ - Registration of backup start
     """
     @swagger_auto_schema(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             required=['host_id'],
             properties={
-                'host_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='ID хоста'),
-                'storage': openapi.Schema(type=openapi.TYPE_STRING, description='Путь к хранилищу'),
+                'host_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='Host ID'),
+                'storage': openapi.Schema(type=openapi.TYPE_STRING, description='Storage path'),
             }
         ),
         responses={
-            201: openapi.Response('Бэкап создан', BackupSerializer),
-            400: 'Ошибка валидации',
+            201: openapi.Response('Backup created', BackupSerializer),
+            400: 'Validation error',
         }
     )
     def post(self, request):
@@ -58,7 +57,7 @@ class BackupCreateView(APIView):
 
         host = Host.objects.get(id=serializer.validated_data['host_id'])
         
-        # Если target_system не указан, берем из хоста
+        # If target_system is not specified, take it from the host
         target_system = serializer.validated_data.get('target_system_id')
         if target_system:
             target_system = TargetSystem.objects.get(id=target_system)
@@ -79,7 +78,7 @@ class BackupCreateView(APIView):
 
 class BackupUpdateView(APIView):
     """
-    PATCH /api/v1/backups/{id}/ - Обновление статуса и метаданных бэкапа
+    PATCH /api/v1/backups/{id}/ - Update backup status and metadata
     """
     @swagger_auto_schema(
         request_body=openapi.Schema(
@@ -94,8 +93,8 @@ class BackupUpdateView(APIView):
             }
         ),
         responses={
-            200: openapi.Response('Бэкап обновлён', BackupSerializer),
-            404: 'Бэкап не найден',
+            200: openapi.Response('Backup updated', BackupSerializer),
+            404: 'Backup not found',
         }
     )
     def patch(self, request, backup_id):
@@ -104,12 +103,12 @@ class BackupUpdateView(APIView):
         serializer = BackupUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        # Обновляем переданные поля
+        # Update passed fields
         for attr, value in serializer.validated_data.items():
-            if value is not None:  # Обновляем только если поле передано
+            if value is not None:  # Update only if field is passed
                 setattr(backup, attr, value)
 
-        # Если статус изменился на завершающий и время завершения не стоит
+        # If status changed to final and end_time is not set
         if backup.status in ['success', 'error'] and not backup.end_time:
             backup.end_time = timezone.now()
 
@@ -119,10 +118,9 @@ class BackupUpdateView(APIView):
         return Response(response_serializer.data, status=status.HTTP_200_OK)
 
 
-
 class TargetSystemViewSet(ModelViewSet):
     """
-    CRUD операции для TargetSystem.
+    CRUD operations for TargetSystem.
     GET/POST /api/v1/systems/
     GET/PUT/PATCH/DELETE /api/v1/systems/{id}/
     """
@@ -132,7 +130,7 @@ class TargetSystemViewSet(ModelViewSet):
 
 class HostViewSet(ModelViewSet):
     """
-    CRUD операции для Host.
+    CRUD operations for Host.
     GET/POST /api/v1/hosts/
     GET/PUT/PATCH/DELETE /api/v1/hosts/{id}/
     """
@@ -142,11 +140,10 @@ class HostViewSet(ModelViewSet):
 
 class BackupViewSet(ModelViewSet):
     """
-    CRUD операции для Backup (только чтение).
+    CRUD operations for Backup (read-only).
     GET /api/v1/backups-list/
     GET /api/v1/backups-list/{id}/
     """
     queryset = Backup.objects.select_related('host', 'target_system').all()
     serializer_class = BackupSerializer
-    http_method_names = ['get', 'head', 'options']  # Только чтение
-
+    http_method_names = ['get', 'head', 'options']  # Read-only
