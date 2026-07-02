@@ -22,10 +22,24 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     path('', views.index, name="index"),
-    path('settings/', views.settings, name="settings"),
-    path('servers/', views.servers, name="servers"),
-    path('magazineHub/', views.magazineHub, name="magazineHub"),
     path('api/', views.api, name="api"),
     
+    # Magazine backup
+    path('magazineHub/', views.magazineHub, name="magazineHub"),
+    path('backups/<uuid:pk>/', views.backup_detail, name="backup_detail_web"),
+    
+    # System settings (CRUD)
+    path('settings/', views.settings, name="settings"),
+    path('settings/create/', views.system_create, name="system_create"),
+    path('settings/<int:pk>/edit/', views.system_edit, name="system_edit"),
+    path('settings/<int:pk>/delete/', views.system_delete, name="system_delete"),
+    
+    # Servers (CRUD)
+    path('servers/', views.servers, name="servers"),
+    path('servers/create/', views.host_create, name="host_create"),
+    path('servers/<int:pk>/edit/', views.host_edit, name="host_edit"),
+    path('servers/<int:pk>/delete/', views.host_delete, name="host_delete"),
+    
+    # API 
     path('api/v1/', include('core.urls')),
 ]

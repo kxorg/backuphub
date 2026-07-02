@@ -1,11 +1,12 @@
-from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-
+from django.shortcuts import render, get_object_or_404, redirect
+from django.core.paginator import Paginator
+from .models import TargetSystem, Host, Backup
 from .models import TargetSystem, Host, Backup
 from .serializers import (
     TargetSystemSerializer,
@@ -15,21 +16,98 @@ from .serializers import (
     BackupUpdateSerializer
 )
 
-def index(request):
-    return render(request, "index.html")
-
-def settings(request):
-    return render(request, "settings.html")
-
-def servers(request):
-    return render(request, "servers.html")
-
+# (MagazineHub) 
 def magazineHub(request):
-    return render(request, "magazineHub.html")
+    backup_list = Backup.objects.select_related('host', 'target_system').order_by('-start_time')
+    
+    # Пагинация: по 10 бэкапов на страницу
+    paginator = Paginator(backup_list, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, "magazineHub.html", {"page_obj": page_obj})
 
-def api(request):
-    return render(request, "api.html")
+def backup_detail(request, pk):
+    backup = get_object_or_404(Backup.objects.select_related('host', 'target_system'), id=pk)
+    return render(request, "backup_detail.html", {"backup": backup})
 
+
+# (System Settings CRUD) 
+def settings(request):
+    # Вывод списка систем с пагинацией (по 5 на страницу)
+    systems_list = TargetSystem.objects.all().order_by('-created_at')
+    paginator = Paginator(systems_list, 5)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, "settings.html", {"page_obj": page_obj})
+
+def system_create(request):
+    if request.method == "POST":
+        name = request.POST.get('name')
+        system_type = request.POST.get('system_type')
+        TargetSystem.objects.create(name=name, system_type=system_type)
+        return redirect('settings')
+    return render(request, "system_form.html")
+
+def system_edit(request, pk):
+    system = get_object_or_404(TargetSystem, id=pk)
+    if request.method == "POST":
+        system.name = request.POST.get('name')
+        system.system_type = request.POST.get('system_type')
+        system.save()
+        return redirect('settings')
+    return render(request, "system_form.html", {"system": system})
+
+def system_delete(request, pk):
+    system = get_object_or_404(TargetSystem, id=pk)
+    if request.method == "POST":
+        system.delete()
+        return redirect('settings')
+    return render(request, "system_confirm_delete.html", {"system": system})
+
+
+# (Servers CRUD) 
+def servers(request):
+    hosts_list = Host.objects.select_related('target_system').all().order_by('hostname')
+    paginator = Paginator(hosts_list, 5)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, "servers.html", {"page_obj": page_obj})
+
+def host_create(request):
+    systems = TargetSystem.objects.all()
+    if request.method == "POST":
+        hostname = request.POST.get('hostname')
+        ip_address = request.POST.get('ip_address')
+        system_id = request.POST.get('target_system')
+        target_system = get_object_or_404(TargetSystem, id=system_id)
+        
+        Host.objects.create(hostname=hostname, ip_address=ip_address, target_system=target_system)
+        return redirect('servers')
+    return render(request, "host_form.html", {"systems": systems})
+
+def host_edit(request, pk):
+    host = get_object_or_404(Host, id=pk)
+    systems = TargetSystem.objects.all()
+    if request.method == "POST":
+        host.hostname = request.POST.get('hostname')
+        host.ip_address = request.POST.get('ip_address')
+        system_id = request.POST.get('target_system')
+        host.target_system = get_object_or_404(TargetSystem, id=system_id)
+        host.save()
+        return redirect('servers')
+    return render(request, "host_form.html", {"host": host, "systems": systems})
+
+def host_delete(request, pk):
+    host = get_object_or_404(Host, id=pk)
+    if request.method == "POST":
+        host.delete()
+        return redirect('servers')
+    return render(request, "host_confirm_delete.html", {"host": host})
+
+
+def index(request): return render(request, "index.html")
+def api(request): return render(request, "api.html")
 
 
 class BackupCreateView(APIView):
