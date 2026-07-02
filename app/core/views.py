@@ -2,10 +2,9 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, serializers
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-
 from .models import TargetSystem, Host, Backup
 from .serializers import (
     TargetSystemSerializer,
@@ -14,6 +13,9 @@ from .serializers import (
     BackupCreateSerializer,
     BackupUpdateSerializer
 )
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
 
 def index(request):
     return render(request, "index.html")
@@ -36,6 +38,20 @@ class BackupCreateView(APIView):
     """
     POST /api/v1/backups/ - Регистрация начала резервного копирования
     """
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['host_id'],
+            properties={
+                'host_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='ID хоста'),
+                'storage': openapi.Schema(type=openapi.TYPE_STRING, description='Путь к хранилищу'),
+            }
+        ),
+        responses={
+            201: openapi.Response('Бэкап создан', BackupSerializer),
+            400: 'Ошибка валидации',
+        }
+    )
     def post(self, request):
         serializer = BackupCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -65,6 +81,23 @@ class BackupUpdateView(APIView):
     """
     PATCH /api/v1/backups/{id}/ - Обновление статуса и метаданных бэкапа
     """
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'status': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    enum=['in_progress', 'success', 'error']
+                ),
+                'backup_size': openapi.Schema(type=openapi.TYPE_INTEGER),
+                'meta_data': openapi.Schema(type=openapi.TYPE_OBJECT),
+            }
+        ),
+        responses={
+            200: openapi.Response('Бэкап обновлён', BackupSerializer),
+            404: 'Бэкап не найден',
+        }
+    )
     def patch(self, request, backup_id):
         backup = get_object_or_404(Backup, id=backup_id)
 
