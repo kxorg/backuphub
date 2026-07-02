@@ -1,0 +1,10 @@
+{
+  "status": "success",
+  "backup_size": 15432890,
+  "storage": "/mnt/backups/db-01/backup.sql.gz",
+  "meta_data": {
+    "compression": "gzip",
+    "duration_seconds": 345,
+    "files_count": 1234
+  }
+}

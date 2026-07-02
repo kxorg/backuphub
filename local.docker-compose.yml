@@ -10,12 +10,12 @@ services:
     build:
       context: .
       dockerfile: compose/local.Dockerfile
-    container_name: bh_app
+    container_name: bh_app_local
     restart: always
     env_file:
-      - local.env
+      - ./local.env
     volumes:
-      - ./app:/opt/bh/app/
+      - ./app:/opt/bh/
     ports:
       - "8000:8000"
     depends_on:
@@ -25,15 +25,16 @@ services:
       - bh-network
 
   postgres:
-    image: postgres:13-alpine
-    container_name: bh_postgres
+    image: postgres:16-alpine
+    container_name: bh_postgres_local
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
       - local.env
     environment:
       - TZ=Europe/Moscow
-      - POSTGRES_HOST_AUTH_METHOD=trust
+    ports:
+      - "5432:5432"
     networks:
       - bh-network
 
