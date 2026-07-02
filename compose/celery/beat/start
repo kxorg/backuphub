@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -o errexit
+set -o nounset
+
+rm -f './celerybeat.pid'
+rm -f '/tmp/celerybeat.pid'
+rm -f '/celerybeat-schedule'
+rm -f '/tmp/celerybeat-schedule'
+
+#exec celery -A main.worker beat --loglevel=info
+#exec celery -A main.worker beat -l INFO --pidfile /tmp/celerybeat.pid -s /tmp/celerybeat-schedule
+exec celery -A app beat -l INFO --pidfile /tmp/celerybeat.pid -s /tmp/celerybeat-schedule

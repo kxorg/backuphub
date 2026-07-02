@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -o errexit
+set -o nounset
+
+echo "Waiting for the psql to be ready"
+while ! nc -z -w 1 "${DB_HOST}" ${DB_PORT}; do
+  echo "Main db is not ready"
+  sleep 1
+done
+
+exec "$@"
