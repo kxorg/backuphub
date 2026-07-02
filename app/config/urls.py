@@ -26,7 +26,7 @@ schema_view = get_schema_view(
     openapi.Info(
         title="BackupHub API",
         default_version='v1',
-        description="REST API для централизованного мониторинга резервного копирования",
+        description="REST API for centralized backup monitoring",
     ),
     public=True,
     permission_classes=[permissions.AllowAny],  
