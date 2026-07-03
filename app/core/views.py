@@ -19,7 +19,7 @@ from .serializers import (
 
 
 # ============================================
-# WEB VIEWS (Colleagues' code)
+# WEB VIEWS
 # ============================================
 
 def index(request):
