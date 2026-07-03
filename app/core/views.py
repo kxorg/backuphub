@@ -2,11 +2,12 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
-from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
-from .models import TargetSystem, Host, Backup
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
 from .models import TargetSystem, Host, Backup
 from .serializers import (
     TargetSystemSerializer,
@@ -16,30 +17,39 @@ from .serializers import (
     BackupUpdateSerializer
 )
 
-# (MagazineHub) 
+
+# ============================================
+# WEB VIEWS (Colleagues' code)
+# ============================================
+
+def index(request):
+    return render(request, "index.html")
+
+
+def api(request):
+    return render(request, "api.html")
+
+
 def magazineHub(request):
     backup_list = Backup.objects.select_related('host', 'target_system').order_by('-start_time')
-    
-    # Пагинация: по 10 бэкапов на страницу
     paginator = Paginator(backup_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
     return render(request, "magazineHub.html", {"page_obj": page_obj})
+
 
 def backup_detail(request, pk):
     backup = get_object_or_404(Backup.objects.select_related('host', 'target_system'), id=pk)
     return render(request, "backup_detail.html", {"backup": backup})
 
 
-# (System Settings CRUD) 
 def settings(request):
-    # Вывод списка систем с пагинацией (по 5 на страницу)
     systems_list = TargetSystem.objects.all().order_by('-created_at')
     paginator = Paginator(systems_list, 5)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     return render(request, "settings.html", {"page_obj": page_obj})
+
 
 def system_create(request):
     if request.method == "POST":
@@ -48,6 +58,7 @@ def system_create(request):
         TargetSystem.objects.create(name=name, system_type=system_type)
         return redirect('settings')
     return render(request, "system_form.html")
+
 
 def system_edit(request, pk):
     system = get_object_or_404(TargetSystem, id=pk)
@@ -58,6 +69,7 @@ def system_edit(request, pk):
         return redirect('settings')
     return render(request, "system_form.html", {"system": system})
 
+
 def system_delete(request, pk):
     system = get_object_or_404(TargetSystem, id=pk)
     if request.method == "POST":
@@ -66,13 +78,13 @@ def system_delete(request, pk):
     return render(request, "system_confirm_delete.html", {"system": system})
 
 
-# (Servers CRUD) 
 def servers(request):
     hosts_list = Host.objects.select_related('target_system').all().order_by('hostname')
     paginator = Paginator(hosts_list, 5)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     return render(request, "servers.html", {"page_obj": page_obj})
+
 
 def host_create(request):
     systems = TargetSystem.objects.all()
@@ -81,10 +93,10 @@ def host_create(request):
         ip_address = request.POST.get('ip_address')
         system_id = request.POST.get('target_system')
         target_system = get_object_or_404(TargetSystem, id=system_id)
-        
         Host.objects.create(hostname=hostname, ip_address=ip_address, target_system=target_system)
         return redirect('servers')
     return render(request, "host_form.html", {"systems": systems})
+
 
 def host_edit(request, pk):
     host = get_object_or_404(Host, id=pk)
@@ -98,6 +110,7 @@ def host_edit(request, pk):
         return redirect('servers')
     return render(request, "host_form.html", {"host": host, "systems": systems})
 
+
 def host_delete(request, pk):
     host = get_object_or_404(Host, id=pk)
     if request.method == "POST":
@@ -106,21 +119,37 @@ def host_delete(request, pk):
     return render(request, "host_confirm_delete.html", {"host": host})
 
 
-def index(request): return render(request, "index.html")
-def api(request): return render(request, "api.html")
-
+# ============================================
+# API VIEWS
+# ============================================
 
 class BackupCreateView(APIView):
     """
-    POST /api/v1/backups/ - Регистрация начала резервного копирования
+    POST /api/v1/backups/ - Registration of backup start
     """
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['host_id'],
+            properties={
+                'host_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='Host ID'),
+                'storage': openapi.Schema(type=openapi.TYPE_STRING, description='Storage path'),
+            }
+        ),
+        responses={
+            201: openapi.Response('Backup created', BackupSerializer),
+            400: 'Validation error',
+        },
+        operation_summary='Register backup start',
+        operation_description='Creates a new backup record with status in_progress',
+        tags=['Backups'],
+    )
     def post(self, request):
         serializer = BackupCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         host = Host.objects.get(id=serializer.validated_data['host_id'])
         
-        # Если target_system не указан, берем из хоста
         target_system = serializer.validated_data.get('target_system_id')
         if target_system:
             target_system = TargetSystem.objects.get(id=target_system)
@@ -141,20 +170,38 @@ class BackupCreateView(APIView):
 
 class BackupUpdateView(APIView):
     """
-    PATCH /api/v1/backups/{id}/ - Обновление статуса и метаданных бэкапа
+    PATCH /api/v1/backups/{id}/ - Update backup status and metadata
     """
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'status': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    enum=['in_progress', 'success', 'error']
+                ),
+                'backup_size': openapi.Schema(type=openapi.TYPE_INTEGER),
+                'meta_data': openapi.Schema(type=openapi.TYPE_OBJECT),
+            }
+        ),
+        responses={
+            200: openapi.Response('Backup updated', BackupSerializer),
+            404: 'Backup not found',
+        },
+        operation_summary='Update backup status',
+        operation_description='Updates backup status and metadata after completion',
+        tags=['Backups'],
+    )
     def patch(self, request, backup_id):
         backup = get_object_or_404(Backup, id=backup_id)
 
         serializer = BackupUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        # Обновляем переданные поля
         for attr, value in serializer.validated_data.items():
-            if value is not None:  # Обновляем только если поле передано
+            if value is not None:
                 setattr(backup, attr, value)
 
-        # Если статус изменился на завершающий и время завершения не стоит
         if backup.status in ['success', 'error'] and not backup.end_time:
             backup.end_time = timezone.now()
 
@@ -164,10 +211,9 @@ class BackupUpdateView(APIView):
         return Response(response_serializer.data, status=status.HTTP_200_OK)
 
 
-
 class TargetSystemViewSet(ModelViewSet):
     """
-    CRUD операции для TargetSystem.
+    CRUD operations for TargetSystem.
     GET/POST /api/v1/systems/
     GET/PUT/PATCH/DELETE /api/v1/systems/{id}/
     """
@@ -177,7 +223,7 @@ class TargetSystemViewSet(ModelViewSet):
 
 class HostViewSet(ModelViewSet):
     """
-    CRUD операции для Host.
+    CRUD operations for Host.
     GET/POST /api/v1/hosts/
     GET/PUT/PATCH/DELETE /api/v1/hosts/{id}/
     """
@@ -187,11 +233,10 @@ class HostViewSet(ModelViewSet):
 
 class BackupViewSet(ModelViewSet):
     """
-    CRUD операции для Backup (только чтение).
+    CRUD operations for Backup (read-only).
     GET /api/v1/backups-list/
     GET /api/v1/backups-list/{id}/
     """
     queryset = Backup.objects.select_related('host', 'target_system').all()
     serializer_class = BackupSerializer
-    http_method_names = ['get', 'head', 'options']  # Только чтение
-
+    http_method_names = ['get', 'head', 'options']
