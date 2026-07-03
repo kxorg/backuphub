@@ -1,5 +1,5 @@
-from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import GenericViewSet
+from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404, render, redirect
@@ -9,18 +9,11 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 from .models import TargetSystem, Host, Backup
-from .serializers import (
-    TargetSystemSerializer,
-    HostSerializer,
-    BackupSerializer,
-    BackupCreateSerializer,
-    BackupUpdateSerializer
-)
+from .serializers import BackupSerializer, BackupCreateSerializer, BackupUpdateSerializer
 
 
-# ============================================
-# WEB VIEWS
-# ============================================
+# WEB VIEWS 
+
 
 def index(request):
     return render(request, "index.html")
@@ -119,20 +112,51 @@ def host_delete(request, pk):
     return render(request, "host_confirm_delete.html", {"host": host})
 
 
-# ============================================
-# API VIEWS
-# ============================================
+# API VIEWS (только Backups)
 
-class BackupCreateView(APIView):
+
+class BackupViewSet(
+    ListModelMixin,
+    CreateModelMixin,
+    RetrieveModelMixin,
+    GenericViewSet
+):
     """
-    POST /api/v1/backups/ - Registration of backup start
+    Backup API operations.
     """
+    queryset = Backup.objects.select_related('host', 'target_system').all()
+    serializer_class = BackupSerializer
+
+    @swagger_auto_schema(
+        operation_summary='List all backups',
+        operation_description='Returns a list of all backup operations',
+        tags=['Backups'],
+        responses={
+            200: openapi.Response('List of backups', BackupSerializer(many=True)),
+        },
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_summary='Retrieve backup details',
+        operation_description='Returns details of a specific backup operation',
+        tags=['Backups'],
+        responses={
+            200: openapi.Response('Backup details', BackupSerializer),
+            404: 'Backup not found',
+        },
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
     @swagger_auto_schema(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             required=['host_id'],
             properties={
                 'host_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='Host ID'),
+                'target_system_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='Target system ID (optional)'),
                 'storage': openapi.Schema(type=openapi.TYPE_STRING, description='Storage path'),
             }
         ),
@@ -140,11 +164,11 @@ class BackupCreateView(APIView):
             201: openapi.Response('Backup created', BackupSerializer),
             400: 'Validation error',
         },
-        operation_summary='Register backup start',
+        operation_summary='Create backup record',
         operation_description='Creates a new backup record with status in_progress',
         tags=['Backups'],
     )
-    def post(self, request):
+    def create(self, request, *args, **kwargs):
         serializer = BackupCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -167,11 +191,6 @@ class BackupCreateView(APIView):
         response_serializer = BackupSerializer(backup)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
-
-class BackupUpdateView(APIView):
-    """
-    PATCH /api/v1/backups/{id}/ - Update backup status and metadata
-    """
     @swagger_auto_schema(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
@@ -180,8 +199,11 @@ class BackupUpdateView(APIView):
                     type=openapi.TYPE_STRING,
                     enum=['in_progress', 'success', 'error']
                 ),
+                'end_time': openapi.Schema(type=openapi.TYPE_STRING, format='date-time'),
                 'backup_size': openapi.Schema(type=openapi.TYPE_INTEGER),
+                'storage': openapi.Schema(type=openapi.TYPE_STRING),
                 'meta_data': openapi.Schema(type=openapi.TYPE_OBJECT),
+                'error_message': openapi.Schema(type=openapi.TYPE_STRING),
             }
         ),
         responses={
@@ -192,8 +214,9 @@ class BackupUpdateView(APIView):
         operation_description='Updates backup status and metadata after completion',
         tags=['Backups'],
     )
-    def patch(self, request, backup_id):
-        backup = get_object_or_404(Backup, id=backup_id)
+    def partial_update(self, request, *args, **kwargs):
+        """PATCH /backups/{id}/ - Update backup status"""
+        backup = self.get_object()
 
         serializer = BackupUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -209,34 +232,3 @@ class BackupUpdateView(APIView):
 
         response_serializer = BackupSerializer(backup)
         return Response(response_serializer.data, status=status.HTTP_200_OK)
-
-
-class TargetSystemViewSet(ModelViewSet):
-    """
-    CRUD operations for TargetSystem.
-    GET/POST /api/v1/systems/
-    GET/PUT/PATCH/DELETE /api/v1/systems/{id}/
-    """
-    queryset = TargetSystem.objects.all()
-    serializer_class = TargetSystemSerializer
-
-
-class HostViewSet(ModelViewSet):
-    """
-    CRUD operations for Host.
-    GET/POST /api/v1/hosts/
-    GET/PUT/PATCH/DELETE /api/v1/hosts/{id}/
-    """
-    queryset = Host.objects.select_related('target_system').all()
-    serializer_class = HostSerializer
-
-
-class BackupViewSet(ModelViewSet):
-    """
-    CRUD operations for Backup (read-only).
-    GET /api/v1/backups-list/
-    GET /api/v1/backups-list/{id}/
-    """
-    queryset = Backup.objects.select_related('host', 'target_system').all()
-    serializer_class = BackupSerializer
-    http_method_names = ['get', 'head', 'options']
