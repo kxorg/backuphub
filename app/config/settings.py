@@ -155,7 +155,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
-# Настройки авторизации
-LOGIN_URL = 'login'          # Куда редиректить неавторизованного пользователя
-LOGIN_REDIRECT_URL = '/'     # Куда редиректить после успешного входа
-LOGOUT_REDIRECT_URL = 'login' # Куда редиректить после выхода
+# Authorization settings
+LOGIN_URL = 'login'          # Where to redirect an unauthorized user
+LOGIN_REDIRECT_URL = '/'     # Where to redirect after successful login
+LOGOUT_REDIRECT_URL = 'login' # Where to redirect after exit

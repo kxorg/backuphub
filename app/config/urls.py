@@ -20,25 +20,24 @@ from core import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    
     path('', views.index, name="index"),
     path('api/', views.api, name="api"),
     
-    # Journal backup
-    path('journal_backup/', views.journal_backup, name="journal_backup"),
-    path('backups/<uuid:pk>/', views.backup_detail, name="backup_detail_web"),
+    # TargetSystems CRUD 
+    path('target-systems/', views.system_settings, name="target_system_list"),
+    path('target-systems/create/', views.system_create, name="target_system_create"),
+    path('target-systems/<int:pk>/edit/', views.system_edit, name="target_system_edit"),
+    path('target-systems/<int:pk>/delete/', views.system_delete, name="target_system_delete"),
     
-    # System settings (CRUD)
-    path('system_settings/', views.system_settings, name="system_settings"),
-    path('system_settings/create/', views.system_create, name="system_create"),
-    path('system_settings/<int:pk>/edit/', views.system_edit, name="system_edit"),
-    path('system_settings/<int:pk>/delete/', views.system_delete, name="system_delete"),
+    # Hosts CRUD 
+    path('hosts/', views.servers, name="host_list"),
+    path('hosts/create/', views.host_create, name="host_create"),
+    path('hosts/<int:pk>/edit/', views.host_edit, name="host_edit"),
+    path('hosts/<int:pk>/delete/', views.host_delete, name="host_delete"),
     
-    # Servers (CRUD)
-    path('servers/', views.servers, name="servers"),
-    path('servers/create/', views.host_create, name="host_create"),
-    path('servers/<int:pk>/edit/', views.host_edit, name="host_edit"),
-    path('servers/<int:pk>/delete/', views.host_delete, name="host_delete"),
+    # Backups 
+    path('backups/', views.backups_list, name="backup_list"),
+    path('backups/<uuid:pk>/', views.backup_detail, name="backup_detail"),
     
     # API 
     path('api/v1/', include('core.urls')),

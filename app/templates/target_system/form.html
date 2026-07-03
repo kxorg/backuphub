@@ -14,7 +14,7 @@
             <input type="text" name="system_type" class="form-control" value="{{ system.system_type|default:'' }}" required>
         </div>
         <button type="submit" class="btn btn-success">Save</button>
-        <a href="{% url 'system_settings' %}" class="btn btn-light">Cancel</a>
+        <a href="{% url 'target_system_list' %}" class="btn btn-light">Cancel</a>
     </form>
 </div>
 {% endblock %}

@@ -7,7 +7,7 @@
     <form method="POST">
         {% csrf_token %}
         <button type="submit" class="btn btn-danger">Yes, delete</button>
-        <a href="{% url 'servers' %}" class="btn btn-light">Cancel</a>
+        <a href="{% url 'host_list' %}" class="btn btn-light">Cancel</a>
     </form>
 </div>
 {% endblock %}

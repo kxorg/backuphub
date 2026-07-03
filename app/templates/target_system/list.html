@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}System settings  | BackupHub{% endblock %}
+{% block title %}Systems | BackupHub{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -8,10 +8,10 @@
         <div class="card shadow-sm p-4 mb-4 bg-white rounded border-0">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <h1 class="page-title fw-bold mb-2">System settings</h1>
+                    <h1 class="page-title fw-bold mb-2">Systems</h1>
                     <p class="text-muted mb-0">Configure BackupHub integration and data cleanup settings.</p>
                 </div>
-                <a href="{% url 'system_create' %}" class="btn btn-primary">+ Add system</a>
+                <a href="{% url 'target_system_create' %}" class="btn btn-primary">+ Add system</a>
             </div>
 
             <!-- System table -->
@@ -33,8 +33,8 @@
                         <td><code>{{ system.api_key }}</code></td>
                         <td>{{ system.created_at|date:"d.m.Y H:i" }}</td>
                         <td class="text-end">
-                            <a href="{% url 'system_edit' system.id %}" class="btn btn-sm btn-outline-warning">Edit</a>
-                            <a href="{% url 'system_delete' system.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                            <a href="{% url 'target_system_edit' system.id %}" class="btn btn-sm btn-outline-warning">Edit</a>
+                            <a href="{% url 'target_system_delete' system.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
                         </td>
                     </tr>
                     {% empty %}
