@@ -5,7 +5,7 @@ from django.shortcuts import redirect
 from rest_framework.routers import DefaultRouter
 from . import views
 
-# Обработчик выхода через GET-запрос
+# Logout handler via GET request
 def logout_view(request):
     logout(request)
     return redirect('login')

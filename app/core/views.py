@@ -16,16 +16,16 @@ from .serializers import (
     BackupUpdateSerializer
 )
 
-# (MagazineHub) 
-def magazineHub(request):
+# (Journal Backup) 
+def journal_backup(request):
     backup_list = Backup.objects.select_related('host', 'target_system').order_by('-start_time')
     
-    # Пагинация: по 10 бэкапов на страницу
+    # Pagination: 10 backups per page
     paginator = Paginator(backup_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    return render(request, "magazineHub.html", {"page_obj": page_obj})
+    return render(request, "journal_backup.html", {"page_obj": page_obj})
 
 def backup_detail(request, pk):
     backup = get_object_or_404(Backup.objects.select_related('host', 'target_system'), id=pk)
@@ -33,20 +33,20 @@ def backup_detail(request, pk):
 
 
 # (System Settings CRUD) 
-def settings(request):
-    # Вывод списка систем с пагинацией (по 5 на страницу)
+def system_settings(request):
+    # Displaying a list of systems with pagination (5 per page)
     systems_list = TargetSystem.objects.all().order_by('-created_at')
     paginator = Paginator(systems_list, 5)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    return render(request, "settings.html", {"page_obj": page_obj})
+    return render(request, "system_settings.html", {"page_obj": page_obj})
 
 def system_create(request):
     if request.method == "POST":
         name = request.POST.get('name')
         system_type = request.POST.get('system_type')
         TargetSystem.objects.create(name=name, system_type=system_type)
-        return redirect('settings')
+        return redirect('system_settings')
     return render(request, "system_form.html")
 
 def system_edit(request, pk):
@@ -55,14 +55,14 @@ def system_edit(request, pk):
         system.name = request.POST.get('name')
         system.system_type = request.POST.get('system_type')
         system.save()
-        return redirect('settings')
+        return redirect('system_settings')
     return render(request, "system_form.html", {"system": system})
 
 def system_delete(request, pk):
     system = get_object_or_404(TargetSystem, id=pk)
     if request.method == "POST":
         system.delete()
-        return redirect('settings')
+        return redirect('system_settings')
     return render(request, "system_confirm_delete.html", {"system": system})
 
 
@@ -120,7 +120,7 @@ class BackupCreateView(APIView):
 
         host = Host.objects.get(id=serializer.validated_data['host_id'])
         
-        # Если target_system не указан, берем из хоста
+        # If target_system is not specified, we take it from the host
         target_system = serializer.validated_data.get('target_system_id')
         if target_system:
             target_system = TargetSystem.objects.get(id=target_system)
@@ -149,12 +149,12 @@ class BackupUpdateView(APIView):
         serializer = BackupUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        # Обновляем переданные поля
+        # Updating the transferred fields
         for attr, value in serializer.validated_data.items():
-            if value is not None:  # Обновляем только если поле передано
+            if value is not None:  # Update only if the field is passed
                 setattr(backup, attr, value)
 
-        # Если статус изменился на завершающий и время завершения не стоит
+        # If the status has changed to final and the completion time is not set
         if backup.status in ['success', 'error'] and not backup.end_time:
             backup.end_time = timezone.now()
 

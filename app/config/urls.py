@@ -24,15 +24,15 @@ urlpatterns = [
     path('', views.index, name="index"),
     path('api/', views.api, name="api"),
     
-    # Magazine backup
-    path('magazineHub/', views.magazineHub, name="magazineHub"),
+    # Journal backup
+    path('journal_backup/', views.journal_backup, name="journal_backup"),
     path('backups/<uuid:pk>/', views.backup_detail, name="backup_detail_web"),
     
     # System settings (CRUD)
-    path('settings/', views.settings, name="settings"),
-    path('settings/create/', views.system_create, name="system_create"),
-    path('settings/<int:pk>/edit/', views.system_edit, name="system_edit"),
-    path('settings/<int:pk>/delete/', views.system_delete, name="system_delete"),
+    path('system_settings/', views.system_settings, name="system_settings"),
+    path('system_settings/create/', views.system_create, name="system_create"),
+    path('system_settings/<int:pk>/edit/', views.system_edit, name="system_edit"),
+    path('system_settings/<int:pk>/delete/', views.system_delete, name="system_delete"),
     
     # Servers (CRUD)
     path('servers/', views.servers, name="servers"),

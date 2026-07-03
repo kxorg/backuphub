@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="card shadow-sm p-4 border-0">
-    <h2 class="fw-bold mb-4">{% if system %}Редактировать систему{% else %}Создать систему{% endif %}</h2>
+    <h2 class="fw-bold mb-4">{% if system %}Edit system{% else %}Create a system{% endif %}</h2>
     <form method="POST">
         {% csrf_token %}
         <div class="mb-3">
@@ -14,7 +14,7 @@
             <input type="text" name="system_type" class="form-control" value="{{ system.system_type|default:'' }}" required>
         </div>
         <button type="submit" class="btn btn-success">Save</button>
-        <a href="{% url 'settings' %}" class="btn btn-light">Cancel</a>
+        <a href="{% url 'system_settings' %}" class="btn btn-light">Cancel</a>
     </form>
 </div>
 {% endblock %}

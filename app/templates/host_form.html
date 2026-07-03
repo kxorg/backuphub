@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}{% if host %}Редактировать сервер{% else %}Добавить сервер{% endif %} | BackupHub{% endblock %}
+{% block title %}{% if host %}Edit server{% else %}Add server{% endif %} | BackupHub{% endblock %}
 
 {% block content %}
 <div class="card shadow-sm p-4 border-0">
-    <h2 class="fw-bold mb-4">{% if host %}Редактировать сервер{% else %}Добавить сервер{% endif %}</h2>
+    <h2 class="fw-bold mb-4">{% if host %}Edit server{% else %}Add server{% endif %}</h2>
     <form method="POST">
         {% csrf_token %}
         <div class="mb-3">

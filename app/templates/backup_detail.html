@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Детали бэкапа | BackupHub{% endblock %}
+{% block title %}Details Backup | BackupHub{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -9,7 +9,7 @@
             
             <!-- Back breadcrumb trail -->
             <div class="mb-3">
-                <a href="{% url 'magazineHub' %}" class="btn btn-sm btn-outline-secondary">&larr; Return to magazine</a>
+                <a href="{% url 'journal_backup' %}" class="btn btn-sm btn-outline-secondary">&larr; Return to magazine</a>
             </div>
 
             <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
@@ -28,7 +28,7 @@
                 <div class="col-md-6">
                     <h5 class="text-muted small text-uppercase fw-bold">System and Server</h5>
                     <p class="mb-1"><strong>System:</strong> <span class="badge bg-info text-dark">{{ backup.target_system.name }}</span></p>
-                    <p class="mb-0"><strong>Server (Host):</strong> {{ backup.host.hostname|default:"Удаленный хост" }} (<code>{{ backup.host.ip_address|default:"—" }}</code>)</p>
+                    <p class="mb-0"><strong>Server (Host):</strong> {{ backup.host.hostname|default:"Remote host" }} (<code>{{ backup.host.ip_address|default:"—" }}</code>)</p>
                 </div>
                 <div class="col-md-6">
                     <h5 class="text-muted small text-uppercase fw-bold">Timestamps</h5>

@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="card shadow-sm p-4 border-0 border-start border-danger border-4">
-    <h2 class="fw-bold text-danger mb-3">Удаление сервера</h2>
+    <h2 class="fw-bold text-danger mb-3">Deleting a server</h2>
     <p>Are you sure you want to delete the host? <strong>{{ host.hostname }}</strong> ({{ host.ip_address }})?</p>
     <form method="POST">
         {% csrf_token %}
