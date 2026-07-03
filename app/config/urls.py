@@ -35,11 +35,6 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-<<<<<<< HEAD
-=======
-    
-    # Web interface
->>>>>>> 8084877e5af2a056077eb5c96f17e08d018576ab
     path('', views.index, name="index"),
     path('api/', views.api, name="api"),
     
