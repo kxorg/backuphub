@@ -9,6 +9,8 @@ class TargetSystem(models.Model):
 
     class Meta:
         db_table = 'target_system'
+        verbose_name = 'Target System'
+        verbose_name_plural = 'Target Systems'
 
     def __str__(self):
         return self.name
@@ -26,6 +28,8 @@ class Host(models.Model):
 
     class Meta:
         db_table = 'host'
+        verbose_name = 'Host'
+        verbose_name_plural = 'Hosts'
 
     def __str__(self):
         return f"{self.hostname} ({self.ip_address})"
@@ -53,6 +57,8 @@ class Backup(models.Model):
 
     class Meta:
         db_table = 'backup'
+        verbose_name = 'Backup'
+        verbose_name_plural = 'Backups'
 
     @property
     def duration(self):

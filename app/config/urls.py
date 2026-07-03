@@ -16,10 +16,30 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
 from core import views
+
+# Swagger configuration
+schema_view = get_schema_view(
+    openapi.Info(
+        title="BackupHub API",
+        default_version='v1',
+        description="REST API for centralized backup monitoring",
+        contact=openapi.Contact(email="support@backuphub.local"),
+    ),
+    public=True,
+    permission_classes=[permissions.AllowAny],
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+<<<<<<< HEAD
+=======
+    
+    # Web interface
+>>>>>>> 8084877e5af2a056077eb5c96f17e08d018576ab
     path('', views.index, name="index"),
     path('api/', views.api, name="api"),
     
@@ -39,6 +59,11 @@ urlpatterns = [
     path('backups/', views.backups_list, name="backup_list"),
     path('backups/<uuid:pk>/', views.backup_detail, name="backup_detail"),
     
-    # API 
+    # REST API
     path('api/v1/', include('core.urls')),
+    
+    # Swagger documentation
+    path('api/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('api/redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path('api/schema/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
 ]
