@@ -14,16 +14,13 @@ from .serializers import BackupSerializer, BackupCreateSerializer, BackupUpdateS
 
 # WEB VIEWS 
 
-
 def index(request):
     return render(request, "index.html")
-
 
 def api(request):
     return render(request, "api.html")
 
 
-<<<<<<< HEAD
 # (Backups) 
 def backups_list(request):
     backup_list = Backup.objects.select_related('host', 'target_system').order_by('-start_time')
@@ -34,14 +31,6 @@ def backups_list(request):
     page_obj = paginator.get_page(page_number)
     
     return render(request, "backup/list.html", {"page_obj": page_obj})
-=======
-def magazineHub(request):
-    backup_list = Backup.objects.select_related('host', 'target_system').order_by('-start_time')
-    paginator = Paginator(backup_list, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    return render(request, "magazineHub.html", {"page_obj": page_obj})
->>>>>>> 8084877e5af2a056077eb5c96f17e08d018576ab
 
 
 def backup_detail(request, pk):
@@ -49,13 +38,9 @@ def backup_detail(request, pk):
     return render(request, "backup/detail.html", {"backup": backup})
 
 
-<<<<<<< HEAD
 # (TargetSystem CRUD) 
 def system_settings(request):
     # Displaying a list of systems with pagination (5 per page)
-=======
-def settings(request):
->>>>>>> 8084877e5af2a056077eb5c96f17e08d018576ab
     systems_list = TargetSystem.objects.all().order_by('-created_at')
     paginator = Paginator(systems_list, 5)
     page_number = request.GET.get('page')
@@ -90,10 +75,7 @@ def system_delete(request, pk):
     return render(request, "target_system/confirm_delete.html", {"system": system})
 
 
-<<<<<<< HEAD
 # (Host CRUD) 
-=======
->>>>>>> 8084877e5af2a056077eb5c96f17e08d018576ab
 def servers(request):
     hosts_list = Host.objects.select_related('target_system').all().order_by('hostname')
     paginator = Paginator(hosts_list, 5)
@@ -197,10 +179,7 @@ class BackupViewSet(
 
         host = Host.objects.get(id=serializer.validated_data['host_id'])
         
-<<<<<<< HEAD
         # If target_system is not specified, we take it from the host
-=======
->>>>>>> 8084877e5af2a056077eb5c96f17e08d018576ab
         target_system = serializer.validated_data.get('target_system_id')
         if target_system:
             target_system = TargetSystem.objects.get(id=target_system)
@@ -248,60 +227,16 @@ class BackupViewSet(
         serializer = BackupUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-<<<<<<< HEAD
         # Updating the transferred fields
         for attr, value in serializer.validated_data.items():
             if value is not None:  # Update only if the field is passed
                 setattr(backup, attr, value)
 
         # If the status has changed to final and the completion time is not set
-=======
-        for attr, value in serializer.validated_data.items():
-            if value is not None:
-                setattr(backup, attr, value)
-
->>>>>>> 8084877e5af2a056077eb5c96f17e08d018576ab
         if backup.status in ['success', 'error'] and not backup.end_time:
             backup.end_time = timezone.now()
 
         backup.save()
 
         response_serializer = BackupSerializer(backup)
-<<<<<<< HEAD
         return Response(response_serializer.data, status=status.HTTP_200_OK)
-
-
-
-class TargetSystemViewSet(ModelViewSet):
-    """
-    CRUD операции для TargetSystem.
-    GET/POST /api/v1/systems/
-    GET/PUT/PATCH/DELETE /api/v1/systems/{id}/
-    """
-    queryset = TargetSystem.objects.all()
-    serializer_class = TargetSystemSerializer
-
-
-class HostViewSet(ModelViewSet):
-    """
-    CRUD операции для Host.
-    GET/POST /api/v1/hosts/
-    GET/PUT/PATCH/DELETE /api/v1/hosts/{id}/
-    """
-    queryset = Host.objects.select_related('target_system').all()
-    serializer_class = HostSerializer
-
-
-class BackupViewSet(ModelViewSet):
-    """
-    CRUD операции для Backup (только чтение).
-    GET /api/v1/backups-list/
-    GET /api/v1/backups-list/{id}/
-    """
-    queryset = Backup.objects.select_related('host', 'target_system').all()
-    serializer_class = BackupSerializer
-    http_method_names = ['get', 'head', 'options']  
-
-=======
-        return Response(response_serializer.data, status=status.HTTP_200_OK)
->>>>>>> 8084877e5af2a056077eb5c96f17e08d018576ab
