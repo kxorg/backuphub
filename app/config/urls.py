@@ -16,16 +16,51 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
 from core import views
+
+# Swagger configuration
+schema_view = get_schema_view(
+    openapi.Info(
+        title="BackupHub API",
+        default_version='v1',
+        description="REST API for centralized backup monitoring",
+        contact=openapi.Contact(email="support@backuphub.local"),
+    ),
+    public=True,
+    permission_classes=[permissions.AllowAny],
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     
+    # Web interface
     path('', views.index, name="index"),
-    path('settings/', views.settings, name="settings"),
-    path('servers/', views.servers, name="servers"),
-    path('magazineHub/', views.magazineHub, name="magazineHub"),
     path('api/', views.api, name="api"),
     
+    # Magazine backup
+    path('magazineHub/', views.magazineHub, name="magazineHub"),
+    path('backups/<uuid:pk>/', views.backup_detail, name="backup_detail_web"),
+    
+    # System settings (CRUD)
+    path('settings/', views.settings, name="settings"),
+    path('settings/create/', views.system_create, name="system_create"),
+    path('settings/<int:pk>/edit/', views.system_edit, name="system_edit"),
+    path('settings/<int:pk>/delete/', views.system_delete, name="system_delete"),
+    
+    # Servers (CRUD)
+    path('servers/', views.servers, name="servers"),
+    path('servers/create/', views.host_create, name="host_create"),
+    path('servers/<int:pk>/edit/', views.host_edit, name="host_edit"),
+    path('servers/<int:pk>/delete/', views.host_delete, name="host_delete"),
+    
+    # REST API
     path('api/v1/', include('core.urls')),
+    
+    # Swagger documentation
+    path('api/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('api/redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path('api/schema/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
 ]

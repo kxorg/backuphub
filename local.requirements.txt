@@ -1,20 +1,15 @@
-# App section
 django>=5.0,<6.0
 djangorestframework>=3.14.0
 djangorestframework-simplejwt==5.3.1
 
-# worker section
 celery==5.4.0
 flower==2.0.1
 
-# storage section
-psycopg2-binary==2.9.9 # binary (no wheels needed)
+psycopg2-binary==2.9.9 
 redis==5.0.7
 
-# style and tests
 black==24.4.2
 flake8==7.1.0
 coverage==7.6.0
 
-# API documentation
 drf-yasg==1.21.7
