@@ -158,4 +158,4 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 # Настройки авторизации
 LOGIN_URL = 'login'          # Куда редиректить неавторизованного пользователя
 LOGIN_REDIRECT_URL = '/'     # Куда редиректить после успешного входа
-LOGOUT_REDIRECT_URL = 'login' # Куда редиректить после выхода
+LOGIN_REDIRECT_URL = 'index' # Куда редиректить после выхода

@@ -22,4 +22,10 @@ urlpatterns = [
     path('backups/<uuid:backup_id>/', views.BackupUpdateView.as_view(), name='backup-update'),
     path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
     path('logout/', logout_view, name='logout'),
+
+    path('dashboard/', views.index, name='index'),
+    path('servers/', views.servers, name='servers'),
+    path('settings-ui/', views.settings, name='settings-page'),
+    path('magazine/', views.magazineHub, name='magazine-hub'),
+    path('api-ui/', views.api, name='api-ui'),
 ]

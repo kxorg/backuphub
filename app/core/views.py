@@ -1,8 +1,11 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
@@ -15,18 +18,23 @@ from .serializers import (
     BackupUpdateSerializer
 )
 
+@login_required
 def index(request):
     return render(request, "index.html")
 
+@login_required
 def settings(request):
     return render(request, "settings.html")
 
+@login_required
 def servers(request):
     return render(request, "servers.html")
 
+@login_required
 def magazineHub(request):
     return render(request, "magazineHub.html")
 
+@login_required
 def api(request):
     return render(request, "api.html")
 
@@ -36,6 +44,8 @@ class BackupCreateView(APIView):
     """
     POST /api/v1/backups/ - Регистрация начала резервного копирования
     """
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
         serializer = BackupCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -65,6 +75,8 @@ class BackupUpdateView(APIView):
     """
     PATCH /api/v1/backups/{id}/ - Обновление статуса и метаданных бэкапа
     """
+    permission_classes = [IsAuthenticated]
+
     def patch(self, request, backup_id):
         backup = get_object_or_404(Backup, id=backup_id)
 
@@ -93,6 +105,7 @@ class TargetSystemViewSet(ModelViewSet):
     GET/POST /api/v1/systems/
     GET/PUT/PATCH/DELETE /api/v1/systems/{id}/
     """
+    permission_classes = [IsAuthenticated]  
     queryset = TargetSystem.objects.all()
     serializer_class = TargetSystemSerializer
 
@@ -103,6 +116,7 @@ class HostViewSet(ModelViewSet):
     GET/POST /api/v1/hosts/
     GET/PUT/PATCH/DELETE /api/v1/hosts/{id}/
     """
+    permission_classes = [IsAuthenticated] 
     queryset = Host.objects.select_related('target_system').all()
     serializer_class = HostSerializer
 
@@ -113,6 +127,7 @@ class BackupViewSet(ModelViewSet):
     GET /api/v1/backups-list/
     GET /api/v1/backups-list/{id}/
     """
+    permission_classes = [IsAuthenticated]
     queryset = Backup.objects.select_related('host', 'target_system').all()
     serializer_class = BackupSerializer
     http_method_names = ['get', 'head', 'options']  # Только чтение
