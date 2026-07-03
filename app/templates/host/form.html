@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 
-{% block title %}{% if host %}Редактировать сервер{% else %}Добавить сервер{% endif %} | BackupHub{% endblock %}
+{% block title %}{% if host %}Edit server{% else %}Add server{% endif %} | BackupHub{% endblock %}
 
 {% block content %}
 <div class="card shadow-sm p-4 border-0">
-    <h2 class="fw-bold mb-4">{% if host %}Редактировать сервер{% else %}Добавить сервер{% endif %}</h2>
+    <h2 class="fw-bold mb-4">{% if host %}Edit server{% else %}Add server{% endif %}</h2>
     <form method="POST">
         {% csrf_token %}
         <div class="mb-3">
             <label class="form-label">Hostname</label>
-            <input type="text" name="hostname" class="form-control" value="{{ host.hostname|default:'' }}" placeholder="например, db-server-01" required>
+            <input type="text" name="hostname" class="form-control" value="{{ host.hostname|default:'' }}" placeholder="for example, db-server-01" required>
         </div>
         <div class="mb-3">
             <label class="form-label">IP address</label>
-            <input type="text" name="ip_address" class="form-control" value="{{ host.ip_address|default:'' }}" placeholder="например, 192.168.1.50" required>
+            <input type="text" name="ip_address" class="form-control" value="{{ host.ip_address|default:'' }}" placeholder="for example, 192.168.1.50" required>
         </div>
         <div class="mb-3">
             <label class="form-label">Observed system</label>
@@ -27,7 +27,7 @@
             </select>
         </div>
         <button type="submit" class="btn btn-success">Save</button>
-        <a href="{% url 'servers' %}" class="btn btn-light">Cancel</a>
+        <a href="{% url 'host_list' %}" class="btn btn-light">Cancel</a>
     </form>
 </div>
 {% endblock %}

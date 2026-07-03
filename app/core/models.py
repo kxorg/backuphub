@@ -4,8 +4,8 @@ from django.db import models
 class TargetSystem(models.Model):
     name = models.CharField(max_length=100, verbose_name='Name')
     system_type = models.CharField(max_length=50, verbose_name='Type')
-    api_key = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, verbose_name='API Key')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created At')
+    api_key = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, verbose_name='API-key')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Creation date')
 
     class Meta:
         db_table = 'target_system'
@@ -17,13 +17,13 @@ class TargetSystem(models.Model):
 
 
 class Host(models.Model):
-    hostname = models.CharField(max_length=255, verbose_name='Hostname')
-    ip_address = models.GenericIPAddressField(verbose_name='IP Address')
+    hostname = models.CharField(max_length=255, verbose_name='Name host')
+    ip_address = models.GenericIPAddressField(verbose_name='IP-addres')
     target_system = models.ForeignKey(
         TargetSystem, 
         on_delete=models.CASCADE, 
         related_name='hosts',
-        verbose_name='Target System'
+        verbose_name='Observed system'
     )
 
     class Meta:
@@ -39,21 +39,21 @@ class Backup(models.Model):
     STATUS_CHOICES = [
         ('success', 'Success'),
         ('error', 'Error'),
-        ('in_progress', 'In Progress'),
+        ('in_progress', 'In progress'),
     ]
-    
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Operation ID')
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='ID operation')
     host = models.ForeignKey(Host, on_delete=models.SET_NULL, null=True, blank=True, related_name='backups', verbose_name='Server')
     target_system = models.ForeignKey(TargetSystem, on_delete=models.CASCADE, related_name='backups', verbose_name='System')
     
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, verbose_name='Status')
-    start_time = models.DateTimeField(verbose_name='Start Time')
-    end_time = models.DateTimeField(null=True, blank=True, verbose_name='End Time')
-    backup_size = models.BigIntegerField(null=True, blank=True, verbose_name='Size (Bytes)')
-    storage = models.CharField(max_length=255, null=True, blank=True, verbose_name='Storage')
+    start_time = models.DateTimeField(verbose_name='Start time')
+    end_time = models.DateTimeField(null=True, blank=True, verbose_name='End time')
+    backup_size = models.BigIntegerField(null=True, blank=True, verbose_name='Size (bytes)')
+    storage = models.CharField(max_length=255, null=True, blank=True, verbose_name='Storage used')
     
-    meta_data = models.JSONField(default=dict, blank=True, verbose_name='Technical Data')
-    error_message = models.TextField(null=True, blank=True, verbose_name='Error Message')
+    meta_data = models.JSONField(default=dict, blank=True, verbose_name='Technical data')
+    error_message = models.TextField(null=True, blank=True, verbose_name='Error message')
 
     class Meta:
         db_table = 'backup'

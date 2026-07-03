@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}BackupHub — Мониторинг резервного копирования{% endblock %}</title>
+    <title>{% block title %}BackupHub — Backup monitoring{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'style/bootstrap.min.css' %}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     
@@ -23,7 +23,7 @@
             background-color: #f5f7fa;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        /* Этот блок отвечает за отображение синей шапки */
+        /* This block is responsible for displaying the blue header. */
         .navbar {
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%) !important;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -50,40 +50,40 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
 
-    <!-- Навигационная панель -->
+    <!-- Navigation bar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid px-4">
-            <!-- Логотип сайта -->
+            <!-- Site logo -->
             <a class="navbar-brand" href="{% url 'index' %}">
                 <i class="bi bi-hdd-stack"></i> BackupHub 
             </a>
             
-            <!-- Кнопка бургер-меню для мобильной версии -->
+            <!-- Burger menu button for mobile version -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             
-            <!-- Пункты навигации -->
+            <!-- Navigation points -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'index' %}">
-                            <i class="bi bi-speedometer2"></i> Home
+                            <i class="bi bi-house"></i> Home
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'settings' %}">
-                            <i class="bi bi-gear"></i> System settings
+                        <a class="nav-link" href="{% url 'target_system_list' %}">
+                            <i class="bi bi-gear"></i> Systems
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'servers' %}">
+                        <a class="nav-link" href="{% url 'host_list' %}">
                             <i class="bi bi-server"></i> Servers
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'magazineHub' %}">
-                            <i class="bi bi-journal-text"></i> Magazine
+                        <a class="nav-link" href="{% url 'backup_list' %}">
+                            <i class="bi bi-journal-text"></i> Backups
                     </a>
                     </li>
                     <li class="nav-item">
@@ -96,13 +96,13 @@
         </div>
     </nav>
 
-    <!-- Основной контент -->
+    <!-- Main content -->
     <main class="container-fluid px-4 my-4 flex-grow-1">
         {% block content %}
         {% endblock %}
     </main>
 
-        <!-- Подвал (Footer) в едином стиле сайта -->
+        <!-- Footer in a unified website style -->
     <footer class="text-center py-4 mt-auto" style="background-color: #ffffff; border-top: 2px solid #ecf0f1;">
         <div class="container-fluid px-4">
             <p class="mb-0 small" style="color: #7f8c8d; font-weight: 500;">
@@ -113,7 +113,7 @@
     </footer>
 
 
-    <!-- Подключаем ваш локальный Bootstrap JS из папки static -->
+    <!-- Include your local Bootstrap JS from the static folder -->
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 </body>
 </html>

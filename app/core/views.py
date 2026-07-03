@@ -23,25 +23,44 @@ def api(request):
     return render(request, "api.html")
 
 
+<<<<<<< HEAD
+# (Backups) 
+def backups_list(request):
+    backup_list = Backup.objects.select_related('host', 'target_system').order_by('-start_time')
+    
+    # Pagination: 10 backups per page
+    paginator = Paginator(backup_list, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, "backup/list.html", {"page_obj": page_obj})
+=======
 def magazineHub(request):
     backup_list = Backup.objects.select_related('host', 'target_system').order_by('-start_time')
     paginator = Paginator(backup_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     return render(request, "magazineHub.html", {"page_obj": page_obj})
+>>>>>>> 8084877e5af2a056077eb5c96f17e08d018576ab
 
 
 def backup_detail(request, pk):
     backup = get_object_or_404(Backup.objects.select_related('host', 'target_system'), id=pk)
-    return render(request, "backup_detail.html", {"backup": backup})
+    return render(request, "backup/detail.html", {"backup": backup})
 
 
+<<<<<<< HEAD
+# (TargetSystem CRUD) 
+def system_settings(request):
+    # Displaying a list of systems with pagination (5 per page)
+=======
 def settings(request):
+>>>>>>> 8084877e5af2a056077eb5c96f17e08d018576ab
     systems_list = TargetSystem.objects.all().order_by('-created_at')
     paginator = Paginator(systems_list, 5)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    return render(request, "settings.html", {"page_obj": page_obj})
+    return render(request, "target_system/list.html", {"page_obj": page_obj})
 
 
 def system_create(request):
@@ -49,8 +68,8 @@ def system_create(request):
         name = request.POST.get('name')
         system_type = request.POST.get('system_type')
         TargetSystem.objects.create(name=name, system_type=system_type)
-        return redirect('settings')
-    return render(request, "system_form.html")
+        return redirect('target_system_list')  # Изменено
+    return render(request, "target_system/form.html")
 
 
 def system_edit(request, pk):
@@ -59,24 +78,28 @@ def system_edit(request, pk):
         system.name = request.POST.get('name')
         system.system_type = request.POST.get('system_type')
         system.save()
-        return redirect('settings')
-    return render(request, "system_form.html", {"system": system})
+        return redirect('target_system_list')  # Изменено
+    return render(request, "target_system/form.html", {"system": system})
 
 
 def system_delete(request, pk):
     system = get_object_or_404(TargetSystem, id=pk)
     if request.method == "POST":
         system.delete()
-        return redirect('settings')
-    return render(request, "system_confirm_delete.html", {"system": system})
+        return redirect('target_system_list')  # Изменено
+    return render(request, "target_system/confirm_delete.html", {"system": system})
 
 
+<<<<<<< HEAD
+# (Host CRUD) 
+=======
+>>>>>>> 8084877e5af2a056077eb5c96f17e08d018576ab
 def servers(request):
     hosts_list = Host.objects.select_related('target_system').all().order_by('hostname')
     paginator = Paginator(hosts_list, 5)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    return render(request, "servers.html", {"page_obj": page_obj})
+    return render(request, "host/list.html", {"page_obj": page_obj})
 
 
 def host_create(request):
@@ -87,8 +110,8 @@ def host_create(request):
         system_id = request.POST.get('target_system')
         target_system = get_object_or_404(TargetSystem, id=system_id)
         Host.objects.create(hostname=hostname, ip_address=ip_address, target_system=target_system)
-        return redirect('servers')
-    return render(request, "host_form.html", {"systems": systems})
+        return redirect('host_list')  # Изменено
+    return render(request, "host/form.html", {"systems": systems})
 
 
 def host_edit(request, pk):
@@ -100,16 +123,16 @@ def host_edit(request, pk):
         system_id = request.POST.get('target_system')
         host.target_system = get_object_or_404(TargetSystem, id=system_id)
         host.save()
-        return redirect('servers')
-    return render(request, "host_form.html", {"host": host, "systems": systems})
+        return redirect('host_list')  # Изменено
+    return render(request, "host/form.html", {"host": host, "systems": systems})
 
 
 def host_delete(request, pk):
     host = get_object_or_404(Host, id=pk)
     if request.method == "POST":
         host.delete()
-        return redirect('servers')
-    return render(request, "host_confirm_delete.html", {"host": host})
+        return redirect('host_list')  # Изменено
+    return render(request, "host/confirm_delete.html", {"host": host})
 
 
 # API VIEWS (только Backups)
@@ -174,6 +197,10 @@ class BackupViewSet(
 
         host = Host.objects.get(id=serializer.validated_data['host_id'])
         
+<<<<<<< HEAD
+        # If target_system is not specified, we take it from the host
+=======
+>>>>>>> 8084877e5af2a056077eb5c96f17e08d018576ab
         target_system = serializer.validated_data.get('target_system_id')
         if target_system:
             target_system = TargetSystem.objects.get(id=target_system)
@@ -221,14 +248,60 @@ class BackupViewSet(
         serializer = BackupUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+<<<<<<< HEAD
+        # Updating the transferred fields
+        for attr, value in serializer.validated_data.items():
+            if value is not None:  # Update only if the field is passed
+                setattr(backup, attr, value)
+
+        # If the status has changed to final and the completion time is not set
+=======
         for attr, value in serializer.validated_data.items():
             if value is not None:
                 setattr(backup, attr, value)
 
+>>>>>>> 8084877e5af2a056077eb5c96f17e08d018576ab
         if backup.status in ['success', 'error'] and not backup.end_time:
             backup.end_time = timezone.now()
 
         backup.save()
 
         response_serializer = BackupSerializer(backup)
+<<<<<<< HEAD
         return Response(response_serializer.data, status=status.HTTP_200_OK)
+
+
+
+class TargetSystemViewSet(ModelViewSet):
+    """
+    CRUD операции для TargetSystem.
+    GET/POST /api/v1/systems/
+    GET/PUT/PATCH/DELETE /api/v1/systems/{id}/
+    """
+    queryset = TargetSystem.objects.all()
+    serializer_class = TargetSystemSerializer
+
+
+class HostViewSet(ModelViewSet):
+    """
+    CRUD операции для Host.
+    GET/POST /api/v1/hosts/
+    GET/PUT/PATCH/DELETE /api/v1/hosts/{id}/
+    """
+    queryset = Host.objects.select_related('target_system').all()
+    serializer_class = HostSerializer
+
+
+class BackupViewSet(ModelViewSet):
+    """
+    CRUD операции для Backup (только чтение).
+    GET /api/v1/backups-list/
+    GET /api/v1/backups-list/{id}/
+    """
+    queryset = Backup.objects.select_related('host', 'target_system').all()
+    serializer_class = BackupSerializer
+    http_method_names = ['get', 'head', 'options']  
+
+=======
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
+>>>>>>> 8084877e5af2a056077eb5c96f17e08d018576ab
