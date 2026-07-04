@@ -10,18 +10,17 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
-# Только BackupViewSet
+# Only BackupViewSet
 router = DefaultRouter()
 router.register(r'backups', views.BackupViewSet, basename='backup')
 
 urlpatterns = [
-    # API для Backups
+    # API for Backups
     path('', include(router.urls)),
     
-    # Аутентификация
     path('login/', auth_views.LoginView.as_view(
         template_name='registration/login.html'
     ), name='login'),
     
-    path('logout/', views.logout_view, name='logout'),
+    #path('logout/', views.logout_view, name='logout'),
 ]
