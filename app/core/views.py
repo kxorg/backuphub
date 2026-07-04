@@ -153,33 +153,60 @@ class BackupViewSet(
     @swagger_auto_schema(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
-            required=['host_id'],
+            required=['api_key', 'hostname'],
             properties={
-                'host_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='Host ID'),
-                'target_system_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='Target system ID (optional)'),
-                'storage': openapi.Schema(type=openapi.TYPE_STRING, description='Storage path'),
+                'api_key': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    format='uuid',
+                    description='API key of the target system'
+                ),
+                'hostname': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description='Hostname of the server'
+                ),
+                'storage': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description='Path to the backup storage'
+                ),
             }
         ),
         responses={
             201: openapi.Response('Backup created', BackupSerializer),
             400: 'Validation error',
+            404: 'Target system or host not found',
         },
         operation_summary='Create backup record',
-        operation_description='Creates a new backup record with status in_progress',
+        operation_description=(
+            'Creates a new backup record with status in_progress. '
+            'Uses api_key and hostname for identification. '
+            'If host does not exist, it will be created automatically.'
+        ),
         tags=['Backups'],
     )
     def create(self, request, *args, **kwargs):
         serializer = BackupCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        host = Host.objects.get(id=serializer.validated_data['host_id'])
-        
-        target_system = serializer.validated_data.get('target_system_id')
-        if target_system:
-            target_system = TargetSystem.objects.get(id=target_system)
-        else:
-            target_system = host.target_system
+        api_key = serializer.validated_data['api_key']
+        hostname = serializer.validated_data['hostname']
 
+        # Находим систему по API-ключу
+        try:
+            target_system = TargetSystem.objects.get(api_key=api_key)
+        except TargetSystem.DoesNotExist:
+            return Response(
+                {'error': f'Target system with api_key {api_key} not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Находим или создаём хост
+        host, created = Host.objects.get_or_create(
+            hostname=hostname,
+            target_system=target_system,
+            defaults={'ip_address': '127.0.0.1'}  # Валидный IP по умолчанию
+        )
+
+        # Создаём бэкап
         backup = Backup.objects.create(
             host=host,
             target_system=target_system,
@@ -197,13 +224,25 @@ class BackupViewSet(
             properties={
                 'status': openapi.Schema(
                     type=openapi.TYPE_STRING,
-                    enum=['in_progress', 'success', 'error']
+                    enum=['in_progress', 'success', 'error'],
+                    description='Backup execution status'
                 ),
-                'end_time': openapi.Schema(type=openapi.TYPE_STRING, format='date-time'),
-                'backup_size': openapi.Schema(type=openapi.TYPE_INTEGER),
-                'storage': openapi.Schema(type=openapi.TYPE_STRING),
-                'meta_data': openapi.Schema(type=openapi.TYPE_OBJECT),
-                'error_message': openapi.Schema(type=openapi.TYPE_STRING),
+                'backup_size': openapi.Schema(
+                    type=openapi.TYPE_INTEGER,
+                    description='Backup size in bytes'
+                ),
+                'storage': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description='Path to the backup file'
+                ),
+                'meta_data': openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    description='Technical data in JSON format'
+                ),
+                'error_message': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description='Error message (if status is error)'
+                ),
             }
         ),
         responses={
@@ -211,11 +250,13 @@ class BackupViewSet(
             404: 'Backup not found',
         },
         operation_summary='Update backup status',
-        operation_description='Updates backup status and metadata after completion',
+        operation_description=(
+            'Updates backup status and metadata after completion. '
+            'end_time is set automatically when status is success or error.'
+        ),
         tags=['Backups'],
     )
     def partial_update(self, request, *args, **kwargs):
-        """PATCH /backups/{id}/ - Update backup status"""
         backup = self.get_object()
 
         serializer = BackupUpdateSerializer(data=request.data)
@@ -225,6 +266,7 @@ class BackupViewSet(
             if value is not None:
                 setattr(backup, attr, value)
 
+        # Автоматически устанавливаем end_time
         if backup.status in ['success', 'error'] and not backup.end_time:
             backup.end_time = timezone.now()
 
