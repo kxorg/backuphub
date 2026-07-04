@@ -5,16 +5,22 @@ from django.shortcuts import redirect
 from rest_framework.routers import DefaultRouter
 from . import views
 
+# Logout handler via GET request
 def logout_view(request):
     logout(request)
     return redirect('login')
 
+# Only BackupViewSet
 router = DefaultRouter()
 router.register(r'backups', views.BackupViewSet, basename='backup')
 
 urlpatterns = [
+    # API for Backups
     path('', include(router.urls)),
     
-    path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
-    path('logout/', logout_view, name='logout'),
+    path('login/', auth_views.LoginView.as_view(
+        template_name='registration/login.html'
+    ), name='login'),
+    
+    #path('logout/', views.logout_view, name='logout'),
 ]
