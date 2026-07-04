@@ -10,15 +10,18 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
+# Только BackupViewSet
 router = DefaultRouter()
-router.register(r'target-system', views.TargetSystemViewSet, basename='target-system')
-router.register(r'host', views.HostViewSet, basename='host')
-router.register(r'backup', views.BackupViewSet, basename='backup')
+router.register(r'backups', views.BackupViewSet, basename='backup')
 
 urlpatterns = [
-    path('backup/create/', views.BackupCreateView.as_view(), name='backup_api_create'),
-    path('backup/<uuid:backup_id>/update/', views.BackupUpdateView.as_view(), name='backup_api_update'),
+    # API для Backups
     path('', include(router.urls)),
-    path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
-    path('logout/', logout_view, name='logout'),
+    
+    # Аутентификация
+    path('login/', auth_views.LoginView.as_view(
+        template_name='registration/login.html'
+    ), name='login'),
+    
+    path('logout/', views.logout_view, name='logout'),
 ]
