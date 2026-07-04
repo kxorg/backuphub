@@ -192,10 +192,6 @@ class BackupViewSet(
         serializer = BackupCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-<<<<<<< HEAD
-        api_key = serializer.validated_data['api_key']
-        hostname = serializer.validated_data['hostname']
-=======
         host = Host.objects.get(id=serializer.validated_data['host_id'])
         
         # If target_system is not specified, we take it from the host
@@ -204,7 +200,6 @@ class BackupViewSet(
             target_system = TargetSystem.objects.get(id=target_system)
         else:
             target_system = host.target_system
->>>>>>> DEV
 
         # Находим систему по API-ключу
         try:
@@ -283,11 +278,7 @@ class BackupViewSet(
             if value is not None:  # Update only if the field is passed
                 setattr(backup, attr, value)
 
-<<<<<<< HEAD
-        # Автоматически устанавливаем end_time
-=======
         # If the status has changed to final and the completion time is not set
->>>>>>> DEV
         if backup.status in ['success', 'error'] and not backup.end_time:
             backup.end_time = timezone.now()
 
