@@ -55,6 +55,10 @@ class Backup(models.Model):
     meta_data = models.JSONField(default=dict, blank=True, verbose_name='Technical data')
     error_message = models.TextField(null=True, blank=True, verbose_name='Error message')
 
+    def __str__(self):
+        return f"Backup {self.id} - {self.status}"
+
+
     class Meta:
         db_table = 'backup'
         verbose_name = 'Backup'
