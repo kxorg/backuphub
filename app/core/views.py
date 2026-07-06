@@ -8,20 +8,26 @@ from django.core.paginator import Paginator
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
+from django.contrib.auth.decorators import login_required
+from rest_framework.permissions import IsAuthenticated
+
 from .models import TargetSystem, Host, Backup
 from .serializers import BackupSerializer, BackupCreateSerializer, BackupUpdateSerializer
 
 
 # WEB VIEWS 
 
+@login_required
 def index(request):
     return render(request, "index.html")
 
+@login_required
 def api(request):
     return render(request, "api.html")
 
 
 # (Backups) 
+@login_required
 def backups_list(request):
     backup_list = Backup.objects.select_related('host', 'target_system').order_by('-start_time')
     
@@ -32,13 +38,14 @@ def backups_list(request):
     
     return render(request, "backup/list.html", {"page_obj": page_obj})
 
-
+@login_required
 def backup_detail(request, pk):
     backup = get_object_or_404(Backup.objects.select_related('host', 'target_system'), id=pk)
     return render(request, "backup/detail.html", {"backup": backup})
 
 
 # (TargetSystem CRUD) 
+@login_required
 def system_settings(request):
     # Displaying a list of systems with pagination (5 per page)
     systems_list = TargetSystem.objects.all().order_by('-created_at')
@@ -48,6 +55,7 @@ def system_settings(request):
     return render(request, "target_system/list.html", {"page_obj": page_obj})
 
 
+@login_required
 def system_create(request):
     if request.method == "POST":
         name = request.POST.get('name')
@@ -57,6 +65,7 @@ def system_create(request):
     return render(request, "target_system/form.html")
 
 
+@login_required
 def system_edit(request, pk):
     system = get_object_or_404(TargetSystem, id=pk)
     if request.method == "POST":
@@ -67,6 +76,7 @@ def system_edit(request, pk):
     return render(request, "target_system/form.html", {"system": system})
 
 
+@login_required
 def system_delete(request, pk):
     system = get_object_or_404(TargetSystem, id=pk)
     if request.method == "POST":
@@ -76,6 +86,7 @@ def system_delete(request, pk):
 
 
 # (Host CRUD) 
+@login_required
 def servers(request):
     hosts_list = Host.objects.select_related('target_system').all().order_by('hostname')
     paginator = Paginator(hosts_list, 5)
@@ -84,6 +95,7 @@ def servers(request):
     return render(request, "host/list.html", {"page_obj": page_obj})
 
 
+@login_required
 def host_create(request):
     systems = TargetSystem.objects.all()
     if request.method == "POST":
@@ -96,6 +108,7 @@ def host_create(request):
     return render(request, "host/form.html", {"systems": systems})
 
 
+@login_required
 def host_edit(request, pk):
     host = get_object_or_404(Host, id=pk)
     systems = TargetSystem.objects.all()
@@ -109,6 +122,7 @@ def host_edit(request, pk):
     return render(request, "host/form.html", {"host": host, "systems": systems})
 
 
+@login_required
 def host_delete(request, pk):
     host = get_object_or_404(Host, id=pk)
     if request.method == "POST":
@@ -129,6 +143,8 @@ class BackupViewSet(
     """
     Backup API operations.
     """
+    permission_classes = [IsAuthenticated]
+
     queryset = Backup.objects.select_related('host', 'target_system').all()
     serializer_class = BackupSerializer
 

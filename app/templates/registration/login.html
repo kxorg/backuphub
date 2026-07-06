@@ -1,35 +1,33 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="ru" data-bs-theme="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход в BackupHub</title>
-    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+    <title>Login | BackupHub</title>
+    <link rel="stylesheet" href="{% static 'style/bootstrap.min.css' %}">
 </head>
-<body class="d-flex align-items-center justify-content-center vh-100 bg-body-tertiary">
-
-<div class="card p-4 shadow" style="width: 100%; max-width: 360px;">
-    <div class="card-body">
-        <h3 class="card-title text-center mb-4 fw-bold">BackupHub</h3>
+<body class="bg-light d-flex align-items-center justify-content-center vh-100">
         
         {% if form.errors %}
-            <div class="alert alert-danger text-center py-2 fs-6" role="alert">
-                Неверный логин или пароль
-            </div>
+            <div class="alert alert-danger">Invalid username or password.</div>
         {% endif %}
 
         <form method="post" action="{% url 'login' %}">
             {% csrf_token %}
             <div class="mb-3">
-                <label for="username" class="form-label">Логин</label>
-                <input type="text" name="username" id="username" class="form-control" autocomplete="username" required>
+                <label class="form-label">Username</label>
+                <input type="text" name="username" class="form-control" required>
             </div>
-            <div class="mb-4">
-                <label for="password" class="form-label">Пароль</label>
-                <input type="password" name="password" id="password" class="form-control" autocomplete="current-password" required>
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" required>
             </div>
-            <button type="submit" class="btn btn-primary w-100 fw-bold">Войти</button>
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="rememberMe">
+                <label class="form-check-label" for="rememberMe">Remember me</label>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Login</button>
         </form>
     </div>
 </div>
