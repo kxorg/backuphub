@@ -43,13 +43,14 @@ INSTALLED_APPS = [
     # 'rest_framework_simplejwt',
     'rest_framework',
     'core',
-    'drf_yasg',
+    'drf_spectacular',
 ]
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',  
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 MIDDLEWARE = [
@@ -161,3 +162,29 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 LOGIN_URL = 'login'          # Where to redirect an unauthorized user
 LOGIN_REDIRECT_URL = '/'     # Where to redirect after successful login
 LOGOUT_REDIRECT_URL = 'login' # Where to redirect after exit
+
+# Test settings
+import sys
+
+if 'test' in sys.argv or 'pytest' in sys.argv[0]:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:',
+        }
+    }
+
+
+    class DisableMigrations:
+        def __contains__(self, item):
+            return True
+
+        def __getitem__(self, item):
+            return None
+
+
+    MIGRATION_MODULES = DisableMigrations()
+
+    PASSWORD_HASHERS = [
+        'django.contrib.auth.hashers.MD5PasswordHasher',
+    ]
