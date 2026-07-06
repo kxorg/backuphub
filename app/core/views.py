@@ -10,7 +10,7 @@ from .models import TargetSystem, Host, Backup
 from .serializers import BackupSerializer, BackupCreateSerializer, BackupUpdateSerializer
 
 
-# WEB VIEWS 
+# WEB VIEWS
 
 def index(request):
     return render(request, "index.html")
@@ -20,11 +20,9 @@ def api(request):
     return render(request, "api.html")
 
 
-# (Backups) 
 def backups_list(request):
     backup_list = Backup.objects.select_related('host', 'target_system').order_by('-start_time')
 
-    # Pagination: 10 backups per page
     paginator = Paginator(backup_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -37,14 +35,23 @@ def backup_detail(request, pk):
     return render(request, "backup/detail.html", {"backup": backup})
 
 
-# (TargetSystem CRUD)
+# TargetSystem CRUD
+
 def system_settings(request):
-    # Displaying a list of systems with pagination (5 per page)
     systems_list = TargetSystem.objects.all().order_by('-created_at')
     paginator = Paginator(systems_list, 5)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     return render(request, "target_system/list.html", {"page_obj": page_obj})
+
+
+def system_detail(request, pk):
+    system = get_object_or_404(TargetSystem, id=pk)
+    recent_backups = system.backups.select_related('host').order_by('-start_time')[:5]
+    return render(request, "target_system/detail.html", {
+        "system": system,
+        "recent_backups": recent_backups
+    })
 
 
 def system_create(request):
@@ -53,7 +60,6 @@ def system_create(request):
         system_type = request.POST.get('system_type')
 
         if not name:
-            # Return error to the form
             return render(request, "target_system/form.html", {
                 'error': 'Name is required'
             })
@@ -65,29 +71,46 @@ def system_create(request):
 
 def system_edit(request, pk):
     system = get_object_or_404(TargetSystem, id=pk)
+    back_url = request.POST.get('next') or request.GET.get('next')
     if request.method == "POST":
         system.name = request.POST.get('name')
         system.system_type = request.POST.get('system_type')
         system.save()
-        return redirect('target_system_list')  # Changed
-    return render(request, "target_system/form.html", {"system": system})
+        if back_url:
+            return redirect(back_url)
+        return redirect('target_system_list')
+
+    return render(request, "target_system/form.html", {
+        "system": system,
+        "back_url": back_url
+    })
 
 
 def system_delete(request, pk):
     system = get_object_or_404(TargetSystem, id=pk)
     if request.method == "POST":
         system.delete()
-        return redirect('target_system_list')  # Changed
+        return redirect('target_system_list')
     return render(request, "target_system/confirm_delete.html", {"system": system})
 
 
-# (Host CRUD)
+# Host CRUD
+
 def servers(request):
     hosts_list = Host.objects.select_related('target_system').all().order_by('hostname')
     paginator = Paginator(hosts_list, 5)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     return render(request, "host/list.html", {"page_obj": page_obj})
+
+
+def host_detail(request, pk):
+    host = get_object_or_404(Host.objects.select_related('target_system'), id=pk)
+    recent_backups = host.backups.order_by('-start_time')[:5]
+    return render(request, "host/detail.html", {
+        "host": host,
+        "recent_backups": recent_backups
+    })
 
 
 def host_create(request):
@@ -98,28 +121,36 @@ def host_create(request):
         system_id = request.POST.get('target_system')
         target_system = get_object_or_404(TargetSystem, id=system_id)
         Host.objects.create(hostname=hostname, ip_address=ip_address, target_system=target_system)
-        return redirect('host_list')  # Changed
+        return redirect('host_list')
     return render(request, "host/form.html", {"systems": systems})
 
 
 def host_edit(request, pk):
     host = get_object_or_404(Host, id=pk)
     systems = TargetSystem.objects.all()
+    back_url = request.POST.get('next') or request.GET.get('next')
     if request.method == "POST":
         host.hostname = request.POST.get('hostname')
         host.ip_address = request.POST.get('ip_address')
         system_id = request.POST.get('target_system')
         host.target_system = get_object_or_404(TargetSystem, id=system_id)
         host.save()
-        return redirect('host_list')  # Changed
-    return render(request, "host/form.html", {"host": host, "systems": systems})
+        if back_url:
+            return redirect(back_url)
+        return redirect('host_list')
+
+    return render(request, "host/form.html", {
+        "host": host,
+        "systems": systems,
+        "back_url": back_url
+    })
 
 
 def host_delete(request, pk):
     host = get_object_or_404(Host, id=pk)
     if request.method == "POST":
         host.delete()
-        return redirect('host_list')  # Changed
+        return redirect('host_list')
     return render(request, "host/confirm_delete.html", {"host": host})
 
 
@@ -150,7 +181,6 @@ class BackupViewSet(
 
         host = Host.objects.get(id=serializer.validated_data['host_id'])
 
-        # If target_system is not specified, we take it from the host
         target_system = serializer.validated_data.get('target_system_id')
         if target_system:
             target_system = TargetSystem.objects.get(id=target_system)
@@ -175,12 +205,10 @@ class BackupViewSet(
         serializer = BackupUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        # Updating the transferred fields
         for attr, value in serializer.validated_data.items():
-            if value is not None:  # Update only if the field is passed
+            if value is not None:
                 setattr(backup, attr, value)
 
-        # If the status has changed to final and the completion time is not set
         if backup.status in ['success', 'error'] and not backup.end_time:
             backup.end_time = timezone.now()
 
