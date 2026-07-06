@@ -14,26 +14,9 @@ from .serializers import BackupSerializer, BackupCreateSerializer, BackupUpdateS
 
 # WEB VIEWS 
 
-@login_required
 def index(request):
     return render(request, "index.html")
 
-<<<<<<< HEAD
-@login_required
-def settings(request):
-    return render(request, "settings.html")
-
-@login_required
-def servers(request):
-    return render(request, "servers.html")
-
-@login_required
-def magazineHub(request):
-    return render(request, "magazineHub.html")
-
-@login_required
-=======
->>>>>>> 6936d4ab6c94a300688590fc24224fdc043ac4f1
 def api(request):
     return render(request, "api.html")
 
@@ -146,11 +129,6 @@ class BackupViewSet(
     """
     Backup API operations.
     """
-<<<<<<< HEAD
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-=======
     queryset = Backup.objects.select_related('host', 'target_system').all()
     serializer_class = BackupSerializer
 
@@ -196,7 +174,6 @@ class BackupViewSet(
         tags=['Backups'],
     )
     def create(self, request, *args, **kwargs):
->>>>>>> 6936d4ab6c94a300688590fc24224fdc043ac4f1
         serializer = BackupCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -220,17 +197,6 @@ class BackupViewSet(
         response_serializer = BackupSerializer(backup)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
-<<<<<<< HEAD
-
-class BackupUpdateView(APIView):
-    """
-    PATCH /api/v1/backups/{id}/ - Обновление статуса и метаданных бэкапа
-    """
-    permission_classes = [IsAuthenticated]
-
-    def patch(self, request, backup_id):
-        backup = get_object_or_404(Backup, id=backup_id)
-=======
     @swagger_auto_schema(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
@@ -257,7 +223,6 @@ class BackupUpdateView(APIView):
     def partial_update(self, request, *args, **kwargs):
         """PATCH /backups/{id}/ - Update backup status"""
         backup = self.get_object()
->>>>>>> 6936d4ab6c94a300688590fc24224fdc043ac4f1
 
         serializer = BackupUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -275,42 +240,3 @@ class BackupUpdateView(APIView):
 
         response_serializer = BackupSerializer(backup)
         return Response(response_serializer.data, status=status.HTTP_200_OK)
-<<<<<<< HEAD
-
-
-
-class TargetSystemViewSet(ModelViewSet):
-    """
-    CRUD операции для TargetSystem.
-    GET/POST /api/v1/systems/
-    GET/PUT/PATCH/DELETE /api/v1/systems/{id}/
-    """
-    permission_classes = [IsAuthenticated]  
-    queryset = TargetSystem.objects.all()
-    serializer_class = TargetSystemSerializer
-
-
-class HostViewSet(ModelViewSet):
-    """
-    CRUD операции для Host.
-    GET/POST /api/v1/hosts/
-    GET/PUT/PATCH/DELETE /api/v1/hosts/{id}/
-    """
-    permission_classes = [IsAuthenticated] 
-    queryset = Host.objects.select_related('target_system').all()
-    serializer_class = HostSerializer
-
-
-class BackupViewSet(ModelViewSet):
-    """
-    CRUD операции для Backup (только чтение).
-    GET /api/v1/backups-list/
-    GET /api/v1/backups-list/{id}/
-    """
-    permission_classes = [IsAuthenticated]
-    queryset = Backup.objects.select_related('host', 'target_system').all()
-    serializer_class = BackupSerializer
-    http_method_names = ['get', 'head', 'options']  # Только чтение
-
-=======
->>>>>>> 6936d4ab6c94a300688590fc24224fdc043ac4f1
