@@ -28,15 +28,19 @@
                 <tbody>
                     {% for system in page_obj %}
                     <tr>
-                        <td class="fw-bold">{{ system.name }}</td>
+                        <td class="fw-bold">
+                            <a href="{% url 'target_system_detail' system.id %}" class="text-decoration-none text-dark hover-primary">{{ system.name }}</a>
+                        </td>
                         <td><span class="badge bg-secondary">{{ system.system_type }}</span></td>
                         <td><code>{{ system.api_key }}</code></td>
                         <td>{{ system.created_at|date:"d.m.Y H:i" }}</td>
                         <td class="text-end">
-                            <a href="{% url 'target_system_edit' system.id %}" class="btn btn-sm btn-outline-warning">Edit</a>
+                            <a href="{% url 'target_system_detail' system.id %}" class="btn btn-sm btn-outline-primary">View</a>
+                            <a href="{% url 'target_system_edit' system.id %}?next={{ request.get_full_path }}" class="btn btn-sm btn-outline-warning">Edit</a>
                             <a href="{% url 'target_system_delete' system.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
                         </td>
                     </tr>
+
                     {% empty %}
                     <tr>
                         <td colspan="5" class="text-center text-muted py-4">No pluggable systems have been added yet.</td>

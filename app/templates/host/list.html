@@ -26,18 +26,24 @@
                 <tbody>
                     {% for host in page_obj %}
                     <tr>
-                        <td class="fw-bold">{{ host.hostname }}</td>
+                        <!-- Clickable server name -->
+                        <td class="fw-bold">
+                            <a href="{% url 'host_detail' host.id %}" class="text-decoration-none text-dark">{{ host.hostname }}</a>
+                        </td>
                         <td><code>{{ host.ip_address }}</code></td>
-                        <td><span class="badge bg-info text-dark">{{ host.target_system.name }}</span></td>
+                        <!-- Clickable badge of the connected system -->
+                        <td>
+                            <a href="{% url 'target_system_detail' host.target_system.id %}" class="text-decoration-none">
+                                <span class="badge bg-info text-dark">{{ host.target_system.name }}</span>
+                            </a>
+                        </td>
                         <td class="text-end">
-                            <a href="{% url 'host_edit' host.id %}" class="btn btn-sm btn-outline-warning">Edit</a>
+                            <a href="{% url 'host_detail' host.id %}" class="btn btn-sm btn-outline-primary">View</a>
+                            <a href="{% url 'host_edit' host.id %}?next={{ request.get_full_path }}" class="btn btn-sm btn-outline-warning">Edit</a>
                             <a href="{% url 'host_delete' host.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
                         </td>
                     </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="4" class="text-center text-muted py-4">No connected servers found.</td>
-                    </tr>
+
                     {% endfor %}
                 </tbody>
             </table>

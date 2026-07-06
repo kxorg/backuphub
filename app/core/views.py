@@ -8,7 +8,7 @@ from django.core.paginator import Paginator
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-from .models import TargetSystem, Host, Backup
+from .models import TargetSystem, Host, Backup, SystemType
 from .serializers import BackupSerializer, BackupCreateSerializer, BackupUpdateSerializer
 
 
@@ -19,7 +19,6 @@ def index(request):
 
 def api(request):
     return render(request, "api.html")
-
 
 # (Backups) 
 def backups_list(request):
@@ -40,38 +39,84 @@ def backup_detail(request, pk):
 
 # (TargetSystem CRUD) 
 def system_settings(request):
-    # Displaying a list of systems with pagination (5 per page)
-    systems_list = TargetSystem.objects.all().order_by('-created_at')
-    paginator = Paginator(systems_list, 5)
+    systems_list = TargetSystem.objects.select_related('system_type').all().order_by('-created_at')
+    paginator = Paginator(systems_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     return render(request, "target_system/list.html", {"page_obj": page_obj})
 
 
 def system_create(request):
+    """Создание новой системы с возможностью добавления нового типа."""
     if request.method == "POST":
         name = request.POST.get('name')
-        system_type = request.POST.get('system_type')
+        system_type_action = request.POST.get('system_type_action')  # 'existing' или 'new'
+        
+        if system_type_action == 'new':
+            new_type_name = request.POST.get('new_system_type')
+            if new_type_name:
+                system_type, created = SystemType.objects.get_or_create(
+                    name=new_type_name.strip(),
+                    defaults={'description': f'Тип {new_type_name}'}
+                )
+            else:
+                system_types = SystemType.objects.all()
+                return render(request, "target_system/form.html", {
+                    "system_types": system_types,
+                    "error": "Укажите название нового типа системы"
+                })
+        else:
+            # Выбираем существующий тип
+            system_type_id = request.POST.get('system_type')
+            system_type = get_object_or_404(SystemType, id=system_type_id)
+        
         TargetSystem.objects.create(name=name, system_type=system_type)
-        return redirect('target_system_list')  # Изменено
-    return render(request, "target_system/form.html")
-
+        return redirect('target_system_list')
+    
+    system_types = SystemType.objects.all()
+    return render(request, "target_system/form.html", {"system_types": system_types})
 
 def system_edit(request, pk):
+    """Редактирование системы."""
     system = get_object_or_404(TargetSystem, id=pk)
     if request.method == "POST":
         system.name = request.POST.get('name')
-        system.system_type = request.POST.get('system_type')
+        system_type_action = request.POST.get('system_type_action')
+        
+        if system_type_action == 'new':
+            new_type_name = request.POST.get('new_system_type')
+            if new_type_name:
+                system_type, created = SystemType.objects.get_or_create(
+                    name=new_type_name.strip(),
+                    defaults={'description': f'Тип {new_type_name}'}
+                )
+            else:
+                system_types = SystemType.objects.all()
+                return render(request, "target_system/form.html", {
+                    "system": system,
+                    "system_types": system_types,
+                    "error": "Укажите название нового типа системы"
+                })
+        else:
+            system_type_id = request.POST.get('system_type')
+            system_type = get_object_or_404(SystemType, id=system_type_id)
+        
+        system.system_type = system_type
         system.save()
-        return redirect('target_system_list')  # Изменено
-    return render(request, "target_system/form.html", {"system": system})
+        return redirect('target_system_list')
+    
+    system_types = SystemType.objects.all()
+    return render(request, "target_system/form.html", {
+        "system": system,
+        "system_types": system_types
+    })
 
 
 def system_delete(request, pk):
     system = get_object_or_404(TargetSystem, id=pk)
     if request.method == "POST":
         system.delete()
-        return redirect('target_system_list')  # Изменено
+        return redirect('target_system_list')
     return render(request, "target_system/confirm_delete.html", {"system": system})
 
 

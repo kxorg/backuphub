@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% block title %}{% if system %}Edit system{% else %}Create a system{% endif %} | BackupHub{% endblock %}
+
 {% block content %}
 <div class="card shadow-sm p-4 border-0">
     <h2 class="fw-bold mb-4">{% if system %}Edit system{% else %}Create a system{% endif %}</h2>
@@ -11,11 +13,67 @@
         </div>
         <div class="mb-3">
             <label class="form-label">System type</label>
-            <input type="text" name="system_type" class="form-control" value="{{ system.system_type|default:'' }}" required>
+            
+            <!-- Выбор: существующий или новый -->
+            <div class="mb-2">
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="system_type_action" id="type_existing" value="existing" checked onchange="toggleSystemType('existing')">
+                    <label class="form-check-label" for="type_existing">Choose existing</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="system_type_action" id="type_new" value="new" onchange="toggleSystemType('new')">
+                    <label class="form-check-label" for="type_new">Create new</label>
+                </div>
+            </div>
+
+            <!-- Выпадающий список существующих типов -->
+            <div id="existing-types">
+                <select name="system_type" class="form-select" required>
+                    <option value="" disabled {% if not system %}selected{% endif %}>Select type...</option>
+                    {% for type in system_types %}
+                        <option value="{{ type.id }}" {% if system and system.system_type.id == type.id %}selected{% endif %}>
+                            {{ type.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Поле для нового типа (скрыто по умолчанию) -->
+            <div id="new-type-input" style="display: none;">
+                <input type="text" name="new_system_type" class="form-control" placeholder="Enter new type name">
+                <div class="form-text">This type will be available for all users</div>
+            </div>
         </div>
         <button type="submit" class="btn btn-success">Save</button>
-        <a href="{% url 'target_system_list' %}" class="btn btn-light">Cancel</a>
+        <!-- A hidden field so that the address is not lost when sending a POST request if validation errors occur. -->
+        <input type="hidden" name="next" value="{{ back_url }}">
+        <!-- Dynamic Undo Button -->
+        {% if back_url %}
+            <a href="{{ back_url }}" class="btn btn-outline-secondary">Cancel</a>
+        {% else %}
+            <a href="{% url 'target_system_list' %}" class="btn btn-outline-secondary">Cancel</a>
+        {% endif %}
     </form>
 </div>
-{% endblock %}
 
+<script>
+function toggleSystemType(action) {
+    const existingTypes = document.getElementById('existing-types');
+    const newTypeInput = document.getElementById('new-type-input');
+    const selectField = document.querySelector('select[name="system_type"]');
+    const inputField = document.querySelector('input[name="new_system_type"]');
+    
+    if (action === 'new') {
+        existingTypes.style.display = 'none';
+        newTypeInput.style.display = 'block';
+        selectField.removeAttribute('required');
+        inputField.setAttribute('required', 'required');
+    } else {
+        existingTypes.style.display = 'block';
+        newTypeInput.style.display = 'none';
+        selectField.setAttribute('required', 'required');
+        inputField.removeAttribute('required');
+    }
+}
+</script>
+{% endblock %}
