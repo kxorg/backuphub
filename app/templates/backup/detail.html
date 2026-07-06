@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Details Backup | BackupHub{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+        <div class="card shadow-sm p-4 mb-4 bg-white rounded border-0">
+            
+            <!-- Back breadcrumb trail -->
+            <div class="mb-3">
+                <a href="{% url 'backup_list' %}" class="btn btn-sm btn-outline-secondary">&larr; Return to magazine</a>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+                <h2 class="fw-bold mb-0">Operation #{{ backup.id|stringformat:".8s" }}</h2>
+                {% if backup.status == 'success' %}
+                    <span class="badge bg-success fs-6">Successfully completed</span>
+                {% elif backup.status == 'error' %}
+                    <span class="badge bg-danger fs-6">Completed with error</span>
+                {% else %}
+                    <span class="badge bg-primary fs-6 placeholder-glow">In progress</span>
+                {% endif %}
+            </div>
+
+            <!-- Basic parameters -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <h5 class="text-muted small text-uppercase fw-bold">System and Server</h5>
+                    <p class="mb-1"><strong>System:</strong> <span class="badge bg-info text-dark">{{ backup.target_system.name }}</span></p>
+                    <p class="mb-0"><strong>Server (Host):</strong> {{ backup.host.hostname|default:"Remote host" }} (<code>{{ backup.host.ip_address|default:"—" }}</code>)</p>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="text-muted small text-uppercase fw-bold">Timestamps</h5>
+                    <p class="mb-1"><strong>Launch:</strong> {{ backup.start_time|date:"d.m.Y H:i:s" }}</p>
+                    <p class="mb-0"><strong>Completion:</strong> {{ backup.end_time|date:"d.m.Y H:i:s"|default:"Still in progress" }}</p>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <h5 class="text-muted small text-uppercase fw-bold">Storage and Size</h5>
+                    <p class="mb-1"><strong>Backup size:</strong> 
+                        {% if backup.backup_size %}
+                            {{ backup.backup_size }} byte
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </p>
+                    <p class="mb-0"><strong>Storage:</strong> {{ backup.storage|default:"Not specified" }}</p>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="text-muted small text-uppercase fw-bold">Operation duration</h5>
+                    <p class="fs-5 fw-bold text-secondary">{{ backup.duration|default:"Calculated..." }}</p>
+                </div>
+            </div>
+
+            <!-- Error log (if any) -->
+            {% if backup.error_message %}
+            <div class="alert alert-danger border-0 shadow-sm mb-4" role="alert">
+                <h5 class="alert-heading fw-bold small text-uppercase mb-2">Error message:</h5>
+                <pre class="mb-0 text-wrap"><code>{{ backup.error_message }}</code></pre>
+            </div>
+            {% endif %}
+
+            <!-- Technical data JSON -->
+            <div class="card bg-light border-0 p-3">
+                <h5 class="text-muted small text-uppercase fw-bold mb-2">Technical data (Metadata)</h5>
+                <pre class="mb-0 text-dark"><code>{{ backup.meta_data }}</code></pre>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

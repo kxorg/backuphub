@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     # 'rest_framework_simplejwt',
     'rest_framework',
     'core',
+    'drf_yasg',
 ]
 
 REST_FRAMEWORK = {
@@ -71,6 +72,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -155,7 +157,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
-# Настройки авторизации
-LOGIN_URL = 'login'          # Куда редиректить неавторизованного пользователя
-LOGIN_REDIRECT_URL = '/'     # Куда редиректить после успешного входа
-LOGIN_REDIRECT_URL = 'index' # Куда редиректить после выхода
+# Authorization settings
+LOGIN_URL = 'login'          # Where to redirect an unauthorized user
+LOGIN_REDIRECT_URL = '/'     # Where to redirect after successful login
+LOGOUT_REDIRECT_URL = 'login' # Where to redirect after exit

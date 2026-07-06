@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card shadow-sm p-4 border-0 border-start border-danger border-4">
+    <h2 class="fw-bold text-danger mb-3">Removing the system</h2>
+    <p>Are you sure you want to remove the system? <strong>{{ system.name }}</strong>?</p>
+    <p class="text-muted small">Important: All associated hosts and backup logs will be deleted along with the system!</p>
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Yes, delete forever</button>
+        <a href="{% url 'target_system_list' %}" class="btn btn-light">Cancel</a>
+    </form>
+</div>
+{% endblock %}

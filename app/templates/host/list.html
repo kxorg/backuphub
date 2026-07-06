@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Servers | BackupHub{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm p-4 mb-4 bg-white rounded border-0">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h1 class="page-title fw-bold mb-2">Connected servers</h1>
+                    <p class="text-muted mb-0">A list of servers and their availability status.</p>
+                </div>
+                <a href="{% url 'host_create' %}" class="btn btn-primary">+ Add server</a>
+            </div>
+
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Hostname</th>
+                        <th>IP address</th>
+                        <th>Tethered system</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for host in page_obj %}
+                    <tr>
+                        <td class="fw-bold">{{ host.hostname }}</td>
+                        <td><code>{{ host.ip_address }}</code></td>
+                        <td><span class="badge bg-info text-dark">{{ host.target_system.name }}</span></td>
+                        <td class="text-end">
+                            <a href="{% url 'host_edit' host.id %}" class="btn btn-sm btn-outline-warning">Edit</a>
+                            <a href="{% url 'host_delete' host.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">No connected servers found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav>
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Back</a></li>
+                    {% endif %}
+                    {% for num in page_obj.paginator.page_range %}
+                        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Forward</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
