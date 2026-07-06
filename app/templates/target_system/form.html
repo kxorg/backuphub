@@ -14,7 +14,14 @@
             <input type="text" name="system_type" class="form-control" value="{{ system.system_type|default:'' }}" required>
         </div>
         <button type="submit" class="btn btn-success">Save</button>
-        <a href="{% url 'target_system_list' %}" class="btn btn-light">Cancel</a>
+        <!-- A hidden field so that the address is not lost when sending a POST request if validation errors occur. -->
+        <input type="hidden" name="next" value="{{ back_url }}">
+        <!-- Dynamic Undo Button -->
+        {% if back_url %}
+            <a href="{{ back_url }}" class="btn btn-outline-secondary">Cancel</a>
+        {% else %}
+            <a href="{% url 'target_system_list' %}" class="btn btn-outline-secondary">Cancel</a>
+        {% endif %}
     </form>
 </div>
 {% endblock %}

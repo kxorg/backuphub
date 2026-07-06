@@ -47,31 +47,47 @@ def system_settings(request):
     page_obj = paginator.get_page(page_number)
     return render(request, "target_system/list.html", {"page_obj": page_obj})
 
+def system_detail(request, pk):
+    # Find the system by ID or return 404
+    system = get_object_or_404(TargetSystem, id=pk)
+    # Select the last 5 backups of this system for display in the interface
+    recent_backups = system.backups.select_related('host').order_by('-start_time')[:5]
+    return render(request, "target_system/detail.html", {
+        "system": system,
+        "recent_backups": recent_backups
+    })
 
 def system_create(request):
     if request.method == "POST":
         name = request.POST.get('name')
         system_type = request.POST.get('system_type')
         TargetSystem.objects.create(name=name, system_type=system_type)
-        return redirect('target_system_list')  # Изменено
+        return redirect('target_system_list')  
     return render(request, "target_system/form.html")
 
 
 def system_edit(request, pk):
     system = get_object_or_404(TargetSystem, id=pk)
+    back_url = request.POST.get('next') or request.GET.get('next')
     if request.method == "POST":
         system.name = request.POST.get('name')
         system.system_type = request.POST.get('system_type')
         system.save()
-        return redirect('target_system_list')  # Изменено
-    return render(request, "target_system/form.html", {"system": system})
+        if back_url:
+            return redirect(back_url)
+        return redirect('target_system_list')
+        
+    return render(request, "target_system/form.html", {
+        "system": system, 
+        "back_url": back_url  # Passing the return address to the form template
+    })
 
 
 def system_delete(request, pk):
     system = get_object_or_404(TargetSystem, id=pk)
     if request.method == "POST":
         system.delete()
-        return redirect('target_system_list')  # Изменено
+        return redirect('target_system_list')  
     return render(request, "target_system/confirm_delete.html", {"system": system})
 
 
@@ -83,6 +99,15 @@ def servers(request):
     page_obj = paginator.get_page(page_number)
     return render(request, "host/list.html", {"page_obj": page_obj})
 
+def host_detail(request, pk):
+    # Find a host by ID 
+    host = get_object_or_404(Host.objects.select_related('target_system'), id=pk)
+    # Select the last 5 backups of this specific server.
+    recent_backups = host.backups.order_by('-start_time')[:5]
+    return render(request, "host/detail.html", {
+        "host": host,
+        "recent_backups": recent_backups
+    })
 
 def host_create(request):
     systems = TargetSystem.objects.all()
@@ -92,28 +117,36 @@ def host_create(request):
         system_id = request.POST.get('target_system')
         target_system = get_object_or_404(TargetSystem, id=system_id)
         Host.objects.create(hostname=hostname, ip_address=ip_address, target_system=target_system)
-        return redirect('host_list')  # Изменено
+        return redirect('host_list')  
     return render(request, "host/form.html", {"systems": systems})
 
 
 def host_edit(request, pk):
     host = get_object_or_404(Host, id=pk)
     systems = TargetSystem.objects.all()
+    back_url = request.POST.get('next') or request.GET.get('next')
     if request.method == "POST":
         host.hostname = request.POST.get('hostname')
         host.ip_address = request.POST.get('ip_address')
         system_id = request.POST.get('target_system')
         host.target_system = get_object_or_404(TargetSystem, id=system_id)
         host.save()
-        return redirect('host_list')  # Изменено
-    return render(request, "host/form.html", {"host": host, "systems": systems})
+        if back_url:
+            return redirect(back_url)
+        return redirect('host_list')  
+        
+    return render(request, "host/form.html", {
+        "host": host, 
+        "systems": systems,
+        "back_url": back_url  
+    })
 
 
 def host_delete(request, pk):
     host = get_object_or_404(Host, id=pk)
     if request.method == "POST":
         host.delete()
-        return redirect('host_list')  # Изменено
+        return redirect('host_list')  
     return render(request, "host/confirm_delete.html", {"host": host})
 
 
@@ -240,3 +273,4 @@ class BackupViewSet(
 
         response_serializer = BackupSerializer(backup)
         return Response(response_serializer.data, status=status.HTTP_200_OK)
+
