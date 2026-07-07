@@ -54,9 +54,6 @@ jobs:
               f"<b>Ветка:</b> {esc('SOURCE_BRANCH')} -> {esc('TARGET_BRANCH')}",
               "",
               esc("PR_URL"),
-              "",
-              "<b>Важно:</b> после изменений в DEV не забыть выполнить:",
-              "<pre><code>git pull origin dev</code></pre>",
           ])
 
           data = urllib.parse.urlencode({
@@ -96,6 +93,7 @@ jobs:
           def esc(name):
               return html.escape(os.environ.get(name, ""), quote=False)
 
+          target_branch = os.environ.get("TARGET_BRANCH", "")
           short_sha = os.environ.get("COMMIT_SHA", "")[:7]
           message = "\n".join([
               "<b>GitHub trigger:</b> Push",
@@ -106,10 +104,15 @@ jobs:
               f"<b>Сообщение:</b> {esc('COMMIT_MESSAGE')}",
               "",
               esc("COMMIT_URL"),
-              "",
-              "<b>Важно:</b> после изменений в DEV не забыть выполнить:",
-              "<pre><code>git pull origin dev</code></pre>",
           ])
+
+          if target_branch == "DEV":
+              message = "\n".join([
+                  message,
+                  "",
+                  "<b>Важно:</b> после изменений в DEV не забыть выполнить:",
+                  "<pre><code>git pull origin DEV</code></pre>",
+              ])
 
           data = urllib.parse.urlencode({
               "chat_id": os.environ["TELEGRAM_CHAT_ID"],
