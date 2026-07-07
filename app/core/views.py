@@ -22,7 +22,6 @@ from .serializers import BackupSerializer, BackupCreateSerializer, BackupUpdateS
 def index(request):
     return render(request, "index.html")
 
-
 @login_required
 def api(request):
     return render(request, "api.html")
@@ -63,7 +62,6 @@ def system_detail(request, pk):
         "system": system,
         "recent_backups": recent_backups
     })
-
 
 @login_required
 def system_create(request):
