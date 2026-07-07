@@ -27,11 +27,7 @@ def api(request):
     return render(request, "api.html")
 
 
-<<<<<<< HEAD
 # (Backups) 
-=======
-# --- Backups ---
->>>>>>> 4e2eb35d0cc14ba05a291ec8aa55a879773008bb
 @login_required
 def backups_list(request):
     backup_list = Backup.objects.select_related('host', 'target_system').order_by('-start_time')
@@ -47,11 +43,7 @@ def backup_detail(request, pk):
     return render(request, "backup/detail.html", {"backup": backup})
 
 
-<<<<<<< HEAD
-# (TargetSystem CRUD) 
-=======
 # --- TargetSystem CRUD ---
->>>>>>> 4e2eb35d0cc14ba05a291ec8aa55a879773008bb
 @login_required
 def system_settings(request):
     systems_list = TargetSystem.objects.select_related('system_type').all().order_by('-created_at')
@@ -60,10 +52,6 @@ def system_settings(request):
     page_obj = paginator.get_page(page_number)
     return render(request, "target_system/list.html", {"page_obj": page_obj})
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 4e2eb35d0cc14ba05a291ec8aa55a879773008bb
 @login_required
 def system_detail(request, pk):
     """Страница деталей системы с последними бэкапами."""
@@ -151,11 +139,7 @@ def system_delete(request, pk):
     return render(request, "target_system/confirm_delete.html", {"system": system})
 
 
-<<<<<<< HEAD
-# (Host CRUD) 
-=======
 # --- Host CRUD ---
->>>>>>> 4e2eb35d0cc14ba05a291ec8aa55a879773008bb
 @login_required
 def servers(request):
     hosts_list = Host.objects.select_related('target_system').all().order_by('hostname')
