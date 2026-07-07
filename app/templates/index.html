@@ -3,12 +3,361 @@
 {% block title %}Home page | BackupHub{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="card shadow-sm p-4 mb-4 bg-white rounded border-0">
-            <h1 class="page-title fw-bold mb-2" style="color: var(--secondary-color);">Home page</h1>
-            <p class="text-muted mb-0">Welcome to the BackupHub control panel. Get started with system monitoring.</p>
+<!-- KPI Cards Row -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid var(--primary-color);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 text-uppercase small fw-bold">Всего систем</p>
+                        <h3 class="mb-0 fw-bold" style="color: var(--secondary-color);">12</h3>
+                    </div>
+                    <div class="icon-box bg-primary bg-opacity-10 rounded-circle p-3">
+                        <i class="bi bi-hdd-stack text-primary" style="font-size: 1.5rem;"></i>
+                    </div>
+                </div>
+                <small class="text-success mt-2 d-block">
+                    <i class="bi bi-arrow-up"></i> 2 новые
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid var(--success-color);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 text-uppercase small fw-bold">Всего бэкапов</p>
+                        <h3 class="mb-0 fw-bold" style="color: var(--secondary-color);">148</h3>
+                    </div>
+                    <div class="icon-box bg-success bg-opacity-10 rounded-circle p-3">
+                        <i class="bi bi-cloud-check text-success" style="font-size: 1.5rem;"></i>
+                    </div>
+                </div>
+                <small class="text-muted mt-2 d-block">За все время</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid var(--info-color);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 text-uppercase small fw-bold">Серверов</p>
+                        <h3 class="mb-0 fw-bold" style="color: var(--secondary-color);">8</h3>
+                    </div>
+                    <div class="icon-box bg-info bg-opacity-10 rounded-circle p-3">
+                        <i class="bi bi-server text-info" style="font-size: 1.5rem;"></i>
+                    </div>
+                </div>
+                <small class="text-success mt-2 d-block">
+                    <i class="bi bi-check-circle"></i> Все активны
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid var(--warning-color);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 text-uppercase small fw-bold">Успешность (24ч)</p>
+                        <h3 class="mb-0 fw-bold" style="color: var(--secondary-color);">94%</h3>
+                    </div>
+                    <div class="icon-box bg-warning bg-opacity-10 rounded-circle p-3">
+                        <i class="bi bi-graph-up text-warning" style="font-size: 1.5rem;"></i>
+                    </div>
+                </div>
+                <small class="text-muted mt-2 d-block">Последние 24 часа</small>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Quick Actions & Recent Activity -->
+<div class="row mb-4">
+    <!-- Quick Actions -->
+    <div class="col-lg-4 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <h5 class="mb-0 fw-bold" style="color: var(--secondary-color);">
+                    <i class="bi bi-lightning-charge text-warning me-2"></i>Быстрые действия
+                </h5>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary text-start" type="button">
+                        <i class="bi bi-plus-circle me-2"></i>Добавить систему
+                    </button>
+                    <button class="btn btn-outline-primary text-start" type="button">
+                        <i class="bi bi-server me-2"></i>Добавить сервер
+                    </button>
+                    <button class="btn btn-outline-primary text-start" type="button">
+                        <i class="bi bi-cloud-upload me-2"></i>Загрузить отчет
+                    </button>
+                    <button class="btn btn-outline-primary text-start" type="button">
+                        <i class="bi bi-gear me-2"></i>Настройки API
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Backups -->
+    <div class="col-lg-8 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold" style="color: var(--secondary-color);">
+                    <i class="bi bi-clock-history text-primary me-2"></i>Последние операции
+                </h5>
+                <a href="#" class="btn btn-sm btn-link">Все операции</a>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Система</th>
+                                <th>Статус</th>
+                                <th>Время</th>
+                                <th>Размер</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-database text-primary me-2"></i>
+                                        <span class="fw-semibold">Database-01</span>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-success">Успешно</span></td>
+                                <td class="text-muted">10 мин назад</td>
+                                <td>2.4 GB</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-hdd text-info me-2"></i>
+                                        <span class="fw-semibold">FileServer-03</span>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-success">Успешно</span></td>
+                                <td class="text-muted">25 мин назад</td>
+                                <td>15.7 GB</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-envelope text-warning me-2"></i>
+                                        <span class="fw-semibold">MailServer-01</span>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-warning text-dark">В процессе</span></td>
+                                <td class="text-muted">Сейчас</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-cloud text-secondary me-2"></i>
+                                        <span class="fw-semibold">WebApp-02</span>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-danger">Ошибка</span></td>
+                                <td class="text-muted">1 час назад</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-database text-primary me-2"></i>
+                                        <span class="fw-semibold">Database-02</span>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-success">Успешно</span></td>
+                                <td class="text-muted">2 часа назад</td>
+                                <td>1.8 GB</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Active Systems Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold" style="color: var(--secondary-color);">
+                    <i class="bi bi-activity text-success me-2"></i>Активные системы
+                </h5>
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-filter"></i> Фильтр
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-download"></i> Экспорт
+                    </button>
+                </div>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Название</th>
+                                <th>Тип</th>
+                                <th>Сервер</th>
+                                <th>Последний бэкап</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                            <i class="bi bi-database text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold">Production DB</div>
+                                            <small class="text-muted">PostgreSQL</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>База данных</td>
+                                <td>srv-db-01</td>
+                                <td>Сегодня, 08:00</td>
+                                <td><span class="badge bg-success">Активна</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-link text-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-link text-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-info bg-opacity-10 rounded-circle p-2 me-3">
+                                            <i class="bi bi-hdd text-info"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold">File Storage</div>
+                                            <small class="text-muted">NAS</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>Файловое хранилище</td>
+                                <td>srv-fs-01</td>
+                                <td>Сегодня, 06:00</td>
+                                <td><span class="badge bg-success">Активна</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-link text-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-link text-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-warning bg-opacity-10 rounded-circle p-2 me-3">
+                                            <i class="bi bi-envelope text-warning"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold">Email Server</div>
+                                            <small class="text-muted">Exchange</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>Почтовый сервер</td>
+                                <td>srv-mail-01</td>
+                                <td>Вчера, 22:00</td>
+                                <td><span class="badge bg-warning text-dark">Предупреждение</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-link text-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-link text-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-secondary bg-opacity-10 rounded-circle p-2 me-3">
+                                            <i class="bi bi-cloud text-secondary"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold">Web Application</div>
+                                            <small class="text-muted">Apache + MySQL</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>Веб-приложение</td>
+                                <td>srv-web-01</td>
+                                <td>Сегодня, 04:00</td>
+                                <td><span class="badge bg-success">Активна</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-link text-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-link text-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Styles -->
+<style>
+    .card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    }
+    .btn-outline-primary:hover {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    .table th {
+        font-weight: 600;
+        color: var(--secondary-color);
+        border-top: none;
+    }
+    .badge {
+        padding: 0.5em 0.8em;
+        font-weight: 500;
+    }
+    .icon-box {
+        min-width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
 {% endblock %}

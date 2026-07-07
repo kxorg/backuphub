@@ -50,6 +50,14 @@ def system_settings(request):
     page_obj = paginator.get_page(page_number)
     return render(request, "target_system/list.html", {"page_obj": page_obj})
 
+@login_required
+def system_detail(request, pk):
+    system = get_object_or_404(TargetSystem, id=pk)
+    recent_backups = system.backups.select_related('host').order_by('-start_time')[:5]
+    return render(request, "target_system/detail.html", {
+        "system": system,
+        "recent_backups": recent_backups
+    })
 
 @login_required
 def system_create(request):
@@ -102,6 +110,16 @@ def servers(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     return render(request, "host/list.html", {"page_obj": page_obj})
+
+
+@login_required
+def host_detail(request, pk):
+    host = get_object_or_404(Host.objects.select_related('target_system'), id=pk)
+    recent_backups = host.backups.order_by('-start_time')[:5]
+    return render(request, "host/detail.html", {
+        "host": host,
+        "recent_backups": recent_backups
+    })
 
 
 @login_required
