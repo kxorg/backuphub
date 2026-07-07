@@ -2,20 +2,21 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
 from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-
-from django.contrib.auth.decorators import login_required
-from rest_framework.permissions import IsAuthenticated
 
 from .models import TargetSystem, Host, Backup, SystemType
 from .serializers import BackupSerializer, BackupCreateSerializer, BackupUpdateSerializer
 
 
-# WEB VIEWS 
+# ==========================================
+# WEB VIEWS
+# ==========================================
 
 @login_required
 def index(request):
@@ -26,16 +27,14 @@ def index(request):
 def api(request):
     return render(request, "api.html")
 
-# (Backups) 
+
+# --- Backups ---
 @login_required
 def backups_list(request):
     backup_list = Backup.objects.select_related('host', 'target_system').order_by('-start_time')
-    
-    # Pagination: 10 backups per page
     paginator = Paginator(backup_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
     return render(request, "backup/list.html", {"page_obj": page_obj})
 
 
@@ -45,7 +44,7 @@ def backup_detail(request, pk):
     return render(request, "backup/detail.html", {"backup": backup})
 
 
-# (TargetSystem CRUD) 
+# --- TargetSystem CRUD ---
 @login_required
 def system_settings(request):
     systems_list = TargetSystem.objects.select_related('system_type').all().order_by('-created_at')
@@ -71,7 +70,7 @@ def system_create(request):
     """Создание новой системы с возможностью добавления нового типа."""
     if request.method == "POST":
         name = request.POST.get('name')
-        system_type_action = request.POST.get('system_type_action')  # 'existing' или 'new'
+        system_type_action = request.POST.get('system_type_action')
         
         if system_type_action == 'new':
             new_type_name = request.POST.get('new_system_type')
@@ -87,7 +86,6 @@ def system_create(request):
                     "error": "Укажите название нового типа системы"
                 })
         else:
-            # Выбираем существующий тип
             system_type_id = request.POST.get('system_type')
             system_type = get_object_or_404(SystemType, id=system_type_id)
         
@@ -144,7 +142,7 @@ def system_delete(request, pk):
     return render(request, "target_system/confirm_delete.html", {"system": system})
 
 
-# (Host CRUD) 
+# --- Host CRUD ---
 @login_required
 def servers(request):
     hosts_list = Host.objects.select_related('target_system').all().order_by('hostname')
@@ -201,8 +199,9 @@ def host_delete(request, pk):
     return render(request, "host/confirm_delete.html", {"host": host})
 
 
-# API VIEWS (только Backups)
-
+# ==========================================
+# API VIEWS (Only Backups)
+# ==========================================
 
 class BackupViewSet(
     ListModelMixin,
@@ -214,17 +213,23 @@ class BackupViewSet(
     Backup API operations.
     """
     permission_classes = [IsAuthenticated]
-
     queryset = Backup.objects.select_related('host', 'target_system').all()
     serializer_class = BackupSerializer
+
+    def get_client_ip(self, request):
+        """Определяет IP-адрес клиента из HTTP-запроса."""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0].strip()
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
 
     @swagger_auto_schema(
         operation_summary='List all backups',
         operation_description='Returns a list of all backup operations',
         tags=['Backups'],
-        responses={
-            200: openapi.Response('List of backups', BackupSerializer(many=True)),
-        },
+        responses={200: openapi.Response('List of backups', BackupSerializer(many=True))},
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
@@ -233,10 +238,7 @@ class BackupViewSet(
         operation_summary='Retrieve backup details',
         operation_description='Returns details of a specific backup operation',
         tags=['Backups'],
-        responses={
-            200: openapi.Response('Backup details', BackupSerializer),
-            404: 'Backup not found',
-        },
+        responses={200: openapi.Response('Backup details', BackupSerializer), 404: 'Backup not found'},
     )
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
@@ -246,31 +248,18 @@ class BackupViewSet(
             type=openapi.TYPE_OBJECT,
             required=['api_key', 'hostname'],
             properties={
-                'api_key': openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    format='uuid',
-                    description='API key of the target system'
-                ),
-                'hostname': openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description='Hostname of the server'
-                ),
-                'storage': openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description='Path to the backup storage (optional)'
-                ),
+                'api_key': openapi.Schema(type=openapi.TYPE_STRING, format='uuid', description='API key of the target system'),
+                'hostname': openapi.Schema(type=openapi.TYPE_STRING, description='Hostname of the server'),
+                'ip_address': openapi.Schema(type=openapi.TYPE_STRING, format='ipv4', description='IP address (optional, auto-detected if not provided)'),
+                'storage': openapi.Schema(type=openapi.TYPE_STRING, description='Path to the backup storage (optional)'),
             }
         ),
-        responses={
-            201: openapi.Response('Backup created', BackupSerializer),
-            400: 'Validation error',
-            404: 'Target system not found',
-        },
+        responses={201: openapi.Response('Backup created', BackupSerializer), 400: 'Validation error', 404: 'Target system not found'},
         operation_summary='Create backup record',
         operation_description=(
             'Creates a new backup record with status in_progress. '
-            'Uses api_key and hostname for identification. '
-            'If host does not exist, it will be created automatically.'
+            'IP address is auto-detected from request if not provided. '
+            'If host exists but IP changed, IP will be updated.'
         ),
         tags=['Backups'],
     )
@@ -280,14 +269,24 @@ class BackupViewSet(
 
         api_key = serializer.validated_data['api_key']
         hostname = serializer.validated_data['hostname']
+        
+        # Комбинированная логика IP: берем из запроса или определяем автоматически
+        ip_address = serializer.validated_data.get('ip_address')
+        if not ip_address:
+            ip_address = self.get_client_ip(request)
 
         target_system = TargetSystem.objects.get(api_key=api_key)
 
         host, created = Host.objects.get_or_create(
             hostname=hostname,
             target_system=target_system,
-            defaults={'ip_address': '127.0.0.1'}
+            defaults={'ip_address': ip_address}
         )
+        
+        # Обновляем IP, если хост уже существует и IP изменился
+        if not created and host.ip_address != ip_address:
+            host.ip_address = ip_address
+            host.save()
 
         backup = Backup.objects.create(
             host=host,
@@ -304,38 +303,16 @@ class BackupViewSet(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                'status': openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    enum=['in_progress', 'success', 'error'],
-                    description='Backup execution status'
-                ),
-                'backup_size': openapi.Schema(
-                    type=openapi.TYPE_INTEGER,
-                    description='Backup size in bytes'
-                ),
-                'storage': openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description='Path to the backup file'
-                ),
-                'meta_data': openapi.Schema(
-                    type=openapi.TYPE_OBJECT,
-                    description='Technical data in JSON format'
-                ),
-                'error_message': openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description='Error message (if status is error)'
-                ),
+                'status': openapi.Schema(type=openapi.TYPE_STRING, enum=['in_progress', 'success', 'error'], description='Backup execution status'),
+                'backup_size': openapi.Schema(type=openapi.TYPE_INTEGER, description='Backup size in bytes'),
+                'storage': openapi.Schema(type=openapi.TYPE_STRING, description='Path to the backup file'),
+                'meta_data': openapi.Schema(type=openapi.TYPE_OBJECT, description='Technical data in JSON format'),
+                'error_message': openapi.Schema(type=openapi.TYPE_STRING, description='Error message (if status is error)'),
             }
         ),
-        responses={
-            200: openapi.Response('Backup updated', BackupSerializer),
-            404: 'Backup not found',
-        },
+        responses={200: openapi.Response('Backup updated', BackupSerializer), 404: 'Backup not found'},
         operation_summary='Update backup status',
-        operation_description=(
-            'Updates backup status and metadata after completion. '
-            'end_time is set automatically when status is success or error.'
-        ),
+        operation_description='Updates backup status and metadata after completion. end_time is set automatically.',
         tags=['Backups'],
     )
     def partial_update(self, request, *args, **kwargs):
