@@ -1,0 +1,124 @@
+name: Telegram notifications
+
+on:
+  pull_request:
+    branches:
+      - DEV
+      - PROD
+    types:
+      - opened
+      - reopened
+
+  push:
+    branches:
+      - DEV
+      - PROD
+
+permissions:
+  contents: read
+
+jobs:
+  notify_pr:
+    name: Notify about pull request
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Telegram message about pull request
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PR_ACTION: ${{ github.event.action }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          TRIGGERED_BY: ${{ github.actor }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          SOURCE_BRANCH: ${{ github.event.pull_request.head.ref }}
+          TARGET_BRANCH: ${{ github.event.pull_request.base.ref }}
+        run: |
+          python3 <<'PY'
+          import html
+          import os
+          import urllib.parse
+          import urllib.request
+
+          def esc(name):
+              return html.escape(os.environ.get(name, ""), quote=False)
+
+          message = "\n".join([
+              f"<b>GitHub trigger:</b> Pull Request {esc('PR_ACTION')}",
+              "",
+              f"<b>Кто сделал:</b> {esc('TRIGGERED_BY')}",
+              f"<b>Автор PR:</b> {esc('PR_AUTHOR')}",
+              f"<b>PR:</b> {esc('PR_TITLE')}",
+              f"<b>Ветка:</b> {esc('SOURCE_BRANCH')} -> {esc('TARGET_BRANCH')}",
+              "",
+              esc("PR_URL"),
+              "",
+              "<b>Важно:</b> после изменений в DEV не забыть выполнить:",
+              "<pre><code>git pull origin dev</code></pre>",
+          ])
+
+          data = urllib.parse.urlencode({
+              "chat_id": os.environ["TELEGRAM_CHAT_ID"],
+              "text": message,
+              "parse_mode": "HTML",
+              "disable_web_page_preview": "true",
+          }).encode()
+
+          url = f"https://api.telegram.org/bot{os.environ['TELEGRAM_BOT_TOKEN']}/sendMessage"
+          request = urllib.request.Request(url, data=data, method="POST")
+          urllib.request.urlopen(request, timeout=15).read()
+          PY
+
+  notify_push:
+    name: Notify about push
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Telegram message about push
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PUSH_AUTHOR: ${{ github.actor }}
+          TARGET_BRANCH: ${{ github.ref_name }}
+          COMMIT_SHA: ${{ github.sha }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          COMMIT_URL: ${{ github.event.head_commit.url }}
+        run: |
+          python3 <<'PY'
+          import html
+          import os
+          import urllib.parse
+          import urllib.request
+
+          def esc(name):
+              return html.escape(os.environ.get(name, ""), quote=False)
+
+          short_sha = os.environ.get("COMMIT_SHA", "")[:7]
+          message = "\n".join([
+              "<b>GitHub trigger:</b> Push",
+              "",
+              f"<b>Кто сделал:</b> {esc('PUSH_AUTHOR')}",
+              f"<b>Ветка:</b> {esc('TARGET_BRANCH')}",
+              f"<b>Коммит:</b> {html.escape(short_sha, quote=False)}",
+              f"<b>Сообщение:</b> {esc('COMMIT_MESSAGE')}",
+              "",
+              esc("COMMIT_URL"),
+              "",
+              "<b>Важно:</b> после изменений в DEV не забыть выполнить:",
+              "<pre><code>git pull origin dev</code></pre>",
+          ])
+
+          data = urllib.parse.urlencode({
+              "chat_id": os.environ["TELEGRAM_CHAT_ID"],
+              "text": message,
+              "parse_mode": "HTML",
+              "disable_web_page_preview": "true",
+          }).encode()
+
+          url = f"https://api.telegram.org/bot{os.environ['TELEGRAM_BOT_TOKEN']}/sendMessage"
+          request = urllib.request.Request(url, data=data, method="POST")
+          urllib.request.urlopen(request, timeout=15).read()
+          PY
