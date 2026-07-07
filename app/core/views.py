@@ -19,20 +19,13 @@ from .serializers import BackupSerializer, BackupCreateSerializer, BackupUpdateS
 def index(request):
     return render(request, "index.html")
 
-<<<<<<< HEAD
 @login_required
-=======
-
->>>>>>> origin/DEV
 def api(request):
     return render(request, "api.html")
 
 
-<<<<<<< HEAD
 # (Backups) 
 @login_required
-=======
->>>>>>> origin/DEV
 def backups_list(request):
     backup_list = Backup.objects.select_related('host', 'target_system').order_by('-start_time')
 
@@ -48,13 +41,8 @@ def backup_detail(request, pk):
     return render(request, "backup/detail.html", {"backup": backup})
 
 
-<<<<<<< HEAD
-# (TargetSystem CRUD) 
-@login_required
-=======
 # TargetSystem CRUD
-
->>>>>>> origin/DEV
+@login_required
 def system_settings(request):
     systems_list = TargetSystem.objects.all().order_by('-created_at')
     paginator = Paginator(systems_list, 5)
@@ -63,9 +51,7 @@ def system_settings(request):
     return render(request, "target_system/list.html", {"page_obj": page_obj})
 
 
-<<<<<<< HEAD
 @login_required
-=======
 def system_detail(request, pk):
     system = get_object_or_404(TargetSystem, id=pk)
     recent_backups = system.backups.select_related('host').order_by('-start_time')[:5]
@@ -74,8 +60,7 @@ def system_detail(request, pk):
         "recent_backups": recent_backups
     })
 
-
->>>>>>> origin/DEV
+@login_required
 def system_create(request):
     if request.method == "POST":
         name = request.POST.get('name')
@@ -118,13 +103,10 @@ def system_delete(request, pk):
     return render(request, "target_system/confirm_delete.html", {"system": system})
 
 
-<<<<<<< HEAD
-# (Host CRUD) 
-@login_required
-=======
-# Host CRUD
 
->>>>>>> origin/DEV
+
+# Host CRUD
+@login_required
 def servers(request):
     hosts_list = Host.objects.select_related('target_system').all().order_by('hostname')
     paginator = Paginator(hosts_list, 5)
@@ -133,9 +115,7 @@ def servers(request):
     return render(request, "host/list.html", {"page_obj": page_obj})
 
 
-<<<<<<< HEAD
 @login_required
-=======
 def host_detail(request, pk):
     host = get_object_or_404(Host.objects.select_related('target_system'), id=pk)
     recent_backups = host.backups.order_by('-start_time')[:5]
@@ -145,7 +125,7 @@ def host_detail(request, pk):
     })
 
 
->>>>>>> origin/DEV
+@login_required
 def host_create(request):
     systems = TargetSystem.objects.all()
     if request.method == "POST":
