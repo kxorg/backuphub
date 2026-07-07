@@ -19,9 +19,11 @@ class TestWebViews:
     """Tests for Web Views"""
 
     @pytest.fixture
-    def client(self):
-        """Test client for web requests"""
-        return Client()
+    def client(self, user):
+        """Authenticated test client for web requests"""
+        client = Client()
+        client.force_login(user)
+        return client
 
     # === Main pages ===
 
