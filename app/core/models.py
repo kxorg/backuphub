@@ -1,11 +1,31 @@
 import uuid
 from django.db import models
 
+class SystemType(models.Model):
+    name = models.CharField(max_length=100, unique=True, verbose_name='System type name')
+    description = models.TextField(blank=True, verbose_name='Description')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Added at')
+    
+    class Meta:
+        db_table = 'system_type'
+        verbose_name = 'System type'
+        verbose_name_plural = 'System types'
+        ordering = ['name']
+    
+    def __str__(self):
+        return self.name
+
+
 class TargetSystem(models.Model):
     name = models.CharField(max_length=100, verbose_name='Name')
-    system_type = models.CharField(max_length=50, verbose_name='Type')
-    api_key = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, verbose_name='API-key')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Creation date')
+    system_type = models.ForeignKey(
+        SystemType, 
+        on_delete=models.PROTECT,
+        related_name='systems',
+        verbose_name='System type'
+    )
+    api_key = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, verbose_name='API Key')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created At')
 
     class Meta:
         db_table = 'target_system'
@@ -14,7 +34,6 @@ class TargetSystem(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class Host(models.Model):
     hostname = models.CharField(max_length=255, verbose_name='Name host')
