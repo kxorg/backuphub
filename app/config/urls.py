@@ -28,6 +28,7 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
+
 # Swagger configuration
 schema_view = get_schema_view(
     openapi.Info(
@@ -39,6 +40,7 @@ schema_view = get_schema_view(
     public=True,
     permission_classes=[permissions.AllowAny],
 )
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
