@@ -18,7 +18,7 @@ urlpatterns = [
     # Main pages
     path('', views.index, name='index'),
     path('api/', views.api, name='api'),
-
+    
     # Backups
     path('backups/', views.backups_list, name='backup_list'),
     path('backups/<uuid:pk>/', views.backup_detail, name='backup_detail'),
