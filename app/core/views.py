@@ -26,7 +26,6 @@ def index(request):
 def api(request):
     return render(request, "api.html")
 
-
 # (Backups) 
 @login_required
 def backups_list(request):

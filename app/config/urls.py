@@ -23,15 +23,14 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
-<<<<<<< HEAD
+
 # Exit handler for processing GET requests
 def logout_view(request):
     logout(request)
     return redirect('login')
 
+
 # Swagger configuration
-=======
->>>>>>> origin/DEV
 schema_view = get_schema_view(
     openapi.Info(
         title="BackupHub API",
@@ -42,6 +41,7 @@ schema_view = get_schema_view(
     public=True,
     permission_classes=[permissions.AllowAny],
 )
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),

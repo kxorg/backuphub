@@ -24,6 +24,10 @@ class BackupSerializer(serializers.ModelSerializer):
 class BackupCreateSerializer(serializers.Serializer):
     api_key =  serializers.UUIDField(help_text = 'API key of the tagret system')
     hostname = serializers.CharField(max_length = 255, help_text = 'Hostname of the server')
+    ip_address = serializers.IPAddressField(
+        required=False,
+        help_text='IP address of the server (optional, auto-detected if not provided)'
+    )
 
     def validate_api_key(self, value):
         if not TargetSystem.objects.filter(api_key=value).exists():
