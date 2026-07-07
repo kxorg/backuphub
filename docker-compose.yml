@@ -28,7 +28,7 @@ services:
     image: postgres:16-alpine
     container_name: bh_postgres
     volumes:
-      - postgres_data:/var/lib/postgresql/data/
+      - postgres_data_v16:/var/lib/postgresql/data/
     env_file:
       - env
     environment:
@@ -46,5 +46,5 @@ services:
       - redis_data:/data
 
 volumes:
-  postgres_data: {}
+  postgres_data_v16: {}
   redis_data: {}
