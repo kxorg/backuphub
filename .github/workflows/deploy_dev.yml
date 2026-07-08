@@ -1,0 +1,35 @@
+name: Deploy DEV
+
+on:
+  push:
+    branches:
+      - DEV
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Pull code and restart DEV app
+    runs-on: [self-hosted, backuphub-dev]
+
+    steps:
+      - name: Pull latest DEV code
+        working-directory: /opt/backuphub/app
+        run: |
+          git fetch origin DEV
+          git checkout DEV
+          git pull --ff-only origin DEV
+
+      - name: Restart application container
+        working-directory: /opt/backuphub/app
+        run: |
+          docker compose down --remove-orphans
+          docker compose up -d --build
+          docker image prune -f
+
+      - name: Show deploy result
+        working-directory: /opt/backuphub/app
+        run: |
+          docker compose ps
+          curl -k -I https://dev.backuphub.spb.ru/
