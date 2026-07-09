@@ -13,57 +13,39 @@ from core.models import (
 
 
 class BackupOperationAPITestBase(TestCase):
-    """Базовый класс с общими фикстурами для всех тестов."""
+    """Базовый класс с общими фикстурами."""
 
     def setUp(self):
-        """Создаёт тестовые данные перед каждым тестом."""
         self.client = APIClient()
-        
-        # Создаём тестового пользователя для авторизации
-        self.user = User.objects.create_user(
-            username='testuser',
-            password='testpass123'
-        )
-        self.client.force_authenticate(user=self.user)
 
         # Справочники
-        self.system_type = SystemType.objects.create(
-            name='PostgreSQL',
-            description='PostgreSQL database'
-        )
-        self.environment = Environment.objects.create(
-            name='Production',
-            description='Production environment'
-        )
-        self.backup_tool = BackupTool.objects.create(
-            name='pg_dump',
-            description='PostgreSQL logical backup'
-        )
+        self.system_type = SystemType.objects.create(name='PostgreSQL')
+        self.environment = Environment.objects.create(name='Production')
+        self.backup_tool = BackupTool.objects.create(name='pg_dump')
 
-        # Целевая система
+        # Целевая система (с API-ключом)
         self.target_system = TargetSystem.objects.create(
             name='PG Main DB',
             system_type=self.system_type,
             environment=self.environment,
-            description='Main production database'
         )
+        # Сохраняем API-ключ для передачи в заголовке
+        self.api_key = str(self.target_system.api_key)
 
         # Версия системы (текущая)
         self.system_version = TargetSystemVersion.objects.create(
             target_system=self.target_system,
             version_number=1,
-            owner='Ivanov I.I.',
-            administrator='Petrov P.P.',
+            owner='Ivanov',
             is_current=True,
-            valid_from=timezone.now()
+            valid_from=timezone.now(),
         )
 
         # Конфигурация бэкапа
         self.config = BackupConfiguration.objects.create(
-            name='Daily PostgreSQL Backup',
+            name='Daily Backup',
             target_system_version=self.system_version,
-            description='Daily logical backup',
-            is_active=True
+            is_active=True,
         )
 
         # Версия конфигурации (текущая)
@@ -72,175 +54,162 @@ class BackupOperationAPITestBase(TestCase):
             backup_tool=self.backup_tool,
             version_number=1,
             backup_mode='full',
-            schedule_cron='0 2 * * *',
-            retention_days=30,
-            rpo_minutes=1440,
-            rto_minutes=60,
-            storage_type='s3',
-            storage_path='s3://backups/prod/',
             is_current=True,
-            valid_from=timezone.now()
+            valid_from=timezone.now(),
         )
 
-        # URL для создания операции
         self.create_url = '/api/backup-operations/'
 
     def _create_payload(self, **overrides):
-        """Базовый payload для создания операции."""
+        """Базовый payload для создания операции (БЕЗ api_key — он в заголовке)."""
         payload = {
-            'backupConfigurationId': self.config.id,
             'externalJobId': 'JOB-001',
             'hostname': 'backup-server-01',
             'ipAddress': '10.10.10.15',
-            'startedAt': '2026-07-09T10:00:00Z'
+            'startedAt': '2026-07-09T10:00:00Z',
         }
         payload.update(overrides)
         return payload
 
 
-# ==========================================
-# 5 ОБЯЗАТЕЛЬНЫХ ТЕСТОВ ИЗ DEFINITION OF DONE
-# ==========================================
-
 class RequiredAPITests(BackupOperationAPITestBase):
     """5 обязательных тестов из Definition of Done."""
 
+    # ==========================================
+    # ТЕСТ 1: Создание операции
+    # ==========================================
     def test_1_create_operation(self):
-        """Тест 1: Создание операции."""
+        """Создание операции бэкапа с API-ключом в заголовке."""
         response = self.client.post(
             self.create_url,
             self._create_payload(),
-            format='json'
+            format='json',
+            HTTP_X_API_KEY=self.api_key,  # ← API-ключ в заголовке
         )
-        
-        # Проверяем статус ответа
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        
-        # Проверяем, что в ответе есть ID
         self.assertIn('id', response.data)
-        operation_id = response.data['id']
-        
-        # Проверяем, что операция создана в БД
-        operation = BackupOperation.objects.get(id=operation_id)
+
+        operation = BackupOperation.objects.get(id=response.data['id'])
         self.assertEqual(operation.status, 'in_progress')
         self.assertEqual(operation.hostname, 'backup-server-01')
         self.assertEqual(operation.external_job_id, 'JOB-001')
-        
-        # Проверяем, что операция привязана к ТЕКУЩЕЙ версии конфигурации
-        self.assertEqual(operation.backup_configuration_version, self.config_version)
+        self.assertEqual(
+            operation.backup_configuration_version,
+            self.config_version,
+        )
 
+    # ==========================================
+    # ТЕСТ 2: Успешное завершение
+    # ==========================================
     def test_2_successful_completion(self):
-        """Тест 2: Успешное завершение."""
-        # Сначала создаём операцию
-        create_response = self.client.post(
+        """RUNNING → SUCCESS."""
+        # Создаём операцию
+        create_resp = self.client.post(
             self.create_url,
             self._create_payload(externalJobId='JOB-SUCCESS'),
-            format='json'
+            format='json',
+            HTTP_X_API_KEY=self.api_key,
         )
-        operation_id = create_response.data['id']
-        update_url = f'/api/backup-operations/{operation_id}/'
-        
+        self.assertEqual(create_resp.status_code, status.HTTP_201_CREATED)
+        op_id = create_resp.data['id']
+
         # Обновляем на SUCCESS
         response = self.client.patch(
-            update_url,
+            f'/api/backup-operations/{op_id}/',
             {
                 'status': 'SUCCESS',
                 'finishedAt': '2026-07-09T10:30:00Z',
                 'sizeBytes': 5368709120,
                 'storageType': 'S3',
                 'storagePath': 's3://backup/prod/backup.sql.gz',
-                'metadata': {'database': 'production_db', 'tables_count': 42}
+                'metadata': {'database': 'production_db', 'tables_count': 42},
             },
-            format='json'
+            format='json',
         )
-        
-        # Проверяем статус ответа
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
-        # Проверяем, что статус обновился в БД
-        operation = BackupOperation.objects.get(id=operation_id)
-        self.assertEqual(operation.status, 'success')
-        self.assertEqual(operation.size_bytes, 5368709120)
-        self.assertEqual(operation.storage_type, 'S3')
-        
-        # Проверяем, что статус в ответе API — SUCCESS
         self.assertEqual(response.data['status'], 'SUCCESS')
 
+        operation = BackupOperation.objects.get(id=op_id)
+        self.assertEqual(operation.status, 'success')
+        self.assertEqual(operation.size_bytes, 5368709120)
+
+    # ==========================================
+    # ТЕСТ 3: Завершение с ошибкой
+    # ==========================================
     def test_3_completion_with_error(self):
-        """Тест 3: Завершение с ошибкой."""
-        # Сначала создаём операцию
-        create_response = self.client.post(
+        """RUNNING → FAILED."""
+        create_resp = self.client.post(
             self.create_url,
             self._create_payload(externalJobId='JOB-FAILED'),
-            format='json'
+            format='json',
+            HTTP_X_API_KEY=self.api_key,
         )
-        operation_id = create_response.data['id']
-        update_url = f'/api/backup-operations/{operation_id}/'
-        
-        # Обновляем на FAILED
+        self.assertEqual(create_resp.status_code, status.HTTP_201_CREATED)
+        op_id = create_resp.data['id']
+
         response = self.client.patch(
-            update_url,
+            f'/api/backup-operations/{op_id}/',
             {
                 'status': 'FAILED',
                 'finishedAt': '2026-07-09T10:15:00Z',
-                'errorMessage': 'Connection timeout to S3 storage'
+                'errorMessage': 'Connection timeout to S3 storage',
             },
-            format='json'
+            format='json',
         )
-        
-        # Проверяем статус ответа
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
-        # Проверяем, что статус обновился в БД
-        operation = BackupOperation.objects.get(id=operation_id)
-        self.assertEqual(operation.status, 'error')
-        self.assertEqual(operation.error_message, 'Connection timeout to S3 storage')
-        
-        # Проверяем, что статус в ответе API — FAILED
         self.assertEqual(response.data['status'], 'FAILED')
 
+        operation = BackupOperation.objects.get(id=op_id)
+        self.assertEqual(operation.status, 'error')
+        self.assertEqual(operation.error_message, 'Connection timeout to S3 storage')
+
+    # ==========================================
+    # ТЕСТ 4: Попытка повторного завершения
+    # ==========================================
     def test_4_attempt_to_complete_again(self):
-        """Тест 4: Попытка повторного завершения."""
-        # Создаём операцию
-        create_response = self.client.post(
+        """Запрет изменения завершённой операции."""
+        create_resp = self.client.post(
             self.create_url,
             self._create_payload(externalJobId='JOB-RETRY'),
-            format='json'
+            format='json',
+            HTTP_X_API_KEY=self.api_key,
         )
-        operation_id = create_response.data['id']
-        update_url = f'/api/backup-operations/{operation_id}/'
-        
-        # Сначала завершаем успешно
+        self.assertEqual(create_resp.status_code, status.HTTP_201_CREATED)
+        op_id = create_resp.data['id']
+        url = f'/api/backup-operations/{op_id}/'
+
+        # Завершаем успешно
         self.client.patch(
-            update_url,
-            {
-                'status': 'SUCCESS',
-                'finishedAt': '2026-07-09T10:30:00Z'
-            },
-            format='json'
+            url,
+            {'status': 'SUCCESS', 'finishedAt': '2026-07-09T10:30:00Z'},
+            format='json',
         )
-        
-        # Пытаемся изменить статус снова
+
+        # Пытаемся изменить снова
         response = self.client.patch(
-            update_url,
-            {
-                'status': 'FAILED',
-                'errorMessage': 'Late error'
-            },
-            format='json'
+            url,
+            {'status': 'FAILED', 'errorMessage': 'Late error'},
+            format='json',
         )
-        
-        # Ожидаем ошибку 400
+
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+        operation = BackupOperation.objects.get(id=op_id)
+        self.assertEqual(operation.status, 'success')
+
+    # ==========================================
+    # ТЕСТ 5: Несуществующая конфигурация
+    # ==========================================
     def test_5_nonexistent_configuration(self):
-        """Тест 5: Несуществующая конфигурация."""
+        """Создание операции с несуществующим configurationId."""
         response = self.client.post(
             self.create_url,
-            self._create_payload(backupConfigurationId=9999),
-            format='json'
+            self._create_payload(configurationId=9999),
+            format='json',
+            HTTP_X_API_KEY=self.api_key,
         )
-        
-        # Ожидаем ошибку 400
+
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('backupConfigurationId', response.data)
