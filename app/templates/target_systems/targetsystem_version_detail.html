@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Версия {{ version.version_number }} - {{ target_system.name }}{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">{{ target_system.name }} — Версия {{ version.version_number }}</h2>
+<a href="{% url 'target_system_history' pk=target_system.pk %}" class="btn btn-outline-secondary mb-3">&larr; Назад к истории</a>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <p><strong>Владелец:</strong> {{ version.owner|default:"-" }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Администратор:</strong> {{ version.administrator|default:"-" }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Действительна с:</strong> {{ version.valid_from|date:"d.m.Y H:i" }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Действительна до:</strong> {{ version.valid_to|date:"d.m.Y H:i"|default:"По настоящее время" }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Создана:</strong> {{ version.created_at|date:"d.m.Y H:i" }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Создана пользователем:</strong> {{ version.created_by|default:"-" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Backup Operations | BackupHub{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Backup Operations</h2>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>System</th>
+                    <th>Host</th>
+                    <th>Status</th>
+                    <th>Started</th>
+                    <th>Duration</th>
+                    <th>Size</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for op in operations %}
+                <tr>
+                    <td class="fw-bold">#{{ op.id }}</td>
+                    <td>{{ op.backup_configuration_version.backup_configuration.target_system_version.target_system.name }}</td>
+                    <td>{{ op.hostname }}</td>
+                    <td>
+                        {% if op.status == 'success' %}<span class="badge bg-success">Success</span>
+                        {% elif op.status == 'error' %}<span class="badge bg-danger">Error</span>
+                        {% elif op.status == 'in_progress' %}<span class="badge bg-primary">In Progress</span>
+                        {% else %}<span class="badge bg-secondary">{{ op.status }}</span>{% endif %}
+                    </td>
+                    <td>{{ op.started_at|date:"d.m.Y H:i" }}</td>
+                    <td>
+                        {% if op.duration_seconds %}
+                            {{ op.duration_seconds }} sec
+                        {% else %}-{% endif %}
+                    </td>
+                    <td>{{ op.size_human|default:"-" }}</td>
+                    <td class="text-end">
+                        <a href="{% url 'operation_detail' pk=op.pk %}" class="btn btn-sm btn-outline-info">Details</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center text-muted py-4">No operations found</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

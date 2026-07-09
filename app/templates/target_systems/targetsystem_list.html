@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Целевые системы{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Целевые системы</h2>
+    <a href="{% url 'target_system_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Добавить систему
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Имя</th>
+                    <th>Тип</th>
+                    <th>Окружение</th>
+                    <th>Владелец</th>
+                    <th>Статус</th>
+                    <th class="text-end">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for system in target_systems %}
+                <tr>
+                    <td><a href="{% url 'target_system_detail' pk=system.pk %}" class="fw-bold text-decoration-none">{{ system.name }}</a></td>
+                    <td>{{ system.system_type.name }}</td>
+                    <td>{{ system.environment.name|default:"-" }}</td>
+                    <td>{{ system.current_version_data.owner|default:"-" }}</td>
+                    <td>
+                        {% if system.is_active %}
+                            <span class="badge bg-success">Активна</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Неактивна</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'target_system_edit' pk=system.pk %}" class="btn btn-sm btn-outline-primary" title="Редактировать"><i class="bi bi-pencil"></i></a>
+                        <a href="{% url 'target_system_history' pk=system.pk %}" class="btn btn-sm btn-outline-info" title="История"><i class="bi bi-clock-history"></i></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-muted py-4">Системы не найдены</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if is_paginated %}
+<nav class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Назад</a></li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Вперед</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Версия {{ version.version_number }} - {{ backup_configuration.name }}{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">{{ backup_configuration.name }} — Версия {{ version.version_number }}</h2>
+<a href="{% url 'backup_configuration_history' pk=backup_configuration.pk %}" class="btn btn-outline-secondary mb-3">&larr; Назад к истории</a>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6"><p><strong>Инструмент:</strong> {{ version.backup_tool.name }}</p></div>
+            <div class="col-md-6"><p><strong>Режим:</strong> {{ version.get_backup_mode_display }}</p></div>
+            <div class="col-md-6"><p><strong>Расписание (Cron):</strong> <code>{{ version.schedule_cron|default:"-" }}</code></p></div>
+            <div class="col-md-6"><p><strong>Период хранения:</strong> {{ version.retention_days }} дней</p></div>
+            <div class="col-md-6"><p><strong>RPO:</strong> {{ version.rpo_minutes }} минут</p></div>
+            <div class="col-md-6"><p><strong>RTO:</strong> {{ version.rto_minutes }} минут</p></div>
+            <div class="col-md-6"><p><strong>Тип хранилища:</strong> {{ version.get_storage_type_display }}</p></div>
+            <div class="col-md-6"><p><strong>Путь в хранилище:</strong> <code>{{ version.storage_path|default:"-" }}</code></p></div>
+            <div class="col-md-6">
+                <p><strong>Опции:</strong></p>
+                <p>
+                    {% if version.verify_after_backup %}<span class="badge bg-info text-dark me-1">Проверка после бэкапа</span>{% endif %}
+                    {% if version.immutable_storage %}<span class="badge bg-warning text-dark me-1">Неизменяемое хранилище</span>{% endif %}
+                    {% if not version.verify_after_backup and not version.immutable_storage %}<span class="text-muted">Нет</span>{% endif %}
+                </p>
+            </div>
+            <div class="col-md-6"><p><strong>Действительна с:</strong> {{ version.valid_from|date:"d.m.Y H:i" }}</p></div>
+            <div class="col-md-6"><p><strong>Действительна до:</strong> {{ version.valid_to|date:"d.m.Y H:i"|default:"По настоящее время" }}</p></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
