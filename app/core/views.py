@@ -1,417 +1,718 @@
-from rest_framework.viewsets import GenericViewSet
-from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-from django.shortcuts import get_object_or_404, render, redirect
+from django.shortcuts import redirect
+from django.urls import reverse_lazy
+from datetime import timedelta
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.contrib import messages
 from django.utils import timezone
-from django.core.paginator import Paginator
-from django.contrib.auth.decorators import login_required
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
+from django.db import transaction
+from django.views.generic import ListView, DetailView
+from django.db.models import Q
+from .models import TargetSystem, TargetSystemVersion, BackupConfiguration, BackupConfigurationVersion, BackupOperation, SystemType, Environment, BackupTool
+from .forms import TargetSystemForm, BackupConfigurationForm, SystemTypeForm, EnvironmentForm, BackupToolForm
+from django.shortcuts import render
 
-from .models import TargetSystem, Host, Backup, SystemType
-from .serializers import BackupSerializer, BackupCreateSerializer, BackupUpdateSerializer
+class TargetSystemListView(ListView):
+    """GET /target-systems/"""
+    model = TargetSystem
+    template_name = 'target_systems/targetsystem_list.html'
+    context_object_name = 'target_systems'
+    paginate_by = 20
+
+    def get_queryset(self):
+        return TargetSystem.objects.select_related(
+            'system_type', 'environment'
+        ).filter(is_active=True).order_by('name')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        for system in context['target_systems']:
+            system.current_version_data = system.current_version
+        return context
 
 
-# ==========================================
-# WEB VIEWS
-# ==========================================
+class TargetSystemDetailView(DetailView):
+    """GET /target-systems/<pk>/"""
+    model = TargetSystem
+    template_name = 'target_systems/targetsystem_detail.html'
+    context_object_name = 'target_system'
 
-@login_required
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['current_version'] = self.object.current_version
+        return context
+
+
+class TargetSystemCreateView(CreateView):
+    """
+    GET /target-systems/create/
+    POST /target-systems/create/
+    """
+    model = TargetSystem
+    form_class = TargetSystemForm
+    template_name = 'target_systems/targetsystem_form.html'
+    success_url = reverse_lazy('target_systems:target_system_list')
+
+    @transaction.atomic
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.created_by = self.request.user.username if self.request.user.is_authenticated else 'System'
+        self.object.save()
+
+        # Создаем первую версию
+        TargetSystemVersion.objects.create(
+            target_system=self.object,
+            version_number=1,
+            owner=form.cleaned_data.get('owner'),
+            administrator=form.cleaned_data.get('administrator'),
+            is_current=True,
+            valid_from=timezone.now(),
+            created_by=self.request.user.username if self.request.user.is_authenticated else 'System',
+        )
+
+        messages.success(self.request, f'Target System "{self.object.name}" created successfully.')
+        return redirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Create Target System'
+        context['action'] = 'create'
+        return context
+
+
+class TargetSystemUpdateView(UpdateView):
+    """
+    GET /target-systems/<pk>/edit/
+    POST /target-systems/<pk>/edit/
+    """
+    model = TargetSystem
+    form_class = TargetSystemForm
+    template_name = 'target_systems/targetsystem_form.html'
+    success_url = reverse_lazy('target_systems:target_system_list')
+
+    @transaction.atomic
+    def form_valid(self, form):
+        current_version = self.object.current_version
+        versioned_fields_changed = False
+        
+        if current_version:
+            if (form.cleaned_data.get('owner') != current_version.owner or
+                form.cleaned_data.get('administrator') != current_version.administrator):
+                versioned_fields_changed = True
+
+        self.object = form.save(commit=False)
+        self.object.updated_by = self.request.user.username if self.request.user.is_authenticated else 'System'
+        self.object.save()
+
+        if versioned_fields_changed:
+            current_version.is_current = False
+            current_version.valid_to = timezone.now()
+            current_version.save()
+
+            TargetSystemVersion.objects.create(
+                target_system=self.object,
+                version_number=current_version.version_number + 1,
+                owner=form.cleaned_data.get('owner'),
+                administrator=form.cleaned_data.get('administrator'),
+                is_current=True,
+                valid_from=timezone.now(),
+                created_by=self.request.user.username if self.request.user.is_authenticated else 'System',
+            )
+            messages.success(self.request, f'Updated. New version created.')
+        else:
+            messages.success(self.request, f'Target System updated.')
+
+        return redirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Edit Target System'
+        context['action'] = 'edit'
+        context['current_version'] = self.object.current_version
+        return context
+
+
+class TargetSystemDeleteView(DeleteView):
+    """POST /target-systems/<pk>/delete/"""
+    model = TargetSystem
+    success_url = reverse_lazy('target_systems:target_system_list')
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.is_active = False
+        self.object.updated_by = request.user.username if request.user.is_authenticated else 'System'
+        self.object.save()
+        messages.success(request, f'Target System deactivated.')
+        return redirect(self.success_url)
+
+    def get(self, request, *args, **kwargs):
+        return redirect('target_systems:target_system_list')
+
+
+class TargetSystemHistoryView(DetailView):
+    """GET /target-systems/<pk>/history/"""
+    model = TargetSystem
+    template_name = 'target_systems/targetsystem_history.html'
+    context_object_name = 'target_system'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['versions'] = TargetSystemVersion.objects.filter(
+            target_system=self.object
+        ).order_by('-version_number')
+        return context
+
+
+class TargetSystemVersionDetailView(DetailView):
+    """GET /target-systems/<pk>/history/<version_pk>/"""
+    model = TargetSystemVersion
+    template_name = 'target_systems/targetsystem_version_detail.html'
+    context_object_name = 'version'
+    pk_url_kwarg = 'version_pk'  # <-- Указываем, что primary key в URL называется 'version_pk'
+
+    def get_queryset(self):
+        # Разрешаем доставать только ту версию, которая принадлежит системе из URL
+        return TargetSystemVersion.objects.filter(
+            target_system_id=self.kwargs['pk']
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['target_system'] = self.object.target_system
+        context['is_readonly'] = True
+        return context
+
+
+class BackupConfigurationListView(ListView):
+    """GET /backup-configuration/"""
+    model = BackupConfiguration
+    template_name = 'backup_configurations/backupconfiguration_list.html'
+    context_object_name = 'backup_configurations'
+    paginate_by = 20
+
+    def get_queryset(self):
+        return BackupConfiguration.objects.select_related(
+            'target_system_version',
+            'target_system_version__target_system'
+        ).filter(is_active=True).order_by('name')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        for config in context['backup_configurations']:
+            config.current_version_data = config.current_version
+        return context
+
+
+class BackupConfigurationDetailView(DetailView):
+    """GET /backup-configuration/<pk>/"""
+    model = BackupConfiguration
+    template_name = 'backup_configurations/backupconfiguration_detail.html'
+    context_object_name = 'backup_configuration'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['current_version'] = self.object.current_version
+        return context
+
+
+class BackupConfigurationCreateView(CreateView):
+    """
+    GET /backup-configuration/create/
+    POST /backup-configuration/create/
+    """
+    model = BackupConfiguration
+    form_class = BackupConfigurationForm
+    template_name = 'backup_configurations/backupconfiguration_form.html'
+    success_url = reverse_lazy('backup_configuration_list')
+
+    @transaction.atomic
+    def form_valid(self, form):
+        # Создаем BackupConfiguration
+        self.object = form.save(commit=False)
+        self.object.created_by = self.request.user.username if self.request.user.is_authenticated else 'System'
+        self.object.save()
+
+        # Создаем первую версию
+        BackupConfigurationVersion.objects.create(
+            backup_configuration=self.object,
+            version_number=1,
+            backup_tool=form.cleaned_data.get('backup_tool'),
+            backup_mode=form.cleaned_data.get('backup_mode'),
+            schedule_cron=form.cleaned_data.get('schedule_cron'),
+            retention_days=form.cleaned_data.get('retention_days'),
+            rpo_minutes=form.cleaned_data.get('rpo_minutes'),
+            rto_minutes=form.cleaned_data.get('rto_minutes'),
+            storage_type=form.cleaned_data.get('storage_type'),
+            storage_path=form.cleaned_data.get('storage_path'),
+            verify_after_backup=form.cleaned_data.get('verify_after_backup'),
+            immutable_storage=form.cleaned_data.get('immutable_storage'),
+            is_current=True,
+            valid_from=timezone.now(),
+            created_by=self.request.user.username if self.request.user.is_authenticated else 'System',
+        )
+
+        messages.success(self.request, f'Backup Configuration "{self.object.name}" created successfully.')
+        return redirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Create Backup Configuration'
+        context['action'] = 'create'
+        return context
+
+
+class BackupConfigurationUpdateView(UpdateView):
+    """
+    GET /backup-configuration/<pk>/edit/
+    POST /backup-configuration/<pk>/edit/
+    """
+    model = BackupConfiguration
+    form_class = BackupConfigurationForm
+    template_name = 'backup_configurations/backupconfiguration_form.html'
+    success_url = reverse_lazy('backup_configuration_list')
+
+    @transaction.atomic
+    def form_valid(self, form):
+        current_version = self.object.current_version
+        versioned_fields_changed = False
+
+        if current_version:
+            # Проверяем, изменились ли версионируемые поля
+            versioned_fields = [
+                'backup_tool', 'backup_mode', 'schedule_cron',
+                'retention_days', 'rpo_minutes', 'rto_minutes',
+                'storage_type', 'storage_path',
+                'verify_after_backup', 'immutable_storage'
+            ]
+
+            for field in versioned_fields:
+                if form.cleaned_data.get(field) != getattr(current_version, field):
+                    versioned_fields_changed = True
+                    break
+
+        # Обновляем BackupConfiguration
+        self.object = form.save(commit=False)
+        self.object.updated_by = self.request.user.username if self.request.user.is_authenticated else 'System'
+        self.object.save()
+
+        if versioned_fields_changed:
+            # Закрываем текущую версию
+            current_version.is_current = False
+            current_version.valid_to = timezone.now()
+            current_version.save()
+
+            # Создаем новую версию
+            BackupConfigurationVersion.objects.create(
+                backup_configuration=self.object,
+                version_number=current_version.version_number + 1,
+                backup_tool=form.cleaned_data.get('backup_tool'),
+                backup_mode=form.cleaned_data.get('backup_mode'),
+                schedule_cron=form.cleaned_data.get('schedule_cron'),
+                retention_days=form.cleaned_data.get('retention_days'),
+                rpo_minutes=form.cleaned_data.get('rpo_minutes'),
+                rto_minutes=form.cleaned_data.get('rto_minutes'),
+                storage_type=form.cleaned_data.get('storage_type'),
+                storage_path=form.cleaned_data.get('storage_path'),
+                verify_after_backup=form.cleaned_data.get('verify_after_backup'),
+                immutable_storage=form.cleaned_data.get('immutable_storage'),
+                is_current=True,
+                valid_from=timezone.now(),
+                created_by=self.request.user.username if self.request.user.is_authenticated else 'System',
+            )
+            messages.success(self.request, f'Updated. New version created.')
+        else:
+            messages.success(self.request, f'Backup Configuration updated.')
+
+        return redirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Edit Backup Configuration'
+        context['action'] = 'edit'
+        context['current_version'] = self.object.current_version
+        return context
+
+
+class BackupConfigurationDeleteView(DeleteView):
+    """POST /backup-configuration/<pk>/delete/"""
+    model = BackupConfiguration
+    success_url = reverse_lazy('backup_configuration_list')
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.is_active = False
+        self.object.updated_by = request.user.username if request.user.is_authenticated else 'System'
+        self.object.save()
+        messages.success(request, f'Backup Configuration deactivated.')
+        return redirect(self.success_url)
+
+    def get(self, request, *args, **kwargs):
+        return redirect('backup_configuration_list')
+
+
+class BackupConfigurationHistoryView(DetailView):
+    """GET /backup-configuration/<pk>/history/"""
+    model = BackupConfiguration
+    template_name = 'backup_configurations/backupconfiguration_history.html'
+    context_object_name = 'backup_configuration'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['versions'] = BackupConfigurationVersion.objects.filter(
+            backup_configuration=self.object
+        ).order_by('-version_number')
+        return context
+
+
+class BackupConfigurationVersionDetailView(DetailView):
+    """GET /backup-configuration/<pk>/history/<version_pk>/"""
+    model = BackupConfigurationVersion
+    template_name = 'backup_configurations/backupconfiguration_version_detail.html'
+    context_object_name = 'version'
+    pk_url_kwarg = 'version_pk'
+
+    def get_queryset(self):
+        return BackupConfigurationVersion.objects.filter(
+            backup_configuration_id=self.kwargs['pk']
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['backup_configuration'] = self.object.backup_configuration
+        context['is_readonly'] = True
+        return context
+    
+class BackupOperationListView(ListView):
+    """
+    GET /backup-operations/
+    Список операций с поиском и фильтрацией
+    """
+    model = BackupOperation
+    template_name = 'backup_operations/backupoperation_list.html'
+    context_object_name = 'operations'
+    paginate_by = 50
+
+    def get_queryset(self):
+        queryset = BackupOperation.objects.select_related(
+            'backup_configuration_version',
+            'backup_configuration_version__backup_configuration',
+            'backup_configuration_version__backup_configuration__target_system_version',
+            'backup_configuration_version__backup_configuration__target_system_version__target_system',
+            'backup_configuration_version__backup_tool'
+        ).order_by('-started_at')
+
+        # Поиск по hostname, external_job_id, storage_path
+        search_query = self.request.GET.get('q', '').strip()
+        if search_query:
+            queryset = queryset.filter(
+                Q(hostname__icontains=search_query) |
+                Q(external_job_id__icontains=search_query) |
+                Q(storage_path__icontains=search_query)
+            )
+
+        # Фильтрация по статусу
+        status = self.request.GET.get('status', '').strip()
+        if status:
+            queryset = queryset.filter(status=status)
+
+        # Фильтрация по hostname
+        hostname = self.request.GET.get('hostname', '').strip()
+        if hostname:
+            queryset = queryset.filter(hostname__icontains=hostname)
+
+        # Фильтрация по конфигурации
+        config_id = self.request.GET.get('configuration', '').strip()
+        if config_id and config_id.isdigit():
+            queryset = queryset.filter(
+                backup_configuration_version__backup_configuration_id=int(config_id)
+            )
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['search_query'] = self.request.GET.get('q', '')
+        context['status_filter'] = self.request.GET.get('status', '')
+        context['hostname_filter'] = self.request.GET.get('hostname', '')
+        context['configuration_filter'] = self.request.GET.get('configuration', '')
+        context['status_choices'] = BackupOperation.STATUS_CHOICES
+        return context
+
+
+class BackupOperationDetailView(DetailView):
+    """
+    GET /backup-operations/<pk>/
+    Детальная информация об операции
+    """
+    model = BackupOperation
+    template_name = 'backup_operations/backupoperation_detail.html'
+    context_object_name = 'operation'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['duration_seconds'] = self.object.duration_seconds
+        context['size_human'] = self.object.size_human
+        return context
+    
+
+class BackupOperationListView(ListView):
+    """
+    GET /backup-operations/
+    Список операций с поиском и фильтрацией
+    """
+    model = BackupOperation
+    template_name = 'backup_operations/backupoperation_list.html'
+    context_object_name = 'operations'
+    paginate_by = 50
+
+    def get_queryset(self):
+        queryset = BackupOperation.objects.select_related(
+            'backup_configuration_version',
+            'backup_configuration_version__backup_configuration',
+            'backup_configuration_version__backup_configuration__target_system_version',
+            'backup_configuration_version__backup_configuration__target_system_version__target_system',
+            'backup_configuration_version__backup_tool'
+        ).order_by('-started_at')
+
+        # Поиск по hostname, external_job_id, storage_path
+        search_query = self.request.GET.get('q', '').strip()
+        if search_query:
+            queryset = queryset.filter(
+                Q(hostname__icontains=search_query) |
+                Q(external_job_id__icontains=search_query) |
+                Q(storage_path__icontains=search_query)
+            )
+
+        # Фильтрация по статусу
+        status = self.request.GET.get('status', '').strip()
+        if status:
+            queryset = queryset.filter(status=status)
+
+        # Фильтрация по hostname
+        hostname = self.request.GET.get('hostname', '').strip()
+        if hostname:
+            queryset = queryset.filter(hostname__icontains=hostname)
+
+        # Фильтрация по конфигурации
+        config_id = self.request.GET.get('configuration', '').strip()
+        if config_id and config_id.isdigit():
+            queryset = queryset.filter(
+                backup_configuration_version__backup_configuration_id=int(config_id)
+            )
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['search_query'] = self.request.GET.get('q', '')
+        context['status_filter'] = self.request.GET.get('status', '')
+        context['hostname_filter'] = self.request.GET.get('hostname', '')
+        context['configuration_filter'] = self.request.GET.get('configuration', '')
+        context['status_choices'] = BackupOperation.STATUS_CHOICES
+        return context
+
+
+class BackupOperationDetailView(DetailView):
+    """
+    GET /backup-operations/<pk>/
+    Детальная информация об операции
+    """
+    model = BackupOperation
+    template_name = 'backup_operations/backupoperation_detail.html'
+    context_object_name = 'operation'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['duration_seconds'] = self.object.duration_seconds
+        context['size_human'] = self.object.size_human
+        return context
+    
+
+class SystemTypeListView(ListView):
+    model = SystemType
+    template_name = 'dictionaries/systemtype_list.html'
+    context_object_name = 'system_types'
+    paginate_by = 50
+
+
+class SystemTypeCreateView(CreateView):
+    model = SystemType
+    form_class = SystemTypeForm
+    template_name = 'dictionaries/systemtype_form.html'
+    success_url = reverse_lazy('dictionaries:system_type_list')
+
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user.username if self.request.user.is_authenticated else 'System'
+        messages.success(self.request, 'System Type created successfully.')
+        return super().form_valid(form)
+
+
+class SystemTypeUpdateView(UpdateView):
+    model = SystemType
+    form_class = SystemTypeForm
+    template_name = 'dictionaries/systemtype_form.html'
+    success_url = reverse_lazy('dictionaries:system_type_list')
+
+    def form_valid(self, form):
+        form.instance.updated_by = self.request.user.username if self.request.user.is_authenticated else 'System'
+        messages.success(self.request, 'System Type updated successfully.')
+        return super().form_valid(form)
+
+
+class SystemTypeDeleteView(DeleteView):
+    model = SystemType
+    success_url = reverse_lazy('dictionaries:system_type_list')
+    template_name = 'dictionaries/systemtype_confirm_delete.html'
+
+    def form_valid(self, form):
+        messages.success(self.request, 'System Type deleted successfully.')
+        return super().form_valid(form)
+
+
+class EnvironmentListView(ListView):
+    model = Environment
+    template_name = 'dictionaries/environment_list.html'
+    context_object_name = 'environments'
+    paginate_by = 50
+
+
+class EnvironmentCreateView(CreateView):
+    model = Environment
+    form_class = EnvironmentForm
+    template_name = 'dictionaries/environment_form.html'
+    success_url = reverse_lazy('dictionaries:environment_list')
+
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user.username if self.request.user.is_authenticated else 'System'
+        messages.success(self.request, 'Environment created successfully.')
+        return super().form_valid(form)
+
+
+class EnvironmentUpdateView(UpdateView):
+    model = Environment
+    form_class = EnvironmentForm
+    template_name = 'dictionaries/environment_form.html'
+    success_url = reverse_lazy('dictionaries:environment_list')
+
+    def form_valid(self, form):
+        form.instance.updated_by = self.request.user.username if self.request.user.is_authenticated else 'System'
+        messages.success(self.request, 'Environment updated successfully.')
+        return super().form_valid(form)
+
+
+class EnvironmentDeleteView(DeleteView):
+    model = Environment
+    success_url = reverse_lazy('dictionaries:environment_list')
+    template_name = 'dictionaries/environment_confirm_delete.html'
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Environment deleted successfully.')
+        return super().form_valid(form)
+
+
+
+class BackupToolListView(ListView):
+    model = BackupTool
+    template_name = 'dictionaries/backuptool_list.html'
+    context_object_name = 'backup_tools'
+    paginate_by = 50
+
+
+class BackupToolCreateView(CreateView):
+    model = BackupTool
+    form_class = BackupToolForm
+    template_name = 'dictionaries/backuptool_form.html'
+    success_url = reverse_lazy('dictionaries:backup_tool_list')
+
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user.username if self.request.user.is_authenticated else 'System'
+        messages.success(self.request, 'Backup Tool created successfully.')
+        return super().form_valid(form)
+
+
+class BackupToolUpdateView(UpdateView):
+    model = BackupTool
+    form_class = BackupToolForm
+    template_name = 'dictionaries/backuptool_form.html'
+    success_url = reverse_lazy('dictionaries:backup_tool_list')
+
+    def form_valid(self, form):
+        form.instance.updated_by = self.request.user.username if self.request.user.is_authenticated else 'System'
+        messages.success(self.request, 'Backup Tool updated successfully.')
+        return super().form_valid(form)
+
+
+class BackupToolDeleteView(DeleteView):
+    model = BackupTool
+    success_url = reverse_lazy('dictionaries:backup_tool_list')
+    template_name = 'dictionaries/backuptool_confirm_delete.html'
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Backup Tool deleted successfully.')
+        return super().form_valid(form)
+    
 def index(request):
-    from django.utils import timezone
-    from django.db.models import Count, Q, Max, F, Value, CharField
-    from django.db.models.functions import Coalesce
-    from datetime import timedelta
-
+    """GET / - Dashboard / Home page"""
     now = timezone.now()
     last_24h = now - timedelta(hours=24)
-    last_7d = now - timedelta(days=7)
 
-    # === KPI: general counters ===
-    total_systems = TargetSystem.objects.count()
-    total_backups = Backup.objects.count()
-    total_hosts = Host.objects.count()
-    new_systems = TargetSystem.objects.filter(created_at__gte=last_7d).count()
+    # Статистика
+    total_systems = TargetSystem.objects.filter(is_active=True).count()
+    new_systems = TargetSystem.objects.filter(created_at__gte=last_24h).count()
+    total_backups = BackupOperation.objects.count()
+    
+    # Уникальные хосты (серверы), с которых делали бэкапы
+    total_hosts = BackupOperation.objects.values('hostname').distinct().count()
 
-    # === KPI: backup status for the last 24 hours ===
-    backups_24h = Backup.objects.filter(start_time__gte=last_24h)
-    success_24h = backups_24h.filter(status='success').count()
-    warning_24h = 0  # The current model does not have a warning status, so leave it at 0.
-    error_24h = backups_24h.filter(status='error').count()
-    in_progress_24h = backups_24h.filter(status='in_progress').count()
+    # Статус за последние 24 часа
+    ops_24h = BackupOperation.objects.filter(started_at__gte=last_24h)
+    success_24h = ops_24h.filter(status='success').count()
+    in_progress_24h = ops_24h.filter(status='in_progress').count()
+    error_24h = ops_24h.filter(status='error').count()
 
-    # === Last 5 backup operations ===
-    recent_backups = Backup.objects.select_related(
-        'host', 'target_system'
-    ).order_by('-start_time')[:5]
+    # Последние операции
+    recent_backups = BackupOperation.objects.select_related(
+        'backup_configuration_version__backup_configuration__target_system_version__target_system'
+    ).order_by('-started_at')[:10]
 
-    # === Active systems with last resort ===
-    systems = TargetSystem.objects.select_related('system_type').prefetch_related(
-        'hosts', 'backups'
-    ).all()
-
+    # Данные по системам
+    systems = TargetSystem.objects.filter(is_active=True).select_related('system_type')
     systems_data = []
-    for system in systems:
-        last_backup = system.backups.order_by('-start_time').first()
-
-        if last_backup is None:
-            system_status = 'no_data'
-            system_status_label = 'no_data'
-            system_status_class = 'secondary'
-        elif last_backup.status == 'error':
-            system_status = 'error'
-            system_status_label = 'error'
-            system_status_class = 'danger'
-        elif last_backup.status == 'in_progress':
-            system_status = 'in_progress'
-            system_status_label = 'in_progress'
-            system_status_class = 'warning'
-        elif last_backup.start_time < last_24h:
-            system_status = 'warning'
-            system_status_label = 'warning'
-            system_status_class = 'warning'
-        else:
-            system_status = 'active'
-            system_status_label = 'success'
-            system_status_class = 'success'
-
-        # Last server of the system
-        last_host = system.hosts.first()
-
+    for sys in systems:
+        last_op = BackupOperation.objects.filter(
+            backup_configuration_version__backup_configuration__target_system_version__target_system=sys
+        ).order_by('-started_at').first()
+        
         systems_data.append({
-            'system': system,
-            'last_backup': last_backup,
-            'last_host': last_host,
-            'status': system_status,
-            'status_label': system_status_label,
-            'status_class': system_status_class,
+            'system': sys,
+            'last_backup': last_op,
+            'status_label': 'Активна' if sys.is_active else 'Неактивна',
+            'ops_count': BackupOperation.objects.filter(
+                backup_configuration_version__backup_configuration__target_system_version__target_system=sys
+            ).count()
         })
 
     context = {
-        # KPI
         'total_systems': total_systems,
+        'new_systems': new_systems,
         'total_backups': total_backups,
         'total_hosts': total_hosts,
-        'new_systems': new_systems,
-        # Backup status for the last 24 hours
         'success_24h': success_24h,
-        'warning_24h': warning_24h,
-        'error_24h': error_24h,
         'in_progress_24h': in_progress_24h,
-        # Data for tables
+        'error_24h': error_24h,
         'recent_backups': recent_backups,
         'systems_data': systems_data,
     }
-
-    return render(request, "index.html", context)
-
-@login_required
-def api(request):
-    return render(request, "api.html")
+    return render(request, 'index.html', context)
 
 
-# (Backups) 
-@login_required
-def backups_list(request):
-    backup_list = Backup.objects.select_related('host', 'target_system').order_by('-start_time')
-    paginator = Paginator(backup_list, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    return render(request, "backup/list.html", {"page_obj": page_obj})
+def operations_list(request):
+    """GET /operations/ - List of all backup operations"""
+    operations = BackupOperation.objects.select_related(
+        'backup_configuration_version__backup_configuration__target_system_version__target_system'
+    ).order_by('-started_at')
+    return render(request, 'operations/operation_list.html', {'operations': operations})
 
-
-@login_required
-def backup_detail(request, pk):
-    backup = get_object_or_404(Backup.objects.select_related('host', 'target_system'), id=pk)
-    return render(request, "backup/detail.html", {"backup": backup})
-
-
-# --- TargetSystem CRUD ---
-@login_required
-def system_settings(request):
-    systems_list = TargetSystem.objects.select_related('system_type').all().order_by('-created_at')
-    paginator = Paginator(systems_list, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    return render(request, "target_system/list.html", {"page_obj": page_obj})
-
-@login_required
-def system_detail(request, pk):
-    """System details page with latest backups."""
-    system = get_object_or_404(TargetSystem, id=pk)
-    recent_backups = system.backups.select_related('host').order_by('-start_time')[:5]
-    return render(request, "target_system/detail.html", {
-        "system": system,
-        "recent_backups": recent_backups
-    })
-
-@login_required
-def system_create(request):
-    """Creating a new system with the ability to add a new type."""
-    if request.method == "POST":
-        name = request.POST.get('name')
-        system_type_action = request.POST.get('system_type_action')
-        
-        if system_type_action == 'new':
-            new_type_name = request.POST.get('new_system_type')
-            if new_type_name:
-                system_type, created = SystemType.objects.get_or_create(
-                    name=new_type_name.strip(),
-                    defaults={'description': f'Тип {new_type_name}'}
-                )
-            else:
-                system_types = SystemType.objects.all()
-                return render(request, "target_system/form.html", {
-                    "system_types": system_types,
-                    "error": "Please provide a name for the new system type."
-                })
-        else:
-            system_type_id = request.POST.get('system_type')
-            system_type = get_object_or_404(SystemType, id=system_type_id)
-        
-        TargetSystem.objects.create(name=name, system_type=system_type)
-        return redirect('target_system_list')
-    
-    system_types = SystemType.objects.all()
-    return render(request, "target_system/form.html", {"system_types": system_types})
-
-
-@login_required
-def system_edit(request, pk):
-    """Edit systems."""
-    system = get_object_or_404(TargetSystem, id=pk)
-    if request.method == "POST":
-        system.name = request.POST.get('name')
-        system_type_action = request.POST.get('system_type_action')
-        
-        if system_type_action == 'new':
-            new_type_name = request.POST.get('new_system_type')
-            if new_type_name:
-                system_type, created = SystemType.objects.get_or_create(
-                    name=new_type_name.strip(),
-                    defaults={'description': f'Тип {new_type_name}'}
-                )
-            else:
-                system_types = SystemType.objects.all()
-                return render(request, "target_system/form.html", {
-                    "system": system,
-                    "system_types": system_types,
-                    "error": "Please provide a name for the new system type."
-                })
-        else:
-            system_type_id = request.POST.get('system_type')
-            system_type = get_object_or_404(SystemType, id=system_type_id)
-        
-        system.system_type = system_type
-        system.save()
-        return redirect('target_system_list')
-    
-    system_types = SystemType.objects.all()
-    return render(request, "target_system/form.html", {
-        "system": system,
-        "system_types": system_types
-    })
-
-
-@login_required
-def system_delete(request, pk):
-    system = get_object_or_404(TargetSystem, id=pk)
-    if request.method == "POST":
-        system.delete()
-        return redirect('target_system_list')
-    return render(request, "target_system/confirm_delete.html", {"system": system})
-
-
-# --- Host CRUD ---
-@login_required
-def servers(request):
-    hosts_list = Host.objects.select_related('target_system').all().order_by('hostname')
-    paginator = Paginator(hosts_list, 5)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    return render(request, "host/list.html", {"page_obj": page_obj})
-
-
-@login_required
-def host_detail(request, pk):
-    """Host details page with latest backups."""
-    host = get_object_or_404(Host.objects.select_related('target_system'), id=pk)
-    recent_backups = host.backups.order_by('-start_time')[:5]
-    return render(request, "host/detail.html", {
-        "host": host,
-        "recent_backups": recent_backups
-    })
-
-
-@login_required
-def host_create(request):
-    systems = TargetSystem.objects.all()
-    if request.method == "POST":
-        hostname = request.POST.get('hostname')
-        ip_address = request.POST.get('ip_address')
-        system_id = request.POST.get('target_system')
-        target_system = get_object_or_404(TargetSystem, id=system_id)
-        Host.objects.create(hostname=hostname, ip_address=ip_address, target_system=target_system)
-        return redirect('host_list')
-    return render(request, "host/form.html", {"systems": systems})
-
-
-@login_required
-def host_edit(request, pk):
-    host = get_object_or_404(Host, id=pk)
-    systems = TargetSystem.objects.all()
-    if request.method == "POST":
-        host.hostname = request.POST.get('hostname')
-        host.ip_address = request.POST.get('ip_address')
-        system_id = request.POST.get('target_system')
-        host.target_system = get_object_or_404(TargetSystem, id=system_id)
-        host.save()
-        return redirect('host_list')
-    return render(request, "host/form.html", {"host": host, "systems": systems})
-
-
-@login_required
-def host_delete(request, pk):
-    host = get_object_or_404(Host, id=pk)
-    if request.method == "POST":
-        host.delete()
-        return redirect('host_list')
-    return render(request, "host/confirm_delete.html", {"host": host})
-
-
-# ==========================================
-# API VIEWS (Only Backups)
-# ==========================================
-
-class BackupViewSet(
-    ListModelMixin,
-    CreateModelMixin,
-    RetrieveModelMixin,
-    GenericViewSet
-):
-    """
-    Backup API operations.
-    """
-    permission_classes = [IsAuthenticated]
-    queryset = Backup.objects.select_related('host', 'target_system').all()
-    serializer_class = BackupSerializer
-
-    def get_client_ip(self, request):
-        """Определяет IP-адрес клиента из HTTP-запроса."""
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            ip = x_forwarded_for.split(',')[0].strip()
-        else:
-            ip = request.META.get('REMOTE_ADDR')
-        return ip
-
-    @swagger_auto_schema(
-        operation_summary='List all backups',
-        operation_description='Returns a list of all backup operations',
-        tags=['Backups'],
-        responses={200: openapi.Response('List of backups', BackupSerializer(many=True))},
-    )
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
-
-    @swagger_auto_schema(
-        operation_summary='Retrieve backup details',
-        operation_description='Returns details of a specific backup operation',
-        tags=['Backups'],
-        responses={200: openapi.Response('Backup details', BackupSerializer), 404: 'Backup not found'},
-    )
-    def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(request, *args, **kwargs)
-
-    @swagger_auto_schema(
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            required=['api_key', 'hostname'],
-            properties={
-                'api_key': openapi.Schema(type=openapi.TYPE_STRING, format='uuid', description='API key of the target system'),
-                'hostname': openapi.Schema(type=openapi.TYPE_STRING, description='Hostname of the server'),
-                'ip_address': openapi.Schema(type=openapi.TYPE_STRING, format='ipv4', description='IP address (optional, auto-detected if not provided)'),
-                'storage': openapi.Schema(type=openapi.TYPE_STRING, description='Path to the backup storage (optional)'),
-            }
-        ),
-        responses={201: openapi.Response('Backup created', BackupSerializer), 400: 'Validation error', 404: 'Target system not found'},
-        operation_summary='Create backup record',
-        operation_description=(
-            'Creates a new backup record with status in_progress. '
-            'IP address is auto-detected from request if not provided. '
-            'If host exists but IP changed, IP will be updated.'
-        ),
-        tags=['Backups'],
-    )
-    def create(self, request, *args, **kwargs):
-        serializer = BackupCreateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        api_key = serializer.validated_data['api_key']
-        hostname = serializer.validated_data['hostname']
-        
-        # Комбинированная логика IP: берем из запроса или определяем автоматически
-        ip_address = serializer.validated_data.get('ip_address')
-        if not ip_address:
-            ip_address = self.get_client_ip(request)
-
-        target_system = TargetSystem.objects.get(api_key=api_key)
-
-        host, created = Host.objects.get_or_create(
-            hostname=hostname,
-            target_system=target_system,
-            defaults={'ip_address': ip_address}
-        )
-        
-        # Обновляем IP, если хост уже существует и IP изменился
-        if not created and host.ip_address != ip_address:
-            host.ip_address = ip_address
-            host.save()
-
-        backup = Backup.objects.create(
-            host=host,
-            target_system=target_system,
-            status='in_progress',
-            start_time=timezone.now(),
-            storage=serializer.validated_data.get('storage', '')
-        )
-
-        response_serializer = BackupSerializer(backup)
-        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
-
-    @swagger_auto_schema(
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'status': openapi.Schema(type=openapi.TYPE_STRING, enum=['in_progress', 'success', 'error'], description='Backup execution status'),
-                'backup_size': openapi.Schema(type=openapi.TYPE_INTEGER, description='Backup size in bytes'),
-                'storage': openapi.Schema(type=openapi.TYPE_STRING, description='Path to the backup file'),
-                'meta_data': openapi.Schema(type=openapi.TYPE_OBJECT, description='Technical data in JSON format'),
-                'error_message': openapi.Schema(type=openapi.TYPE_STRING, description='Error message (if status is error)'),
-            }
-        ),
-        responses={200: openapi.Response('Backup updated', BackupSerializer), 404: 'Backup not found'},
-        operation_summary='Update backup status',
-        operation_description='Updates backup status and metadata after completion. end_time is set automatically.',
-        tags=['Backups'],
-    )
-    def partial_update(self, request, *args, **kwargs):
-        """PATCH /backups/{id}/ - Update backup status"""
-        backup = self.get_object()
-
-        serializer = BackupUpdateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        for attr, value in serializer.validated_data.items():
-            if value is not None:
-                setattr(backup, attr, value)
-
-        if backup.status in ['success', 'error'] and not backup.end_time:
-            backup.end_time = timezone.now()
-
-        backup.save()
-
-        response_serializer = BackupSerializer(backup)
-        return Response(response_serializer.data, status=status.HTTP_200_OK)
+def operation_detail(request, pk):
+    """GET /operations/<pk>/ - Detail of a specific backup operation"""
+    operation = get_object_or_404(BackupOperation, pk=pk)
+    return render(request, 'operations/operation_detail.html', {'operation': operation})

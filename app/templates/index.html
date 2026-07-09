@@ -1,323 +1,209 @@
-{% extends "base.html" %}
-
-{% block title %}Home page | BackupHub{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Dashboard | BackupHub{% endblock %}
 
 {% block content %}
-<!-- KPI Cards Row -->
-<div class="row mb-4">
-    <div class="col-xl-3 col-md-6 mb-3">
-        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid var(--primary-color);">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="text-muted mb-1 text-uppercase small fw-bold">Total Systems</p>
-                        <h3 class="mb-0 fw-bold" style="color: var(--secondary-color);">{{ total_systems }}</h3>
-                    </div>
-                    <div class="icon-box bg-primary bg-opacity-10 rounded-circle p-3">
-                        <i class="bi bi-hdd-stack text-primary" style="font-size: 1.5rem;"></i>
-                    </div>
-                </div>
-                <small class="text-success mt-2 d-block">
-                    <i class="bi bi-arrow-up"></i> {{ new_systems }} new
-                </small>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-xl-3 col-md-6 mb-3">
-        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid var(--success-color);">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="text-muted mb-1 text-uppercase small fw-bold">Total Backups</p>
-                        <h3 class="mb-0 fw-bold" style="color: var(--secondary-color);">{{ total_backups }}</h3>
-                    </div>
-                    <div class="icon-box bg-success bg-opacity-10 rounded-circle p-3">
-                        <i class="bi bi-cloud-check text-success" style="font-size: 1.5rem;"></i>
-                    </div>
-                </div>
-                <small class="text-muted mt-2 d-block">All time</small>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-xl-3 col-md-6 mb-3">
-        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid var(--info-color);">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="text-muted mb-1 text-uppercase small fw-bold">Servers</p>
-                        <h3 class="mb-0 fw-bold" style="color: var(--secondary-color);">{{ total_hosts }}</h3>
-                    </div>
-                    <div class="icon-box bg-info bg-opacity-10 rounded-circle p-3">
-                        <i class="bi bi-server text-info" style="font-size: 1.5rem;"></i>
-                    </div>
-                </div>
-                <small class="text-success mt-2 d-block">
-                    <i class="bi bi-check-circle"></i> Registered
-                </small>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-xl-3 col-md-6 mb-3">
+<!-- Stats Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
-                <h6 class="text-muted text-uppercase small fw-bold mb-3">Backup Status (24h)</h6>
-                
-                <div class="d-flex align-items-center mb-2">
-                    <i class="bi bi-check-circle-fill text-success me-2" style="font-size: 1.2rem;"></i>
-                    <span class="fw-semibold">Success</span>
-                    <span class="ms-auto fw-bold" style="color: var(--success-color);">{{ success_24h }}</span>
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted text-uppercase small mb-1">Total Systems</h6>
+                        <h2 class="fw-bold mb-0">{{ total_systems }}</h2>
+                        <small class="text-success">{{ new_systems }} new (24h)</small>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-3 d-flex align-items-center">
+                        <i class="bi bi-hdd-stack fs-3"></i>
+                    </div>
                 </div>
-                
-                <div class="d-flex align-items-center mb-2">
-                    <i class="bi bi-arrow-repeat text-warning me-2" style="font-size: 1.2rem;"></i>
-                    <span class="fw-semibold">In Progress</span>
-                    <span class="ms-auto fw-bold" style="color: var(--warning-color);">{{ in_progress_24h }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted text-uppercase small mb-1">Total Backups</h6>
+                        <h2 class="fw-bold mb-0">{{ total_backups }}</h2>
+                        <small class="text-muted">All time</small>
+                    </div>
+                    <div class="bg-success bg-opacity-10 text-success rounded-3 p-3 d-flex align-items-center">
+                        <i class="bi bi-clipboard-check fs-3"></i>
+                    </div>
                 </div>
-                
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-x-circle-fill text-danger me-2" style="font-size: 1.2rem;"></i>
-                    <span class="fw-semibold">Errors</span>
-                    <span class="ms-auto fw-bold" style="color: var(--danger-color);">{{ error_24h }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted text-uppercase small mb-1">Servers</h6>
+                        <h2 class="fw-bold mb-0">{{ total_hosts }}</h2>
+                        <small class="text-muted">Registered</small>
+                    </div>
+                    <div class="bg-info bg-opacity-10 text-info rounded-3 p-3 d-flex align-items-center">
+                        <i class="bi bi-server fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="text-muted text-uppercase small mb-3">Backup Status (24h)</h6>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-success"><i class="bi bi-check-circle-fill"></i> Success</span>
+                    <span class="fw-bold">{{ success_24h }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-primary"><i class="bi bi-arrow-repeat"></i> In Progress</span>
+                    <span class="fw-bold">{{ in_progress_24h }}</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-danger"><i class="bi bi-exclamation-triangle-fill"></i> Errors</span>
+                    <span class="fw-bold">{{ error_24h }}</span>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Quick Actions & Recent Activity -->
-<div class="row mb-4">
-    <!-- Quick Actions -->
-    <div class="col-lg-4 mb-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white border-0 pt-4 px-4">
-                <h5 class="mb-0 fw-bold" style="color: var(--secondary-color);">
-                    <i class="bi bi-lightning-charge text-warning me-2"></i>Quick Actions
-                </h5>
-            </div>
-            <div class="card-body px-4 pb-4">
-                <div class="d-grid gap-2">
-                    <a href="{% url 'target_system_create' %}" class="btn btn-outline-primary text-start text-decoration-none">
-                        <i class="bi bi-plus-circle me-2"></i>Add System
-                    </a>
-                    <a href="{% url 'host_create' %}" class="btn btn-outline-primary text-start text-decoration-none">
-                        <i class="bi bi-server me-2"></i>Add Server
-                    </a>
-                    <a href="{% url 'backup_list' %}" class="btn btn-outline-primary text-start text-decoration-none">
-                        <i class="bi bi-list-ul me-2"></i>All Backups
-                    </a>
-                    <a href="{% url 'api' %}" class="btn btn-outline-primary text-start text-decoration-none">
-                        <i class="bi bi-gear me-2"></i>API Settings
-                    </a>
-                </div>
-            </div>
+<!-- Quick Actions -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <h5 class="card-title mb-3"><i class="bi bi-lightning-charge-fill text-warning"></i> Quick Actions</h5>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'target_system_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add System</a>
+            <a href="{% url 'backup_operation_list' %}" class="btn btn-outline-secondary"><i class="bi bi-list-ul"></i> All Backups</a>
         </div>
     </div>
+</div>
 
-    <!-- Recent Backups -->
-    <div class="col-lg-8 mb-3">
+<div class="row g-4">
+    <!-- Recent Operations -->
+    <div class="col-lg-7">
         <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 fw-bold" style="color: var(--secondary-color);">
-                    <i class="bi bi-clock-history text-primary me-2"></i>Recent Operations
-                </h5>
-                <a href="{% url 'backup_list' %}" class="btn btn-sm btn-link">All Operations</a>
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Operations</h5>
+                <a href="{% url 'backup_operation_list' %}" class="btn btn-sm btn-outline-primary">All Operations</a>
             </div>
-            <div class="card-body px-4 pb-4">
-                {% if recent_backups %}
+            <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
+                    <table class="table table-hover mb-0 align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th>System</th>
+                                <th>System / Host</th>
                                 <th>Status</th>
                                 <th>Time</th>
                                 <th>Size</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for backup in recent_backups %}
+                            {% for op in recent_backups %}
                             <tr>
                                 <td>
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-database text-primary me-2"></i>
-                                        <div>
-                                            <a href="{% url 'backup_detail' backup.id %}" class="text-decoration-none fw-semibold">
-                                                {{ backup.target_system.name }}
-                                            </a>
-                                            <br>
-                                            <small class="text-muted">{{ backup.host.hostname }}</small>
-                                        </div>
-                                    </div>
+                                    <a href="{% url 'operation_detail' pk=op.pk %}" class="fw-bold text-decoration-none">
+                                        {{ op.backup_configuration_version.backup_configuration.target_system_version.target_system.name }}
+                                    </a>
+                                    <br><small class="text-muted">{{ op.hostname }}</small>
                                 </td>
                                 <td>
-                                    {% if backup.status == 'success' %}
+                                    {% if op.status == 'success' %}
                                         <span class="badge bg-success">Success</span>
-                                    {% elif backup.status == 'error' %}
+                                    {% elif op.status == 'error' %}
                                         <span class="badge bg-danger">Error</span>
+                                    {% elif op.status == 'in_progress' %}
+                                        <span class="badge bg-primary">In Progress</span>
                                     {% else %}
-                                        <span class="badge bg-warning text-dark">In Progress</span>
+                                        <span class="badge bg-secondary">{{ op.status }}</span>
                                     {% endif %}
                                 </td>
-                                <td class="text-muted">
-                                    {% if backup.start_time %}
-                                        {{ backup.start_time|timesince }} ago
+                                <td>
+                                    {% if op.started_at %}
+                                        {{ op.started_at|timesince }} ago
                                     {% else %}
                                         -
                                     {% endif %}
                                 </td>
                                 <td>
-                                    {% if backup.backup_size %}
-                                        {% if backup.backup_size >= 1073741824 %}
-                                            {{ backup.backup_size|floatformat:1|slice:":-2" }} GB
-                                        {% elif backup.backup_size >= 1048576 %}
-                                            {{ backup.backup_size|floatformat:1|slice:":-2" }} MB
-                                        {% else %}
-                                            {{ backup.backup_size }} B
-                                        {% endif %}
+                                    {% if op.size_human %}
+                                        {{ op.size_human }}
                                     {% else %}
                                         -
                                     {% endif %}
                                 </td>
                             </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">No backup operations registered yet</td>
+                            </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
-                {% else %}
-                <div class="text-center text-muted py-4">
-                    <i class="bi bi-inbox" style="font-size: 2rem;"></i>
-                    <p class="mt-2 mb-0">No backup operations registered yet</p>
-                </div>
-                {% endif %}
             </div>
         </div>
     </div>
-</div>
 
-<!-- Active Systems Table -->
-<div class="row">
-    <div class="col-12">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 fw-bold" style="color: var(--secondary-color);">
-                    <i class="bi bi-activity text-success me-2"></i>Systems
-                </h5>
-                <a href="{% url 'target_system_list' %}" class="btn btn-sm btn-outline-primary">
-                    All Systems
-                </a>
+    <!-- Systems List -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Systems</h5>
+                <a href="{% url 'target_system_list' %}" class="btn btn-sm btn-outline-primary">All Systems</a>
             </div>
-            <div class="card-body px-4 pb-4">
-                {% if systems_data %}
+            <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
+                    <table class="table table-hover mb-0 align-middle">
                         <thead class="table-light">
                             <tr>
                                 <th>Name</th>
-                                <th>Type</th>
-                                <th>Servers</th>
+                                <th>Backups</th>
                                 <th>Last Backup</th>
                                 <th>Status</th>
-                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for item in systems_data %}
                             <tr>
                                 <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
-                                            <i class="bi bi-hdd text-primary"></i>
-                                        </div>
-                                        <div>
-                                            <a href="{% url 'target_system_detail' item.system.id %}" class="text-decoration-none fw-semibold">
-                                                {{ item.system.name }}
-                                            </a>
-                                        </div>
-                                    </div>
+                                    <a href="{% url 'target_system_detail' pk=item.system.pk %}" class="fw-bold text-decoration-none">
+                                        {{ item.system.name }}
+                                    </a>
+                                    <br><small class="text-muted">{{ item.system.system_type.name }}</small>
                                 </td>
-                                <td>{{ item.system.system_type.name }}</td>
-                                <td>{{ item.system.hosts.count }}</td>
+                                <td>{{ item.ops_count }}</td>
                                 <td>
                                     {% if item.last_backup %}
-                                        <div>
-                                            <small>{{ item.last_backup.start_time|date:"d.m.Y H:i" }}</small>
-                                            {% if item.last_backup.backup_size %}
-                                                <br><small class="text-muted">
-                                                    {% if item.last_backup.backup_size >= 1073741824 %}
-                                                        {{ item.last_backup.backup_size|floatformat:1|slice:":-2" }} GB
-                                                    {% elif item.last_backup.backup_size >= 1048576 %}
-                                                        {{ item.last_backup.backup_size|floatformat:1|slice:":-2" }} MB
-                                                    {% else %}
-                                                        {{ item.last_backup.backup_size }} B
-                                                    {% endif %}
-                                                </small>
-                                            {% endif %}
-                                        </div>
+                                        {{ item.last_backup.started_at|date:"d.m.Y H:i" }}
+                                        {% if item.last_backup.size_human %}
+                                            <br><small class="text-muted">{{ item.last_backup.size_human }}</small>
+                                        {% endif %}
                                     {% else %}
                                         <span class="text-muted">—</span>
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <span class="badge bg-{{ item.status_class }}">
-                                        {{ item.status_label }}
-                                    </span>
+                                    <span class="badge bg-success">{{ item.status_label }}</span>
                                 </td>
-                                <td>
-                                    <a href="{% url 'target_system_detail' item.system.id %}" class="btn btn-sm btn-link text-primary" title="View">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    <a href="{% url 'target_system_edit' item.system.id %}" class="btn btn-sm btn-link text-primary" title="Edit">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">
+                                    No systems added yet. <a href="{% url 'target_system_create' %}">Add first system</a>
                                 </td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
-                {% else %}
-                <div class="text-center text-muted py-4">
-                    <i class="bi bi-inbox" style="font-size: 2rem;"></i>
-                    <p class="mt-2 mb-0">No systems added yet. 
-                        <a href="{% url 'target_system_create' %}">Add first system</a>
-                    </p>
-                </div>
-                {% endif %}
             </div>
         </div>
     </div>
 </div>
-
-<style>
-    .card {
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-    }
-    .btn-outline-primary:hover {
-        background-color: var(--primary-color);
-        border-color: var(--primary-color);
-    }
-    .table th {
-        font-weight: 600;
-        color: var(--secondary-color);
-        border-top: none;
-    }
-    .badge {
-        padding: 0.5em 0.8em;
-        font-weight: 500;
-    }
-    .icon-box {
-        min-width: 60px;
-        height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-</style>
 {% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}{{ backup_configuration.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>{{ backup_configuration.name }}</h2>
+    <div>
+        <a href="{% url 'backup_configuration_edit' pk=backup_configuration.pk %}" class="btn btn-primary">Редактировать</a>
+        <form method="post" action="{% url 'backup_configuration_delete' pk=backup_configuration.pk %}" class="d-inline" onsubmit="return confirm('Деактивировать конфигурацию?');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Деактивировать</button>
+        </form>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-5">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white fw-bold">Основная информация</div>
+            <div class="card-body">
+                <p><strong>Целевая система:</strong> {{ backup_configuration.target_system_version.target_system.name }}</p>
+                <p><strong>Версия системы:</strong> v{{ backup_configuration.target_system_version.version_number }}</p>
+                <p><strong>Описание:</strong> {{ backup_configuration.description|default:"-" }}</p>
+                <p><strong>Статус:</strong> 
+                    {% if backup_configuration.is_active %}<span class="badge bg-success">Активна</span>{% else %}<span class="badge bg-secondary">Неактивна</span>{% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white fw-bold">Параметры текущей версии (v{{ current_version.version_number }})</div>
+            <div class="card-body">
+                {% if current_version %}
+                <div class="row g-3">
+                    <div class="col-md-6"><p><strong>Инструмент:</strong> {{ current_version.backup_tool.name }}</p></div>
+                    <div class="col-md-6"><p><strong>Режим:</strong> {{ current_version.get_backup_mode_display }}</p></div>
+                    <div class="col-md-6"><p><strong>Расписание (Cron):</strong> <code>{{ current_version.schedule_cron|default:"-" }}</code></p></div>
+                    <div class="col-md-6"><p><strong>Хранение (дни):</strong> {{ current_version.retention_days }}</p></div>
+                    <div class="col-md-6"><p><strong>RPO (мин):</strong> {{ current_version.rpo_minutes }}</p></div>
+                    <div class="col-md-6"><p><strong>RTO (мин):</strong> {{ current_version.rto_minutes }}</p></div>
+                    <div class="col-md-6"><p><strong>Тип хранилища:</strong> {{ current_version.get_storage_type_display }}</p></div>
+                    <div class="col-md-6"><p><strong>Путь:</strong> <code>{{ current_version.storage_path|default:"-" }}</code></p></div>
+                    <div class="col-md-12">
+                        <p>
+                            <strong>Дополнительно:</strong>
+                            {% if current_version.verify_after_backup %}<span class="badge bg-info text-dark me-1">Проверка</span>{% endif %}
+                            {% if current_version.immutable_storage %}<span class="badge bg-warning text-dark me-1">Неизменяемое хранилище</span>{% endif %}
+                        </p>
+                    </div>
+                </div>
+                <a href="{% url 'backup_configuration_history' pk=backup_configuration.pk %}" class="btn btn-sm btn-outline-info mt-2">Посмотреть историю версий</a>
+                {% else %}
+                    <p class="text-muted">Версии не найдены</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
