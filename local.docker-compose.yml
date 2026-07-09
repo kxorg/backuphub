@@ -39,7 +39,7 @@ services:
       - bh-network
 
   redis:
-    image: valkey/valkey:7.2.5-alpine3.19
+    image: redis:8.8.0-alpine
     container_name: bh_redis
     restart: always
     networks:
