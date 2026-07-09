@@ -1,7 +1,17 @@
 import uuid
 from django.db import models
+from django.utils import timezone
+
+
+# ==========================================
+# LOOKUP TABLES (DICTIONARIES)
+# ==========================================
 
 class SystemType(models.Model):
+    """
+    SYSTEM_TYPE - Lookup table for system types
+    (PostgreSQL, GitLab, Kubernetes, etc.)
+    """
     name = models.CharField(
         max_length=255,
         unique=True,
@@ -43,6 +53,10 @@ class SystemType(models.Model):
 
 
 class Environment(models.Model):
+    """
+    ENVIRONMENT - Lookup table for environments
+    (Production, Test, Development)
+    """
     name = models.CharField(
         max_length=255,
         unique=True,
@@ -84,6 +98,10 @@ class Environment(models.Model):
 
 
 class BackupTool(models.Model):
+    """
+    BACKUP_TOOL - Lookup table for backup tools
+    (pg_dump, Velero, rsync, etc.)
+    """
     name = models.CharField(
         max_length=255,
         unique=True,
@@ -127,7 +145,16 @@ class BackupTool(models.Model):
     def __str__(self):
         return self.name
 
+
+# ==========================================
+# TARGET SYSTEMS AND VERSIONS
+# ==========================================
+
 class TargetSystem(models.Model):
+    """
+    TARGET_SYSTEM - Target system for backup
+    (specific server or service)
+    """
     system_type = models.ForeignKey(
         SystemType,
         on_delete=models.PROTECT,
@@ -138,8 +165,10 @@ class TargetSystem(models.Model):
         Environment,
         on_delete=models.PROTECT,
         related_name='target_systems',
-        verbose_name='Environment'
-    )
+        verbose_name='Environment',
+        null=True,      # ← Добавь
+        blank=True      # ← Добавь
+)
     name = models.CharField(
         max_length=255,
         verbose_name='System name'
@@ -149,19 +178,6 @@ class TargetSystem(models.Model):
         null=True,
         verbose_name='Description'
     )
-    owner = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-        verbose_name='Owner'
-    )
-    administrator = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-        verbose_name='Administrator'
-    )
-    
     api_key = models.UUIDField(
         default=uuid.uuid4,
         editable=False,
@@ -170,7 +186,6 @@ class TargetSystem(models.Model):
         verbose_name='API Key',
         help_text='Automatically generated upon creation.'
     )
-    
     is_active = models.BooleanField(
         default=True,
         verbose_name='Active'
@@ -202,14 +217,19 @@ class TargetSystem(models.Model):
         ordering = ['name']
 
     def __str__(self):
-        return f"{self.name} ({self.system_type.name})"
+        return f"{self.name}"
 
     @property
     def current_version(self):
+        """Returns the current version of the system."""
         return self.versions.filter(is_current=True).first()
 
 
 class TargetSystemVersion(models.Model):
+    """
+    TARGET_SYSTEM_VERSION - Target system version
+    (change history with owner/administrator tracking)
+    """
     target_system = models.ForeignKey(
         TargetSystem,
         on_delete=models.CASCADE,
@@ -263,7 +283,15 @@ class TargetSystemVersion(models.Model):
     def __str__(self):
         return f"{self.target_system.name} v{self.version_number}"
 
+
+# ==========================================
+# BACKUP CONFIGURATIONS AND VERSIONS
+# ==========================================
+
 class BackupConfiguration(models.Model):
+    """
+    BACKUP_CONFIGURATION - Logical group of backup settings
+    """
     target_system_version = models.ForeignKey(
         TargetSystemVersion,
         on_delete=models.PROTECT,
@@ -310,14 +338,19 @@ class BackupConfiguration(models.Model):
         ordering = ['name']
 
     def __str__(self):
-        return f"{self.name} ({self.target_system_version})"
+        return f"{self.name} ({self.target_system_version.target_system.name})"
 
     @property
     def current_version(self):
+        """Returns the current version of the configuration."""
         return self.versions.filter(is_current=True).first()
 
 
 class BackupConfigurationVersion(models.Model):
+    """
+    BACKUP_CONFIGURATION_VERSION - Backup configuration version
+    (specific parameters: tool, mode, RPO/RTO, storage, etc.)
+    """
     BACKUP_MODE_CHOICES = [
         ('full', 'Full'),
         ('incremental', 'Incremental'),
@@ -427,7 +460,14 @@ class BackupConfigurationVersion(models.Model):
         return f"{self.backup_configuration.name} v{self.version_number} ({self.backup_tool.name})"
 
 
+# ==========================================
+# BACKUP OPERATIONS
+# ==========================================
+
 class BackupOperation(models.Model):
+    """
+    BACKUP_OPERATION - Backup execution fact (result)
+    """
     STATUS_CHOICES = [
         ('in_progress', 'In Progress'),
         ('success', 'Success'),
@@ -515,7 +555,7 @@ class BackupOperation(models.Model):
         ordering = ['-started_at']
 
     def __str__(self):
-        return f"Backup {self.id} - {self.status} ({self.hostname})"
+        return f"Operation #{self.id} - {self.status} ({self.hostname})"
 
     @property
     def duration_seconds(self):
@@ -530,7 +570,6 @@ class BackupOperation(models.Model):
         """Human-readable backup size."""
         if self.size_bytes is None:
             return None
-        
         size = self.size_bytes
         for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
             if abs(size) < 1024.0:
