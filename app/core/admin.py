@@ -10,6 +10,14 @@ from .models import (
     BackupConfigurationVersion,
     BackupOperation,
 )
+<<<<<<< HEAD
+=======
+
+>>>>>>> a67310cbd931e2983732da421f7c49ad20bc40e0
+
+# ==========================================
+# LOOKUP TABLES
+# ==========================================
 
 @admin.register(SystemType)
 class SystemTypeAdmin(admin.ModelAdmin):
@@ -33,6 +41,13 @@ class BackupToolAdmin(admin.ModelAdmin):
     ordering = ('name',)
 
 
+<<<<<<< HEAD
+=======
+# ==========================================
+# TARGET SYSTEMS
+# ==========================================
+
+>>>>>>> a67310cbd931e2983732da421f7c49ad20bc40e0
 class TargetSystemVersionInline(admin.TabularInline):
     model = TargetSystemVersion
     extra = 0
@@ -71,6 +86,7 @@ class TargetSystemVersionAdmin(admin.ModelAdmin):
     list_filter = ('is_current', 'target_system')
 
 
+<<<<<<< HEAD
 class BackupConfigurationVersionInline(admin.TabularInline):
     model = BackupConfigurationVersion
     extra = 0
@@ -81,6 +97,22 @@ class BackupConfigurationVersionInline(admin.TabularInline):
     ordering = ('-version_number',)
 
 
+=======
+# ==========================================
+# BACKUP CONFIGURATIONS
+# ==========================================
+
+class BackupConfigurationVersionInline(admin.TabularInline):
+    model = BackupConfigurationVersion
+    extra = 0
+    fields = (
+        'version_number', 'backup_tool', 'backup_mode', 'schedule_cron',
+        'retention_days', 'rpo_minutes', 'rto_minutes', 'is_current'
+    )
+    ordering = ('-version_number',)
+
+
+>>>>>>> a67310cbd931e2983732da421f7c49ad20bc40e0
 @admin.register(BackupConfiguration)
 class BackupConfigurationAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'target_system_version', 'is_active', 'created_at')
@@ -97,6 +129,13 @@ class BackupConfigurationVersionAdmin(admin.ModelAdmin):
     list_filter = ('is_current', 'backup_mode', 'backup_tool')
 
 
+<<<<<<< HEAD
+=======
+# ==========================================
+# BACKUP OPERATIONS
+# ==========================================
+
+>>>>>>> a67310cbd931e2983732da421f7c49ad20bc40e0
 @admin.register(BackupOperation)
 class BackupOperationAdmin(admin.ModelAdmin):
     list_display = (
@@ -145,6 +184,13 @@ class BackupOperationAdmin(admin.ModelAdmin):
     size_display.short_description = 'Size'
 
 
+<<<<<<< HEAD
+=======
+# ==========================================
+# ADMIN SITE CUSTOMIZATION
+# ==========================================
+
+>>>>>>> a67310cbd931e2983732da421f7c49ad20bc40e0
 admin.site.site_header = 'BackupHub Administration'
 admin.site.site_title = 'BackupHub Admin'
 admin.site.index_title = 'Backup Management System'

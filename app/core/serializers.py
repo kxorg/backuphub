@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from rest_framework import serializers
 
 from .models import (
@@ -301,3 +302,5 @@ class BackupOperationUpdateSerializer(serializers.Serializer):
         allow_blank=True,
         help_text='Error message (if status is error)'
     )
+=======
+>>>>>>> a67310cbd931e2983732da421f7c49ad20bc40e0

@@ -1,10 +1,6 @@
-from django.urls import path, include
-from django.contrib.auth import views as auth_views
-from django.contrib.auth import logout
-from django.shortcuts import redirect
-from rest_framework.routers import DefaultRouter
-from . import views
+from django.urls import path
 
+<<<<<<< HEAD
 def logout_view(request):
     logout(request)
     return redirect('login')
@@ -73,3 +69,6 @@ urlpatterns = [
     ), name='login'),
     path('logout/', logout_view, name='logout'),
 ]
+=======
+urlpatterns = []
+>>>>>>> a67310cbd931e2983732da421f7c49ad20bc40e0
