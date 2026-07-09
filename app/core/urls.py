@@ -1,6 +1,5 @@
 from django.urls import path
 
-<<<<<<< HEAD
 def logout_view(request):
     logout(request)
     return redirect('login')
@@ -69,6 +68,3 @@ urlpatterns = [
     ), name='login'),
     path('logout/', logout_view, name='logout'),
 ]
-=======
-urlpatterns = []
->>>>>>> a67310cbd931e2983732da421f7c49ad20bc40e0

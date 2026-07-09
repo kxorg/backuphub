@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from datetime import timedelta
@@ -717,5 +716,3 @@ def operation_detail(request, pk):
     """GET /operations/<pk>/ - Detail of a specific backup operation"""
     operation = get_object_or_404(BackupOperation, pk=pk)
     return render(request, 'operations/operation_detail.html', {'operation': operation})
-=======
->>>>>>> a67310cbd931e2983732da421f7c49ad20bc40e0

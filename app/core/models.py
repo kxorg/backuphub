@@ -2,19 +2,10 @@ import uuid
 from django.db import models
 from django.utils import timezone
 
-<<<<<<< HEAD
 # LOOKUP TABLES (DICTIONARIES)
 
 class SystemType(models.Model):
     
-=======
-
-# ==========================================
-# LOOKUP TABLES (DICTIONARIES)
-# ==========================================
-
-class SystemType(models.Model):
->>>>>>> a67310cbd931e2983732da421f7c49ad20bc40e0
     """
     SYSTEM_TYPE - Lookup table for system types
     (PostgreSQL, GitLab, Kubernetes, etc.)
@@ -153,13 +144,7 @@ class BackupTool(models.Model):
         return self.name
 
 
-<<<<<<< HEAD
 # TARGET SYSTEMS AND VERSIONS
-=======
-# ==========================================
-# TARGET SYSTEMS AND VERSIONS
-# ==========================================
->>>>>>> a67310cbd931e2983732da421f7c49ad20bc40e0
 
 class TargetSystem(models.Model):
     """
@@ -295,13 +280,7 @@ class TargetSystemVersion(models.Model):
         return f"{self.target_system.name} v{self.version_number}"
 
 
-<<<<<<< HEAD
 # BACKUP CONFIGURATIONS AND VERSIONS
-=======
-# ==========================================
-# BACKUP CONFIGURATIONS AND VERSIONS
-# ==========================================
->>>>>>> a67310cbd931e2983732da421f7c49ad20bc40e0
 
 class BackupConfiguration(models.Model):
     """
@@ -475,13 +454,7 @@ class BackupConfigurationVersion(models.Model):
         return f"{self.backup_configuration.name} v{self.version_number} ({self.backup_tool.name})"
 
 
-<<<<<<< HEAD
 # BACKUP OPERATIONS
-=======
-# ==========================================
-# BACKUP OPERATIONS
-# ==========================================
->>>>>>> a67310cbd931e2983732da421f7c49ad20bc40e0
 
 class BackupOperation(models.Model):
     """
