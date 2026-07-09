@@ -11,8 +11,9 @@ from .models import (
     BackupOperation,
 )
 
+
 # ==========================================
-# NEW MODELS (Enterprise structure)
+# LOOKUP TABLES
 # ==========================================
 
 @admin.register(SystemType)
@@ -36,6 +37,10 @@ class BackupToolAdmin(admin.ModelAdmin):
     search_fields = ('name',)
     ordering = ('name',)
 
+
+# ==========================================
+# TARGET SYSTEMS
+# ==========================================
 
 class TargetSystemVersionInline(admin.TabularInline):
     model = TargetSystemVersion
@@ -75,6 +80,10 @@ class TargetSystemVersionAdmin(admin.ModelAdmin):
     list_filter = ('is_current', 'target_system')
 
 
+# ==========================================
+# BACKUP CONFIGURATIONS
+# ==========================================
+
 class BackupConfigurationVersionInline(admin.TabularInline):
     model = BackupConfigurationVersion
     extra = 0
@@ -100,6 +109,10 @@ class BackupConfigurationVersionAdmin(admin.ModelAdmin):
     )
     list_filter = ('is_current', 'backup_mode', 'backup_tool')
 
+
+# ==========================================
+# BACKUP OPERATIONS
+# ==========================================
 
 @admin.register(BackupOperation)
 class BackupOperationAdmin(admin.ModelAdmin):
@@ -148,6 +161,10 @@ class BackupOperationAdmin(admin.ModelAdmin):
         return obj.size_human or "-"
     size_display.short_description = 'Size'
 
+
+# ==========================================
+# ADMIN SITE CUSTOMIZATION
+# ==========================================
 
 admin.site.site_header = 'BackupHub Administration'
 admin.site.site_title = 'BackupHub Admin'
