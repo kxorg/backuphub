@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'core',
     'drf_spectacular',
     'drf_yasg',
+    'api',
 ]
 
 REST_FRAMEWORK = {
