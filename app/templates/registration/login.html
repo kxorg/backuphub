@@ -8,8 +8,10 @@
     <link rel="stylesheet" href="{% static 'style/bootstrap.min.css' %}">
 </head>
 <body class="bg-light d-flex align-items-center justify-content-center vh-100">
+    
+    <div class="card shadow-sm p-4" style="width: 100%; max-width: 400px;">
         
-        {% if form.errors %}
+        {% if form.is_bound and form.errors %}
             <div class="alert alert-danger">Invalid username or password.</div>
         {% endif %}
 
@@ -30,7 +32,6 @@
             <button type="submit" class="btn btn-primary w-100">Login</button>
         </form>
     </div>
-</div>
 
 </body>
 </html>
