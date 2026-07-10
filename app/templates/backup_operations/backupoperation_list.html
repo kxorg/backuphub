@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Backup Operations | BackupHub{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Backup Operations</h2>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="search" class="form-label">Search</label>
+                <input type="text" class="form-control" id="search" name="q" value="{{ search_query }}" placeholder="Hostname, Job ID, Path...">
+            </div>
+            <div class="col-md-2">
+                <label for="status" class="form-label">Status</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">All</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="hostname" class="form-label">Hostname</label>
+                <input type="text" class="form-control" id="hostname" name="hostname" value="{{ hostname_filter }}">
+            </div>
+            <div class="col-md-2">
+                <label for="configuration" class="form-label">Configuration ID</label>
+                <input type="text" class="form-control" id="configuration" name="configuration" value="{{ configuration_filter }}">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if operations %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Hostname</th>
+                        <th>Configuration</th>
+                        <th>Status</th>
+                        <th>Started</th>
+                        <th>Duration</th>
+                        <th>Size</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for operation in operations %}
+                    <tr>
+                        <td>{{ operation.id }}</td>
+                        <td>{{ operation.hostname }}</td>
+                        <td>
+                            <a href="{% url 'backup_configuration_detail' operation.backup_configuration_version.backup_configuration.id %}">
+                                {{ operation.backup_configuration_version.backup_configuration.name }}
+                            </a>
+                            <br>
+                            <small class="text-muted">v{{ operation.backup_configuration_version.version_number }}</small>
+                        </td>
+                        <td>
+                            {% if operation.status == 'success' %}
+                                <span class="badge badge-success">Success</span>
+                            {% elif operation.status == 'error' %}
+                                <span class="badge badge-error">Error</span>
+                            {% elif operation.status == 'in_progress' %}
+                                <span class="badge badge-info">In Progress</span>
+                            {% elif operation.status == 'warning' %}
+                                <span class="badge badge-warning">Warning</span>
+                            {% elif operation.status == 'cancelled' %}
+                                <span class="badge badge-secondary">Cancelled</span>
+                            {% else %}
+                                <span class="badge badge-secondary">{{ operation.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ operation.started_at|date:"d.m.Y H:i" }}</td>
+                        <td>
+                            {% if operation.duration_seconds %}
+                                {{ operation.duration_seconds }}s
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td>{{ operation.size_human|default:"—" }}</td>
+                        <td>
+                            <a href="{% url 'backup_operation_detail' operation.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if is_paginated %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}&status={{ status_filter }}&hostname={{ hostname_filter }}&configuration={{ configuration_filter }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}&q={{ search_query }}&status={{ status_filter }}&hostname={{ hostname_filter }}&configuration={{ configuration_filter }}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ search_query }}&status={{ status_filter }}&hostname={{ hostname_filter }}&configuration={{ configuration_filter }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <p class="text-muted text-center">No backup operations found</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,32 +1,91 @@
-{% extends 'base.html' %}
-{% block title %}Версия {{ version.version_number }} - {{ target_system.name }}{% endblock %}
+{% extends "base.html" %}
+
+{% block title %}Version {{ version.version_number }}: {{ target_system.name }} | BackupHub{% endblock %}
 
 {% block content %}
-<h2 class="mb-4">{{ target_system.name }} — Версия {{ version.version_number }}</h2>
-<a href="{% url 'target_system_history' pk=target_system.pk %}" class="btn btn-outline-secondary mb-3">&larr; Назад к истории</a>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'target_system_list' %}">Target Systems</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'target_system_detail' target_system.id %}">{{ target_system.name }}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'target_system_history' target_system.id %}">History</a></li>
+        <li class="breadcrumb-item active">Version {{ version.version_number }}</li>
+    </ol>
+</nav>
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <div class="row g-3">
-            <div class="col-md-6">
-                <p><strong>Владелец:</strong> {{ version.owner|default:"-" }}</p>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Version {{ version.version_number }}: {{ target_system.name }}</h2>
+    <a href="{% url 'target_system_history' target_system.id %}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Back to History
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Version Information</h5>
             </div>
-            <div class="col-md-6">
-                <p><strong>Администратор:</strong> {{ version.administrator|default:"-" }}</p>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th style="width: 40%;">Version Number:</th>
+                        <td>{{ version.version_number }}</td>
+                    </tr>
+                    <tr>
+                        <th>Owner:</th>
+                        <td>{{ version.owner|default:"—" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Administrator:</th>
+                        <td>{{ version.administrator|default:"—" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Status:</th>
+                        <td>
+                            {% if version.is_current %}
+                                <span class="badge badge-success">Current</span>
+                            {% else %}
+                                <span class="badge badge-secondary">Historical</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
             </div>
-            <div class="col-md-6">
-                <p><strong>Действительна с:</strong> {{ version.valid_from|date:"d.m.Y H:i" }}</p>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Validity Period</h5>
             </div>
-            <div class="col-md-6">
-                <p><strong>Действительна до:</strong> {{ version.valid_to|date:"d.m.Y H:i"|default:"По настоящее время" }}</p>
-            </div>
-            <div class="col-md-6">
-                <p><strong>Создана:</strong> {{ version.created_at|date:"d.m.Y H:i" }}</p>
-            </div>
-            <div class="col-md-6">
-                <p><strong>Создана пользователем:</strong> {{ version.created_by|default:"-" }}</p>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th style="width: 40%;">Valid From:</th>
+                        <td>{{ version.valid_from|date:"d.m.Y H:i" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Valid To:</th>
+                        <td>{{ version.valid_to|date:"d.m.Y H:i"|default:"Current" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Created At:</th>
+                        <td>{{ version.created_at|date:"d.m.Y H:i" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Created By:</th>
+                        <td>{{ version.created_by|default:"System" }}</td>
+                    </tr>
+                </table>
             </div>
         </div>
     </div>
 </div>
+
+{% if is_readonly %}
+<div class="alert alert-info mt-4">
+    <i class="bi bi-info-circle"></i> This is a historical version. Editing is not allowed.
+</div>
+{% endif %}
 {% endblock %}

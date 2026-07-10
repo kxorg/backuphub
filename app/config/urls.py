@@ -55,6 +55,11 @@ urlpatterns = [
         template_name='registration/login.html'
     ), name='login'),
     
+    # Entrance
+    path('login/', auth_views.LoginView.as_view(
+        template_name='registration/login.html'
+    ), name='login'),
+
     # Exit
     path('logout/', logout_view, name='logout'),
 ]

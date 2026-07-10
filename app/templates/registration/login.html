@@ -1,0 +1,37 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | BackupHub</title>
+    <link rel="stylesheet" href="{% static 'style/bootstrap.min.css' %}">
+</head>
+<body class="bg-light d-flex align-items-center justify-content-center vh-100">
+    
+    <div class="card shadow-sm p-4" style="width: 100%; max-width: 400px;">
+        
+        {% if form.is_bound and form.errors %}
+            <div class="alert alert-danger">Invalid username or password.</div>
+        {% endif %}
+
+        <form method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" name="username" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" required>
+            </div>
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="rememberMe">
+                <label class="form-check-label" for="rememberMe">Remember me</label>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Login</button>
+        </form>
+    </div>
+
+</body>
+</html>

@@ -1,57 +1,147 @@
-{% extends 'base.html' %}
-{% block title %}{{ backup_configuration.name }}{% endblock %}
+{% extends "base.html" %}
+
+{% block title %}{{ backup_configuration.name }} | BackupHub{% endblock %}
 
 {% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'backup_configuration_list' %}">Backup Configurations</a></li>
+        <li class="breadcrumb-item active">{{ backup_configuration.name }}</li>
+    </ol>
+</nav>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>{{ backup_configuration.name }}</h2>
     <div>
-        <a href="{% url 'backup_configuration_edit' pk=backup_configuration.pk %}" class="btn btn-primary">Редактировать</a>
-        <form method="post" action="{% url 'backup_configuration_delete' pk=backup_configuration.pk %}" class="d-inline" onsubmit="return confirm('Деактивировать конфигурацию?');">
+        <a href="{% url 'backup_configuration_edit' backup_configuration.id %}" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> Edit
+        </a>
+        <a href="{% url 'backup_configuration_history' backup_configuration.id %}" class="btn btn-info">
+            <i class="bi bi-clock-history"></i> History
+        </a>
+        <form method="post" action="{% url 'backup_configuration_delete' backup_configuration.id %}" class="d-inline">
             {% csrf_token %}
-            <button type="submit" class="btn btn-danger">Деактивировать</button>
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure?')">
+                <i class="bi bi-trash"></i> Deactivate
+            </button>
         </form>
     </div>
 </div>
 
-<div class="row g-4">
-    <div class="col-md-5">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-white fw-bold">Основная информация</div>
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Configuration Information</h5>
+            </div>
             <div class="card-body">
-                <p><strong>Целевая система:</strong> {{ backup_configuration.target_system_version.target_system.name }}</p>
-                <p><strong>Версия системы:</strong> v{{ backup_configuration.target_system_version.version_number }}</p>
-                <p><strong>Описание:</strong> {{ backup_configuration.description|default:"-" }}</p>
-                <p><strong>Статус:</strong> 
-                    {% if backup_configuration.is_active %}<span class="badge bg-success">Активна</span>{% else %}<span class="badge bg-secondary">Неактивна</span>{% endif %}
-                </p>
+                <table class="table table-borderless">
+                    <tr>
+                        <th style="width: 40%;">Name:</th>
+                        <td>{{ backup_configuration.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Target System:</th>
+                        <td>{{ backup_configuration.target_system_version.target_system.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>System Version:</th>
+                        <td>v{{ backup_configuration.target_system_version.version_number }}</td>
+                    </tr>
+                    <tr>
+                        <th>Description:</th>
+                        <td>{{ backup_configuration.description|default:"—" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Status:</th>
+                        <td>
+                            {% if backup_configuration.is_active %}
+                                <span class="badge badge-success">Active</span>
+                            {% else %}
+                                <span class="badge badge-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Created:</th>
+                        <td>{{ backup_configuration.created_at|date:"d.m.Y H:i" }} by {{ backup_configuration.created_by|default:"System" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Updated:</th>
+                        <td>{{ backup_configuration.updated_at|date:"d.m.Y H:i" }} by {{ backup_configuration.updated_by|default:"System" }}</td>
+                    </tr>
+                </table>
             </div>
         </div>
     </div>
-    <div class="col-md-7">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-white fw-bold">Параметры текущей версии (v{{ current_version.version_number }})</div>
+
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Current Version Parameters</h5>
+            </div>
             <div class="card-body">
                 {% if current_version %}
-                <div class="row g-3">
-                    <div class="col-md-6"><p><strong>Инструмент:</strong> {{ current_version.backup_tool.name }}</p></div>
-                    <div class="col-md-6"><p><strong>Режим:</strong> {{ current_version.get_backup_mode_display }}</p></div>
-                    <div class="col-md-6"><p><strong>Расписание (Cron):</strong> <code>{{ current_version.schedule_cron|default:"-" }}</code></p></div>
-                    <div class="col-md-6"><p><strong>Хранение (дни):</strong> {{ current_version.retention_days }}</p></div>
-                    <div class="col-md-6"><p><strong>RPO (мин):</strong> {{ current_version.rpo_minutes }}</p></div>
-                    <div class="col-md-6"><p><strong>RTO (мин):</strong> {{ current_version.rto_minutes }}</p></div>
-                    <div class="col-md-6"><p><strong>Тип хранилища:</strong> {{ current_version.get_storage_type_display }}</p></div>
-                    <div class="col-md-6"><p><strong>Путь:</strong> <code>{{ current_version.storage_path|default:"-" }}</code></p></div>
-                    <div class="col-md-12">
-                        <p>
-                            <strong>Дополнительно:</strong>
-                            {% if current_version.verify_after_backup %}<span class="badge bg-info text-dark me-1">Проверка</span>{% endif %}
-                            {% if current_version.immutable_storage %}<span class="badge bg-warning text-dark me-1">Неизменяемое хранилище</span>{% endif %}
-                        </p>
-                    </div>
-                </div>
-                <a href="{% url 'backup_configuration_history' pk=backup_configuration.pk %}" class="btn btn-sm btn-outline-info mt-2">Посмотреть историю версий</a>
+                <table class="table table-borderless">
+                    <tr>
+                        <th style="width: 40%;">Version:</th>
+                        <td>{{ current_version.version_number }}</td>
+                    </tr>
+                    <tr>
+                        <th>Backup Tool:</th>
+                        <td>{{ current_version.backup_tool.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Backup Mode:</th>
+                        <td>{{ current_version.get_backup_mode_display }}</td>
+                    </tr>
+                    <tr>
+                        <th>Schedule:</th>
+                        <td><code>{{ current_version.schedule_cron|default:"—" }}</code></td>
+                    </tr>
+                    <tr>
+                        <th>Retention:</th>
+                        <td>{{ current_version.retention_days }} days</td>
+                    </tr>
+                    <tr>
+                        <th>RPO:</th>
+                        <td>{{ current_version.rpo_minutes }} minutes</td>
+                    </tr>
+                    <tr>
+                        <th>RTO:</th>
+                        <td>{{ current_version.rto_minutes }} minutes</td>
+                    </tr>
+                    <tr>
+                        <th>Storage Type:</th>
+                        <td>{{ current_version.get_storage_type_display }}</td>
+                    </tr>
+                    <tr>
+                        <th>Storage Path:</th>
+                        <td>{{ current_version.storage_path|default:"—" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Verify After Backup:</th>
+                        <td>
+                            {% if current_version.verify_after_backup %}
+                                <span class="badge badge-success">Yes</span>
+                            {% else %}
+                                <span class="badge badge-secondary">No</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Immutable Storage:</th>
+                        <td>
+                            {% if current_version.immutable_storage %}
+                                <span class="badge badge-success">Yes</span>
+                            {% else %}
+                                <span class="badge badge-secondary">No</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
                 {% else %}
-                    <p class="text-muted">Версии не найдены</p>
+                <p class="text-muted">No version information available</p>
                 {% endif %}
             </div>
         </div>

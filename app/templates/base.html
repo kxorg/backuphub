@@ -5,55 +5,374 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}BackupHub{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <link rel="stylesheet" href="{% static 'style/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
+    <style>
+        :root {
+            --primary-color: #2c5aa0;
+            --secondary-color: #34495e;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --info-color: #3498db;
+            --light-bg: #f8f9fa;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+        }
+        
+        /* Navbar styles */
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%) !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: white !important;
+        }
+        
+        .navbar-brand i {
+            color: #74b9ff;
+        }
+        
+        .nav-link {
+            color: rgba(255,255,255,0.9) !important;
+            font-weight: 500;
+            transition: color 0.3s;
+            padding: 0.5rem 1rem !important;
+            border-radius: 4px;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: #74b9ff !important;
+            background-color: rgba(255,255,255,0.05);
+        }
+        
+        .dropdown-menu {
+            border: none;
+            box-shadow: var(--card-shadow);
+            border-radius: 8px;
+        }
+        
+        .dropdown-item {
+            padding: 0.5rem 1rem;
+            transition: all 0.2s;
+        }
+        
+        .dropdown-item:hover {
+            background-color: #f0f4ff;
+            color: var(--primary-color);
+        }
+        
+        .dropdown-item i {
+            color: var(--primary-color);
+            margin-right: 0.5rem;
+        }
+        
+        /* Content wrapper */
+        .main-content {
+            flex: 1 0 auto;
+            padding: 2rem 0;
+        }
+        
+        .content {
+            padding: 0 1rem;
+        }
+        
+        /* Badges */
+        .badge {
+            font-weight: 500;
+            padding: 0.4em 0.7em;
+            font-size: 0.85em;
+        }
+        
+        .badge-success { 
+            background-color: var(--success-color); 
+            color: white;
+        }
+        .badge-error { 
+            background-color: var(--danger-color); 
+            color: white;
+        }
+        .badge-warning { 
+            background-color: var(--warning-color); 
+            color: white;
+        }
+        .badge-info { 
+            background-color: var(--info-color); 
+            color: white;
+        }
+        .badge-secondary { 
+            background-color: #6c757d; 
+            color: white;
+        }
+        .badge-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid #eef2f7;
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+            border-radius: 10px 10px 0 0 !important;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .card-stat {
+            transition: transform 0.2s;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .card-stat:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .card-stat.border-primary { border-left-color: var(--primary-color) !important; }
+        .card-stat.border-success { border-left-color: var(--success-color) !important; }
+        .card-stat.border-info { border-left-color: var(--info-color) !important; }
+        .card-stat.border-warning { border-left-color: var(--warning-color) !important; }
+        
+        /* Tables */
+        .table {
+            margin-bottom: 0;
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: #f8f9ff;
+        }
+        
+        .table thead th {
+            border-top: none;
+            border-bottom: 2px solid #eef2f7;
+            font-weight: 600;
+            color: var(--secondary-color);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: #1e4178;
+            border-color: #1e4178;
+        }
+        
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        .btn-info {
+            background-color: var(--info-color);
+            border-color: var(--info-color);
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+        
+        /* Breadcrumbs */
+        .breadcrumb {
+            background-color: transparent;
+            padding: 0;
+            margin-bottom: 1.5rem;
+        }
+        
+        .breadcrumb-item a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Alerts */
+        .alert {
+            border: none;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        /* Footer */
+        footer {
+            flex-shrink: 0;
+            margin-top: auto;
+            background-color: var(--secondary-color);
+            color: rgba(255,255,255,0.8);
+        }
+        
+        footer a {
+            color: #74b9ff;
+        }
+        
+        /* Forms */
+        .form-label {
+            font-weight: 500;
+            color: var(--secondary-color);
+            margin-bottom: 0.4rem;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 6px;
+            border: 1px solid #dce4ec;
+            padding: 0.6rem 0.9rem;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(44, 90, 160, 0.15);
+        }
+        
+        /* Page header */
+        h2 {
+            color: var(--secondary-color);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Pagination */
+        .page-link {
+            color: var(--primary-color);
+            border: 1px solid #dee2e6;
+        }
+        
+        .page-item.active .page-link {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
 </head>
-<body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="{% url 'index' %}">
-                <i class="bi bi-shield-lock-fill"></i> BackupHub
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'index' %}">
+                <i class="bi bi-hdd-stack"></i>
+                BackupHub
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler navbar-dark" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
-                    <li class="nav-item"><a class="nav-link" href="{% url 'target_system_list' %}">Системы</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'backup_configuration_list' %}">Конфигурации бэкапов</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'backup_operation_list' %}">Операции</a></li>
-                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'index' %}">
+                            <i class="bi bi-house me-1"></i>Home
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-hdd-network me-1"></i>Systems
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'target_system_list' %}">
+                                <i class="bi bi-server"></i>Target Systems
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'system_type_list' %}">
+                                <i class="bi bi-diagram-3"></i>System Types
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'environment_list' %}">
+                                <i class="bi bi-cloud"></i>Environments
+                            </a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-cloud-arrow-up me-1"></i>Backups
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'backup_configuration_list' %}">
+                                <i class="bi bi-gear"></i>Configurations
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'backup_operation_list' %}">
+                                <i class="bi bi-list-task"></i>Operations
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'backup_tool_list' %}">
+                                <i class="bi bi-tools"></i>Backup Tools
+                            </a></li>
+                        </ul>
+                    </li>
                 </ul>
+                {% if user.is_authenticated %}
                 <ul class="navbar-nav">
-                    {% if user.is_authenticated %}
-                        <li class="nav-item"><span class="nav-link text-light">{{ user.username }}</span></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Выйти</a></li>
-                    {% else %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Войти</a></li>
-                    {% endif %}
-                </ul>
+                    <li class="nav-item">
+                        <span class="nav-link">
+                            <i class="bi bi-person-circle me-1"></i>{{ user.username }}
+                        </span>
+                    </li>
+                {% endif %}
             </div>
         </div>
     </nav>
 
-    <div class="container mb-5">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
-
+    <!-- Main content -->
+    <main class="container-fluid px-4 my-4 flex-grow-1">
         {% block content %}
         {% endblock %}
-    </div>
+    </main>
 
-    <footer class="text-center text-muted py-3 border-top">
-        <small>&copy; 2026 BackupHub • Backup monitoring and accounting system</small>
+        <!-- Footer in a unified website style -->
+    <footer class="text-center py-4 mt-auto" style="background-color: #ffffff; border-top: 2px solid #ecf0f1;">
+        <div class="container-fluid px-4">
+            <p class="mb-0 small" style="color: #7f8c8d; font-weight: 500;">
+                &copy; 2026 <span style="color: var(--primary-color); font-weight: 600;">BackupHub</span> 
+                &bull; Backup monitoring and accounting system
+            </p>
+        </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>
