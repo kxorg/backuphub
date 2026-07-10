@@ -5,17 +5,17 @@ networks:
     external: true
 
 services:
-  app:
+  app: &app
     build:
       context: .
       dockerfile: compose/Dockerfile
     container_name: app_${STAGE}
-    restart: unless-stopped
+    command: /start
+    restart: always
     env_file:
       - ./env
     expose:
       - "8000"
     networks:
       - backuphub_network
-
 
