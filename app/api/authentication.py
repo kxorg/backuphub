@@ -24,3 +24,11 @@ class ApiKeyAuthentication(authentication.BaseAuthentication):
         # Возвращаем (user, auth) — но у нас нет пользователя,
         # поэтому возвращаем саму систему как "пользователя"
         return (None, system)
+    
+    def authenticate_header(self, request):
+        """
+        Возвращает строку, которая будет использована в заголовке WWW-Authenticate
+        при ответе 401 Unauthorized. Без этого метода DRF возвращает 403.
+        """
+        return 'X-API-Key'
+

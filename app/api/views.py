@@ -5,12 +5,10 @@ from rest_framework.permissions import BasePermission, IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-# --- Новые импорты для UI Refresh API и Demo страницы ---
-from django.shortcuts import render
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from datetime import timedelta
-from django.db.models import Q
-# --------------------------------------------------------
 
 from core.models import TargetSystem, BackupOperation
 from .authentication import ApiKeyAuthentication
@@ -24,10 +22,8 @@ class HasValidApiKey(BasePermission):
     """Проверяет, что запрос прошёл аутентификацию по API-ключу."""
     
     def has_permission(self, request, view):
-        # Для POST нужна аутентификация
-        if request.method == 'POST':
+        if request.method in ['POST', 'PATCH']:
             return hasattr(request, 'auth') and request.auth is not None
-        # Для GET/PATCH — разрешаем (или добавь свою логику)
         return True
 
 
@@ -37,7 +33,7 @@ class BackupOperationViewSet(viewsets.GenericViewSet,
                              viewsets.mixins.RetrieveModelMixin):
     """REST API для работы с операциями резервного копирования."""
     queryset = BackupOperation.objects.select_related(
-        'backup_configuration_version__backup_configuration'
+        'backup_configuration_version__backup_configuration__target_system_version__target_system'
     ).all()
     http_method_names = ['get', 'post', 'patch', 'head', 'options']
     
@@ -72,6 +68,15 @@ class BackupOperationViewSet(viewsets.GenericViewSet,
             )
 
         return qs.order_by('-started_at')
+
+    def _get_operation_system(self, operation):
+        """Получает TargetSystem из BackupOperation через цепочку связей."""
+        return (
+            operation.backup_configuration_version
+            .backup_configuration
+            .target_system_version
+            .target_system
+        )
 
     # ==================== POST ====================
     @swagger_auto_schema(
@@ -121,13 +126,27 @@ class BackupOperationViewSet(viewsets.GenericViewSet,
         operation_summary='Update backup operation',
         operation_description=(
             'Updates status and metadata of a backup operation. '
+            'Requires X-API-Key header. The API key must belong to the same target system '
+            'that the operation is associated with. '
             'Allowed transitions: RUNNING → SUCCESS, RUNNING → FAILED. '
             'Completed operations cannot be modified.'
         ),
+        manual_parameters=[
+            openapi.Parameter(
+                'X-API-Key',
+                openapi.IN_HEADER,
+                description='API key of the target system (must match the operation\'s system)',
+                type=openapi.TYPE_STRING,
+                format='uuid',
+                required=True,
+            ),
+        ],
         request_body=BackupOperationUpdateSerializer,
         responses={
             200: BackupOperationReadSerializer,
-            400: 'Validation error',
+            400: 'Validation error (invalid transition or completed operation)',
+            401: 'Invalid or missing API key',
+            403: 'API key does not match the operation\'s target system',
             404: 'Operation not found',
         },
         tags=['Backup Operations'],
@@ -135,6 +154,20 @@ class BackupOperationViewSet(viewsets.GenericViewSet,
     def partial_update(self, request, *args, **kwargs):
         """PATCH /api/backup-operations/{id}/"""
         instance = self.get_object()
+        
+        # 🔐 Получаем систему из API-ключа (установлено в ApiKeyAuthentication)
+        target_system = request.auth
+        
+        # 🔐 Получаем систему, к которой привязана операция
+        operation_system = self._get_operation_system(instance)
+        
+        # 🔐 Проверяем, что API-ключ соответствует системе операции
+        if target_system != operation_system:
+            return Response(
+                {'error': 'API key does not match the operation\'s target system.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         updated = serializer.save()
@@ -176,16 +209,16 @@ class BackupOperationViewSet(viewsets.GenericViewSet,
         return super().retrieve(request, *args, **kwargs)
 
 # ==========================================
-# UI REFRESH API (Для веб-интерфейса)
+# UI REFRESH API 
 # ==========================================
 
-@api_view(['GET'])
-# @permission_classes([IsAuthenticated]) # Защищено сессией Django, а не API-ключом
+@login_required
 def api_ui_refresh_dashboard(request):
-    """API для живого обновления Дашборда"""
+    """API для живого обновления дашборда"""
     now = timezone.now()
     last_24h = now - timedelta(hours=24)
     
+    # Статистика
     data = {
         'total_systems': TargetSystem.objects.filter(is_active=True).count(),
         'new_systems': TargetSystem.objects.filter(created_at__gte=last_24h).count(),
@@ -196,6 +229,7 @@ def api_ui_refresh_dashboard(request):
         'error_24h': BackupOperation.objects.filter(started_at__gte=last_24h, status='error').count(),
     }
     
+    # Последние операции
     recent_backups = BackupOperation.objects.select_related(
         'backup_configuration_version__backup_configuration__target_system_version__target_system'
     ).order_by('-started_at')[:10]
@@ -210,56 +244,9 @@ def api_ui_refresh_dashboard(request):
             'status': op.status,
             'started_at': op.started_at.strftime('%d.%m.%Y %H:%M') if op.started_at else '-',
             'size_human': op.size_human or '-',
+            'detail_url': f"/backup-operations/{op.id}/"
         })
         
     data['recent_operations'] = ops_data
-    return Response(data)
-
-
-@api_view(['GET'])
-# @permission_classes([IsAuthenticated])
-def api_ui_refresh_operations(request):
-    """API для живого обновления Списка операций"""
-    queryset = BackupOperation.objects.select_related(
-        'backup_configuration_version__backup_configuration__target_system_version__target_system',
-    ).order_by('-started_at')
     
-    # Поддержка фильтров, если они переданы в URL
-    search_query = request.GET.get('q', '').strip()
-    if search_query:
-        queryset = queryset.filter(
-            Q(hostname__icontains=search_query) |
-            Q(external_job_id__icontains=search_query) |
-            Q(storage_path__icontains=search_query)
-        )
-    
-    status_filter = request.GET.get('status', '').strip()
-    if status_filter:
-        queryset = queryset.filter(status=status_filter)
-        
-    ops_data = []
-    for op in queryset[:50]: 
-        sys_name = op.backup_configuration_version.backup_configuration.target_system_version.target_system.name
-        ops_data.append({
-            'id': op.id,
-            'system_name': sys_name,
-            'hostname': op.hostname,
-            'status': op.status,
-            'started_at': op.started_at.strftime('%d.%m.%Y %H:%M') if op.started_at else '-',
-            'size_human': op.size_human or '-',
-        })
-        
-    return Response({'operations': ops_data})
-
-
-# ==========================================
-# ДЕМО-СТРАНИЦА (Для показа руководителю)
-# ==========================================
-
-def demo_dashboard(request):
-    """
-    Изолированная демо-страница внутри /api/.
-    Нужна только для того, чтобы показать руководителю работу AJAX 
-    без вмешательства в шаблоны /core/, которые сейчас переделывает фронтендер.
-    """
-    return render(request, 'demo_dashboard.html')
+    return JsonResponse(data)
