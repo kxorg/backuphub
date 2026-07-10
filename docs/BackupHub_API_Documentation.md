@@ -408,42 +408,6 @@ curl -X GET "http://localhost:8000/api/backup-operations/?status=SUCCESS"
 curl -X GET http://localhost:8000/api/backup-operations/105/
 ```
 
-### Python (requests)
-
-```python
-import requests
-
-API_URL = "http://localhost:8000/api/backup-operations/"
-API_KEY = "54d2e7b7-c231-4cfa-aabb-0ed9996614f7"
-HEADERS = {
-    "Content-Type": "application/json",
-    "X-API-Key": API_KEY
-}
-
-# 1. Создать операцию
-response = requests.post(API_URL, headers=HEADERS, json={
-    "externalJobId": "JOB-001",
-    "hostname": "db-server-01",
-    "startedAt": "2026-07-10T10:00:00Z"
-})
-operation_id = response.json()["id"]
-
-# 2. Обновить статус
-response = requests.patch(
-    f"{API_URL}{operation_id}/",
-    headers=HEADERS,
-    json={
-        "status": "SUCCESS",
-        "finishedAt": "2026-07-10T10:30:00Z",
-        "sizeBytes": 5368709120
-    }
-)
-
-# 3. Получить список
-response = requests.get(f"{API_URL}?status=SUCCESS")
-operations = response.json()
-```
-
 ---
 
 ## 🧪 Тестирование
