@@ -11,4 +11,6 @@ router.register(
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('ui-refresh/dashboard/', views.api_ui_refresh_dashboard, name='api_ui_refresh_dashboard'),
+    
 ]

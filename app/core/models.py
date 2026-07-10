@@ -252,6 +252,7 @@ class TargetSystemVersion(models.Model):
         verbose_name='Is current'
     )
     valid_from = models.DateTimeField(
+        default=timezone.now,
         verbose_name='Valid from'
     )
     valid_to = models.DateTimeField(
@@ -426,6 +427,7 @@ class BackupConfigurationVersion(models.Model):
         verbose_name='Is current'
     )
     valid_from = models.DateTimeField(
+        default=timezone.now,
         verbose_name='Valid from'
     )
     valid_to = models.DateTimeField(

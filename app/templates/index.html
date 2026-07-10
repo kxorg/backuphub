@@ -8,8 +8,8 @@
         <div class="card card-stat border-primary">
             <div class="card-body">
                 <h6 class="card-title text-muted">Total Systems</h6>
-                <h2 class="mb-0">{{ total_systems }}</h2>
-                <small class="text-success"><i class="bi bi-plus-circle me-1"></i>{{ new_systems }} new</small>
+                <h2 class="mb-0" id="stat-total-systems">{{ total_systems }}</h2>
+                <small class="text-success" id="stat-new-systems"><i class="bi bi-plus-circle me-1"></i>{{ new_systems }} new</small>
             </div>
         </div>
     </div>
@@ -17,7 +17,7 @@
         <div class="card card-stat border-success">
             <div class="card-body">
                 <h6 class="card-title text-muted">Total Backups</h6>
-                <h2 class="mb-0">{{ total_backups }}</h2>
+                <h2 class="mb-0" id="stat-total-backups">{{ total_backups }}</h2>
                 <small class="text-muted"><i class="bi bi-clock me-1"></i>All time</small>
             </div>
         </div>
@@ -26,7 +26,7 @@
         <div class="card card-stat border-info">
             <div class="card-body">
                 <h6 class="card-title text-muted">Servers</h6>
-                <h2 class="mb-0">{{ total_hosts }}</h2>
+                <h2 class="mb-0" id="stat-total-hosts">{{ total_hosts }}</h2>
                 <small class="text-muted"><i class="bi bi-hdd-network me-1"></i>Registered</small>
             </div>
         </div>
@@ -37,13 +37,13 @@
                 <h6 class="card-title text-muted">Backup Status (24h)</h6>
                 <div class="d-flex flex-column gap-1">
                     <div>
-                        <span class="badge badge-success me-2">Success: {{ success_24h }}</span>
+                        <span class="badge badge-success me-2" id="stat-success-24h">Success: {{ success_24h }}</span>
                     </div>
                     <div>
-                        <span class="badge badge-info me-2">In Progress: {{ in_progress_24h }}</span>
+                        <span class="badge badge-info me-2" id="stat-in-progress-24h">In Progress: {{ in_progress_24h }}</span>
                     </div>
                     <div>
-                        <span class="badge badge-error">Errors: {{ error_24h }}</span>
+                        <span class="badge badge-error" id="stat-error-24h">Errors: {{ error_24h }}</span>
                     </div>
                 </div>
             </div>
@@ -95,7 +95,7 @@
                                 <th>Size</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="recent-operations-body">
                             {% for backup in recent_backups %}
                             <tr>
                                 <td>
@@ -273,4 +273,101 @@
         </div>
     </div>
 </div>
+
+<!-- Live Update Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Функция обновления текста с подсветкой изменения
+    function updateStat(elementId, newValue) {
+        const el = document.getElementById(elementId);
+        if (el && el.textContent.trim() !== String(newValue).trim()) {
+            el.textContent = newValue;
+            el.style.transition = 'background-color 0.5s';
+            el.style.backgroundColor = '#fff3cd';
+            setTimeout(() => { el.style.backgroundColor = ''; }, 1500);
+        }
+    }
+
+    // Функция перерисовки таблицы Recent Operations
+    function updateOperationsTable(operations) {
+        const tbody = document.getElementById('recent-operations-body');
+        if (!tbody) return;
+
+        let html = '';
+        if (operations.length === 0) {
+            // Если операций нет, показываем заглушку (сохраняем стиль оригинала)
+            html = `
+                <tr>
+                    <td colspan="6" class="text-center py-4">
+                        <i class="bi bi-inbox display-4 text-muted"></i>
+                        <p class="text-muted mt-2 mb-0">No backup operations registered yet</p>
+                    </td>
+                </tr>`;
+        } else {
+            operations.forEach(op => {
+                // Маппинг статусов на бейджи (копия логики из Django шаблона)
+                let statusBadge = '';
+                if (op.status === 'success') {
+                    statusBadge = '<span class="badge badge-success"><i class="bi bi-check-circle me-1"></i>Success</span>';
+                } else if (op.status === 'error') {
+                    statusBadge = '<span class="badge badge-error"><i class="bi bi-x-circle me-1"></i>Error</span>';
+                } else if (op.status === 'in_progress') {
+                    statusBadge = '<span class="badge badge-info"><i class="bi bi-arrow-repeat me-1"></i>In Progress</span>';
+                } else if (op.status === 'warning') {
+                    statusBadge = '<span class="badge badge-warning"><i class="bi bi-exclamation-triangle me-1"></i>Warning</span>';
+                } else if (op.status === 'cancelled') {
+                    statusBadge = '<span class="badge badge-secondary"><i class="bi bi-slash-circle me-1"></i>Cancelled</span>';
+                } else {
+                    statusBadge = `<span class="badge badge-secondary">${op.status}</span>`;
+                }
+
+                const timeDisplay = op.started_at ? `<i class="bi bi-clock me-1"></i>${op.started_at} ago` : '<span class="text-muted">—</span>';
+                const sizeDisplay = op.size_human ? `<i class="bi bi-database me-1"></i>${op.size_human}` : '<span class="text-muted">—</span>';
+
+                html += `
+                    <tr>
+                        <td>
+                            <a href="${op.detail_url}" class="text-decoration-none">
+                                <i class="bi bi-server me-1"></i>${op.system_name}
+                            </a>
+                        </td>
+                        <td><span class="text-muted">${op.hostname}</span></td>
+                        <td>${statusBadge}</td>
+                        <td>${timeDisplay}</td>
+                        <td><span class="text-muted">—</span></td>
+                        <td>${sizeDisplay}</td>
+                    </tr>`;
+            });
+        }
+
+        // Обновляем DOM только если содержимое реально изменилось
+        if (tbody.innerHTML.trim() !== html.trim()) {
+            tbody.innerHTML = html;
+        }
+    }
+
+    // Запуск polling каждые 5 секунд
+    setInterval(() => {
+        fetch('/api/ui-refresh/dashboard/')
+            .then(response => {
+                if (!response.ok) throw new Error('Network error');
+                return response.json();
+            })
+            .then(data => {
+                // Обновляем статистику
+                updateStat('stat-total-systems', data.total_systems);
+                updateStat('stat-new-systems', `${data.new_systems} new`);
+                updateStat('stat-total-backups', data.total_backups);
+                updateStat('stat-total-hosts', data.total_hosts);
+                updateStat('stat-success-24h', `Success: ${data.success_24h}`);
+                updateStat('stat-in-progress-24h', `In Progress: ${data.in_progress_24h}`);
+                updateStat('stat-error-24h', `Errors: ${data.error_24h}`);
+
+                // Обновляем таблицу последних операций
+                updateOperationsTable(data.recent_operations);
+            })
+            .catch(error => console.error('Dashboard live update error:', error));
+    }, 5000);
+});
+</script>
 {% endblock %}
