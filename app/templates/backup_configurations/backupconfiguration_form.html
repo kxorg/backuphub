@@ -1,58 +1,134 @@
-{% extends 'base.html' %}
-{% block title %}{{ title }}{% endblock %}
+{% extends "base.html" %}
+
+{% block title %}{{ title }} | BackupHub{% endblock %}
 
 {% block content %}
-<h2 class="mb-4">{{ title }}</h2>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'backup_configuration_list' %}">Backup Configurations</a></li>
+        <li class="breadcrumb-item active">{{ title }}</li>
+    </ol>
+</nav>
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <form method="post">
-            {% csrf_token %}
-            
-            {% if form.non_field_errors %}
-                <div class="alert alert-danger">{{ form.non_field_errors }}</div>
-            {% endif %}
-
-            <h5 class="text-muted mb-3">Основные параметры</h5>
-            <div class="row g-3 mb-4">
-                {% for field in form %}
-                    {% if field.name in "target_system_version,name,description,is_active" %}
-                    <div class="col-md-6">
-                        <label for="{{ field.id_for_label }}" class="form-label fw-bold">{{ field.label }}</label>
-                        {% if field.field.widget.input_type == 'checkbox' %}
-                            <div class="form-check mt-2">{{ field }} <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label></div>
-                        {% else %}
-                            {{ field }}
-                        {% endif %}
-                        {% if field.help_text %}<small class="text-muted">{{ field.help_text }}</small>{% endif %}
-                        {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">{{ title }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <strong>Please correct the errors below:</strong>
+                        <ul class="mb-0">
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                <li>{{ field.label }}: {{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                        </ul>
                     </div>
                     {% endif %}
-                {% endfor %}
-            </div>
 
-            <h5 class="text-muted mb-3">Параметры резервного копирования (Версионируемые)</h5>
-            <div class="row g-3">
-                {% for field in form %}
-                    {% if field.name not in "target_system_version,name,description,is_active" %}
-                    <div class="col-md-6">
-                        <label for="{{ field.id_for_label }}" class="form-label fw-bold">{{ field.label }}</label>
-                        {% if field.field.widget.input_type == 'checkbox' %}
-                            <div class="form-check mt-2">{{ field }} <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label></div>
-                        {% else %}
-                            {{ field }}
-                        {% endif %}
-                        {% if field.help_text %}<small class="text-muted">{{ field.help_text }}</small>{% endif %}
-                        {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    <h5>General Information</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.target_system_version.id_for_label }}" class="form-label">Target System Version *</label>
+                            {{ form.target_system_version }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">Name *</label>
+                            {{ form.name }}
+                        </div>
                     </div>
-                    {% endif %}
-                {% endfor %}
-            </div>
 
-            <hr>
-            <button type="submit" class="btn btn-primary">Сохранить</button>
-            <a href="{% url 'backup_configuration_list' %}" class="btn btn-secondary">Отмена</a>
-        </form>
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                        {{ form.description }}
+                    </div>
+
+                    <hr>
+                    <h5>Backup Parameters</h5>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.backup_tool.id_for_label }}" class="form-label">Backup Tool *</label>
+                            {{ form.backup_tool }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.backup_mode.id_for_label }}" class="form-label">Backup Mode *</label>
+                            {{ form.backup_mode }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.schedule_cron.id_for_label }}" class="form-label">Schedule (cron)</label>
+                            {{ form.schedule_cron }}
+                            <div class="form-text">{{ form.schedule_cron.help_text }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.retention_days.id_for_label }}" class="form-label">Retention Period (days) *</label>
+                            {{ form.retention_days }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.rpo_minutes.id_for_label }}" class="form-label">RPO (minutes) *</label>
+                            {{ form.rpo_minutes }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.rto_minutes.id_for_label }}" class="form-label">RTO (minutes) *</label>
+                            {{ form.rto_minutes }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.storage_type.id_for_label }}" class="form-label">Storage Type *</label>
+                            {{ form.storage_type }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.storage_path.id_for_label }}" class="form-label">Storage Path</label>
+                            {{ form.storage_path }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                {{ form.verify_after_backup }}
+                                <label class="form-check-label" for="{{ form.verify_after_backup.id_for_label }}">
+                                    Verify After Backup
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                {{ form.immutable_storage }}
+                                <label class="form-check-label" for="{{ form.immutable_storage.id_for_label }}">
+                                    Immutable Storage
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        {{ form.is_active }}
+                        <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Active</label>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'backup_configuration_list' %}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

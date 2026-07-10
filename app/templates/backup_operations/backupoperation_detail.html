@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Operation #{{ operation.id }} | BackupHub{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'backup_operation_list' %}">Backup Operations</a></li>
+        <li class="breadcrumb-item active">Operation #{{ operation.id }}</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Backup Operation #{{ operation.id }}</h2>
+    <a href="{% url 'backup_operation_list' %}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Back to List
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Operation Details</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th style="width: 40%;">Status:</th>
+                        <td>
+                            {% if operation.status == 'success' %}
+                                <span class="badge badge-success">Success</span>
+                            {% elif operation.status == 'error' %}
+                                <span class="badge badge-error">Error</span>
+                            {% elif operation.status == 'in_progress' %}
+                                <span class="badge badge-info">In Progress</span>
+                            {% elif operation.status == 'warning' %}
+                                <span class="badge badge-warning">Warning</span>
+                            {% elif operation.status == 'cancelled' %}
+                                <span class="badge badge-secondary">Cancelled</span>
+                            {% else %}
+                                <span class="badge badge-secondary">{{ operation.status }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Hostname:</th>
+                        <td>{{ operation.hostname }}</td>
+                    </tr>
+                    <tr>
+                        <th>IP Address:</th>
+                        <td>{{ operation.ip_address|default:"—" }}</td>
+                    </tr>
+                    <tr>
+                        <th>External Job ID:</th>
+                        <td><code>{{ operation.external_job_id|default:"—" }}</code></td>
+                    </tr>
+                    <tr>
+                        <th>Configuration:</th>
+                        <td>
+                            <a href="{% url 'backup_configuration_detail' operation.backup_configuration_version.backup_configuration.id %}">
+                                {{ operation.backup_configuration_version.backup_configuration.name }}
+                            </a>
+                            (v{{ operation.backup_configuration_version.version_number }})
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Timing & Size</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th style="width: 40%;">Started:</th>
+                        <td>{{ operation.started_at|date:"d.m.Y H:i:s" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Finished:</th>
+                        <td>{{ operation.finished_at|date:"d.m.Y H:i:s"|default:"—" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Duration:</th>
+                        <td>
+                            {% if duration_seconds %}
+                                {{ duration_seconds }} seconds
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Size:</th>
+                        <td>{{ size_human|default:"—" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Storage Type:</th>
+                        <td>{{ operation.storage_type|default:"—" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Storage Path:</th>
+                        <td>{{ operation.storage_path|default:"—" }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if operation.error_message %}
+<div class="card border-danger">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">Error Message</h5>
+    </div>
+    <div class="card-body">
+        <pre class="mb-0">{{ operation.error_message }}</pre>
+    </div>
+</div>
+{% endif %}
+
+{% if operation.metadata %}
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0">Metadata</h5>
+    </div>
+    <div class="card-body">
+        <pre class="mb-0">{{ operation.metadata|pprint }}</pre>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

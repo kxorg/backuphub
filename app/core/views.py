@@ -526,6 +526,7 @@ class BackupOperationDetailView(DetailView):
         context['size_human'] = self.object.size_human
         return context
     
+# System Types
 
 class SystemTypeListView(ListView):
     model = SystemType
@@ -567,6 +568,7 @@ class SystemTypeDeleteView(DeleteView):
         messages.success(self.request, 'System Type deleted successfully.')
         return super().form_valid(form)
 
+# Environments
 
 class EnvironmentListView(ListView):
     model = Environment
@@ -608,7 +610,7 @@ class EnvironmentDeleteView(DeleteView):
         messages.success(self.request, 'Environment deleted successfully.')
         return super().form_valid(form)
 
-
+# Backup Tools
 
 class BackupToolListView(ListView):
     model = BackupTool
@@ -649,7 +651,7 @@ class BackupToolDeleteView(DeleteView):
     def form_valid(self, form):
         messages.success(self.request, 'Backup Tool deleted successfully.')
         return super().form_valid(form)
-    
+
 def index(request):
     """GET / - Dashboard / Home page"""
     now = timezone.now()
