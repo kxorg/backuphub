@@ -1,3 +1,5 @@
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from datetime import timedelta
@@ -5,13 +7,12 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.contrib import messages
 from django.utils import timezone
 from django.db import transaction
-from django.views.generic import ListView, DetailView
 from django.db.models import Q
 from .models import TargetSystem, TargetSystemVersion, BackupConfiguration, BackupConfigurationVersion, BackupOperation, SystemType, Environment, BackupTool
 from .forms import TargetSystemForm, BackupConfigurationForm, SystemTypeForm, EnvironmentForm, BackupToolForm
 from django.shortcuts import render
 
-class TargetSystemListView(ListView):
+class TargetSystemListView(LoginRequiredMixin, ListView):
     """GET /target-systems/"""
     model = TargetSystem
     template_name = 'target_systems/targetsystem_list.html'
@@ -30,7 +31,7 @@ class TargetSystemListView(ListView):
         return context
 
 
-class TargetSystemDetailView(DetailView):
+class TargetSystemDetailView(LoginRequiredMixin, DetailView):
     """GET /target-systems/<pk>/"""
     model = TargetSystem
     template_name = 'target_systems/targetsystem_detail.html'
@@ -42,11 +43,8 @@ class TargetSystemDetailView(DetailView):
         return context
 
 
-class TargetSystemCreateView(CreateView):
-    """
-    GET /target-systems/create/
-    POST /target-systems/create/
-    """
+class TargetSystemCreateView(LoginRequiredMixin, CreateView):
+    """GET /target-systems/create/"""
     model = TargetSystem
     form_class = TargetSystemForm
     template_name = 'target_systems/targetsystem_form.html'
@@ -55,10 +53,9 @@ class TargetSystemCreateView(CreateView):
     @transaction.atomic
     def form_valid(self, form):
         self.object = form.save(commit=False)
-        self.object.created_by = self.request.user.username if self.request.user.is_authenticated else 'System'
+        self.object.created_by = self.request.user.username
         self.object.save()
 
-        # Создаем первую версию
         TargetSystemVersion.objects.create(
             target_system=self.object,
             version_number=1,
@@ -66,7 +63,7 @@ class TargetSystemCreateView(CreateView):
             administrator=form.cleaned_data.get('administrator'),
             is_current=True,
             valid_from=timezone.now(),
-            created_by=self.request.user.username if self.request.user.is_authenticated else 'System',
+            created_by=self.request.user.username,
         )
 
         messages.success(self.request, f'Target System "{self.object.name}" created successfully.')
@@ -79,11 +76,8 @@ class TargetSystemCreateView(CreateView):
         return context
 
 
-class TargetSystemUpdateView(UpdateView):
-    """
-    GET /target-systems/<pk>/edit/
-    POST /target-systems/<pk>/edit/
-    """
+class TargetSystemUpdateView(LoginRequiredMixin, UpdateView):
+    """GET /target-systems/<pk>/edit/"""
     model = TargetSystem
     form_class = TargetSystemForm
     template_name = 'target_systems/targetsystem_form.html'
@@ -100,7 +94,7 @@ class TargetSystemUpdateView(UpdateView):
                 versioned_fields_changed = True
 
         self.object = form.save(commit=False)
-        self.object.updated_by = self.request.user.username if self.request.user.is_authenticated else 'System'
+        self.object.updated_by = self.request.user.username
         self.object.save()
 
         if versioned_fields_changed:
@@ -115,7 +109,7 @@ class TargetSystemUpdateView(UpdateView):
                 administrator=form.cleaned_data.get('administrator'),
                 is_current=True,
                 valid_from=timezone.now(),
-                created_by=self.request.user.username if self.request.user.is_authenticated else 'System',
+                created_by=self.request.user.username,
             )
             messages.success(self.request, f'Updated. New version created.')
         else:
@@ -131,7 +125,7 @@ class TargetSystemUpdateView(UpdateView):
         return context
 
 
-class TargetSystemDeleteView(DeleteView):
+class TargetSystemDeleteView(LoginRequiredMixin, DeleteView):
     """POST /target-systems/<pk>/delete/"""
     model = TargetSystem
     success_url = reverse_lazy('target_systems:target_system_list')
@@ -139,7 +133,7 @@ class TargetSystemDeleteView(DeleteView):
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         self.object.is_active = False
-        self.object.updated_by = request.user.username if request.user.is_authenticated else 'System'
+        self.object.updated_by = request.user.username
         self.object.save()
         messages.success(request, f'Target System deactivated.')
         return redirect(self.success_url)
@@ -148,7 +142,7 @@ class TargetSystemDeleteView(DeleteView):
         return redirect('target_systems:target_system_list')
 
 
-class TargetSystemHistoryView(DetailView):
+class TargetSystemHistoryView(LoginRequiredMixin, DetailView):
     """GET /target-systems/<pk>/history/"""
     model = TargetSystem
     template_name = 'target_systems/targetsystem_history.html'
@@ -162,15 +156,14 @@ class TargetSystemHistoryView(DetailView):
         return context
 
 
-class TargetSystemVersionDetailView(DetailView):
+class TargetSystemVersionDetailView(LoginRequiredMixin, DetailView):
     """GET /target-systems/<pk>/history/<version_pk>/"""
     model = TargetSystemVersion
     template_name = 'target_systems/targetsystem_version_detail.html'
     context_object_name = 'version'
-    pk_url_kwarg = 'version_pk'  # <-- Указываем, что primary key в URL называется 'version_pk'
+    pk_url_kwarg = 'version_pk'
 
     def get_queryset(self):
-        # Разрешаем доставать только ту версию, которая принадлежит системе из URL
         return TargetSystemVersion.objects.filter(
             target_system_id=self.kwargs['pk']
         )
@@ -182,7 +175,7 @@ class TargetSystemVersionDetailView(DetailView):
         return context
 
 
-class BackupConfigurationListView(ListView):
+class BackupConfigurationListView(LoginRequiredMixin, ListView):
     """GET /backup-configuration/"""
     model = BackupConfiguration
     template_name = 'backup_configurations/backupconfiguration_list.html'
@@ -202,7 +195,7 @@ class BackupConfigurationListView(ListView):
         return context
 
 
-class BackupConfigurationDetailView(DetailView):
+class BackupConfigurationDetailView(LoginRequiredMixin, DetailView):
     """GET /backup-configuration/<pk>/"""
     model = BackupConfiguration
     template_name = 'backup_configurations/backupconfiguration_detail.html'
@@ -214,11 +207,8 @@ class BackupConfigurationDetailView(DetailView):
         return context
 
 
-class BackupConfigurationCreateView(CreateView):
-    """
-    GET /backup-configuration/create/
-    POST /backup-configuration/create/
-    """
+class BackupConfigurationCreateView(LoginRequiredMixin, CreateView):
+    """GET /backup-configuration/create/"""
     model = BackupConfiguration
     form_class = BackupConfigurationForm
     template_name = 'backup_configurations/backupconfiguration_form.html'
@@ -226,12 +216,10 @@ class BackupConfigurationCreateView(CreateView):
 
     @transaction.atomic
     def form_valid(self, form):
-        # Создаем BackupConfiguration
         self.object = form.save(commit=False)
-        self.object.created_by = self.request.user.username if self.request.user.is_authenticated else 'System'
+        self.object.created_by = self.request.user.username
         self.object.save()
 
-        # Создаем первую версию
         BackupConfigurationVersion.objects.create(
             backup_configuration=self.object,
             version_number=1,
@@ -247,7 +235,7 @@ class BackupConfigurationCreateView(CreateView):
             immutable_storage=form.cleaned_data.get('immutable_storage'),
             is_current=True,
             valid_from=timezone.now(),
-            created_by=self.request.user.username if self.request.user.is_authenticated else 'System',
+            created_by=self.request.user.username,
         )
 
         messages.success(self.request, f'Backup Configuration "{self.object.name}" created successfully.')
@@ -260,11 +248,8 @@ class BackupConfigurationCreateView(CreateView):
         return context
 
 
-class BackupConfigurationUpdateView(UpdateView):
-    """
-    GET /backup-configuration/<pk>/edit/
-    POST /backup-configuration/<pk>/edit/
-    """
+class BackupConfigurationUpdateView(LoginRequiredMixin, UpdateView):
+    """GET /backup-configuration/<pk>/edit/"""
     model = BackupConfiguration
     form_class = BackupConfigurationForm
     template_name = 'backup_configurations/backupconfiguration_form.html'
@@ -276,7 +261,6 @@ class BackupConfigurationUpdateView(UpdateView):
         versioned_fields_changed = False
 
         if current_version:
-            # Проверяем, изменились ли версионируемые поля
             versioned_fields = [
                 'backup_tool', 'backup_mode', 'schedule_cron',
                 'retention_days', 'rpo_minutes', 'rto_minutes',
@@ -289,18 +273,15 @@ class BackupConfigurationUpdateView(UpdateView):
                     versioned_fields_changed = True
                     break
 
-        # Обновляем BackupConfiguration
         self.object = form.save(commit=False)
-        self.object.updated_by = self.request.user.username if self.request.user.is_authenticated else 'System'
+        self.object.updated_by = self.request.user.username
         self.object.save()
 
         if versioned_fields_changed:
-            # Закрываем текущую версию
             current_version.is_current = False
             current_version.valid_to = timezone.now()
             current_version.save()
 
-            # Создаем новую версию
             BackupConfigurationVersion.objects.create(
                 backup_configuration=self.object,
                 version_number=current_version.version_number + 1,
@@ -316,7 +297,7 @@ class BackupConfigurationUpdateView(UpdateView):
                 immutable_storage=form.cleaned_data.get('immutable_storage'),
                 is_current=True,
                 valid_from=timezone.now(),
-                created_by=self.request.user.username if self.request.user.is_authenticated else 'System',
+                created_by=self.request.user.username,
             )
             messages.success(self.request, f'Updated. New version created.')
         else:
@@ -332,7 +313,7 @@ class BackupConfigurationUpdateView(UpdateView):
         return context
 
 
-class BackupConfigurationDeleteView(DeleteView):
+class BackupConfigurationDeleteView(LoginRequiredMixin, DeleteView):
     """POST /backup-configuration/<pk>/delete/"""
     model = BackupConfiguration
     success_url = reverse_lazy('backup_configuration_list')
@@ -340,7 +321,7 @@ class BackupConfigurationDeleteView(DeleteView):
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         self.object.is_active = False
-        self.object.updated_by = request.user.username if request.user.is_authenticated else 'System'
+        self.object.updated_by = request.user.username
         self.object.save()
         messages.success(request, f'Backup Configuration deactivated.')
         return redirect(self.success_url)
@@ -349,7 +330,7 @@ class BackupConfigurationDeleteView(DeleteView):
         return redirect('backup_configuration_list')
 
 
-class BackupConfigurationHistoryView(DetailView):
+class BackupConfigurationHistoryView(LoginRequiredMixin, DetailView):
     """GET /backup-configuration/<pk>/history/"""
     model = BackupConfiguration
     template_name = 'backup_configurations/backupconfiguration_history.html'
@@ -363,7 +344,7 @@ class BackupConfigurationHistoryView(DetailView):
         return context
 
 
-class BackupConfigurationVersionDetailView(DetailView):
+class BackupConfigurationVersionDetailView(LoginRequiredMixin, DetailView):
     """GET /backup-configuration/<pk>/history/<version_pk>/"""
     model = BackupConfigurationVersion
     template_name = 'backup_configurations/backupconfiguration_version_detail.html'
@@ -380,12 +361,10 @@ class BackupConfigurationVersionDetailView(DetailView):
         context['backup_configuration'] = self.object.backup_configuration
         context['is_readonly'] = True
         return context
-    
-class BackupOperationListView(ListView):
-    """
-    GET /backup-operations/
-    Список операций с поиском и фильтрацией
-    """
+
+
+class BackupOperationListView(LoginRequiredMixin, ListView):
+    """GET /backup-operations/"""
     model = BackupOperation
     template_name = 'backup_operations/backupoperation_list.html'
     context_object_name = 'operations'
@@ -400,7 +379,6 @@ class BackupOperationListView(ListView):
             'backup_configuration_version__backup_tool'
         ).order_by('-started_at')
 
-        # Поиск по hostname, external_job_id, storage_path
         search_query = self.request.GET.get('q', '').strip()
         if search_query:
             queryset = queryset.filter(
@@ -409,17 +387,14 @@ class BackupOperationListView(ListView):
                 Q(storage_path__icontains=search_query)
             )
 
-        # Фильтрация по статусу
         status = self.request.GET.get('status', '').strip()
         if status:
             queryset = queryset.filter(status=status)
 
-        # Фильтрация по hostname
         hostname = self.request.GET.get('hostname', '').strip()
         if hostname:
             queryset = queryset.filter(hostname__icontains=hostname)
 
-        # Фильтрация по конфигурации
         config_id = self.request.GET.get('configuration', '').strip()
         if config_id and config_id.isdigit():
             queryset = queryset.filter(
@@ -438,11 +413,8 @@ class BackupOperationListView(ListView):
         return context
 
 
-class BackupOperationDetailView(DetailView):
-    """
-    GET /backup-operations/<pk>/
-    Детальная информация об операции
-    """
+class BackupOperationDetailView(LoginRequiredMixin, DetailView):
+    """GET /backup-operations/<pk>/"""
     model = BackupOperation
     template_name = 'backup_operations/backupoperation_detail.html'
     context_object_name = 'operation'
@@ -452,114 +424,40 @@ class BackupOperationDetailView(DetailView):
         context['duration_seconds'] = self.object.duration_seconds
         context['size_human'] = self.object.size_human
         return context
-    
-
-class BackupOperationListView(ListView):
-    """
-    GET /backup-operations/
-    Список операций с поиском и фильтрацией
-    """
-    model = BackupOperation
-    template_name = 'backup_operations/backupoperation_list.html'
-    context_object_name = 'operations'
-    paginate_by = 50
-
-    def get_queryset(self):
-        queryset = BackupOperation.objects.select_related(
-            'backup_configuration_version',
-            'backup_configuration_version__backup_configuration',
-            'backup_configuration_version__backup_configuration__target_system_version',
-            'backup_configuration_version__backup_configuration__target_system_version__target_system',
-            'backup_configuration_version__backup_tool'
-        ).order_by('-started_at')
-
-        # Поиск по hostname, external_job_id, storage_path
-        search_query = self.request.GET.get('q', '').strip()
-        if search_query:
-            queryset = queryset.filter(
-                Q(hostname__icontains=search_query) |
-                Q(external_job_id__icontains=search_query) |
-                Q(storage_path__icontains=search_query)
-            )
-
-        # Фильтрация по статусу
-        status = self.request.GET.get('status', '').strip()
-        if status:
-            queryset = queryset.filter(status=status)
-
-        # Фильтрация по hostname
-        hostname = self.request.GET.get('hostname', '').strip()
-        if hostname:
-            queryset = queryset.filter(hostname__icontains=hostname)
-
-        # Фильтрация по конфигурации
-        config_id = self.request.GET.get('configuration', '').strip()
-        if config_id and config_id.isdigit():
-            queryset = queryset.filter(
-                backup_configuration_version__backup_configuration_id=int(config_id)
-            )
-
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['search_query'] = self.request.GET.get('q', '')
-        context['status_filter'] = self.request.GET.get('status', '')
-        context['hostname_filter'] = self.request.GET.get('hostname', '')
-        context['configuration_filter'] = self.request.GET.get('configuration', '')
-        context['status_choices'] = BackupOperation.STATUS_CHOICES
-        return context
 
 
-class BackupOperationDetailView(DetailView):
-    """
-    GET /backup-operations/<pk>/
-    Детальная информация об операции
-    """
-    model = BackupOperation
-    template_name = 'backup_operations/backupoperation_detail.html'
-    context_object_name = 'operation'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['duration_seconds'] = self.object.duration_seconds
-        context['size_human'] = self.object.size_human
-        return context
-    
-# System Types
-
-class SystemTypeListView(ListView):
+class SystemTypeListView(LoginRequiredMixin, ListView):
     model = SystemType
     template_name = 'dictionaries/systemtype_list.html'
     context_object_name = 'system_types'
     paginate_by = 50
 
 
-class SystemTypeCreateView(CreateView):
+class SystemTypeCreateView(LoginRequiredMixin, CreateView):
     model = SystemType
     form_class = SystemTypeForm
     template_name = 'dictionaries/systemtype_form.html'
     success_url = reverse_lazy('dictionaries:system_type_list')
 
     def form_valid(self, form):
-        form.instance.created_by = self.request.user.username if self.request.user.is_authenticated else 'System'
+        form.instance.created_by = self.request.user.username
         messages.success(self.request, 'System Type created successfully.')
         return super().form_valid(form)
 
 
-class SystemTypeUpdateView(UpdateView):
+class SystemTypeUpdateView(LoginRequiredMixin, UpdateView):
     model = SystemType
     form_class = SystemTypeForm
     template_name = 'dictionaries/systemtype_form.html'
     success_url = reverse_lazy('dictionaries:system_type_list')
 
     def form_valid(self, form):
-        form.instance.updated_by = self.request.user.username if self.request.user.is_authenticated else 'System'
+        form.instance.updated_by = self.request.user.username
         messages.success(self.request, 'System Type updated successfully.')
         return super().form_valid(form)
 
 
-class SystemTypeDeleteView(DeleteView):
+class SystemTypeDeleteView(LoginRequiredMixin, DeleteView):
     model = SystemType
     success_url = reverse_lazy('dictionaries:system_type_list')
     template_name = 'dictionaries/systemtype_confirm_delete.html'
@@ -568,40 +466,39 @@ class SystemTypeDeleteView(DeleteView):
         messages.success(self.request, 'System Type deleted successfully.')
         return super().form_valid(form)
 
-# Environments
 
-class EnvironmentListView(ListView):
+class EnvironmentListView(LoginRequiredMixin, ListView):
     model = Environment
     template_name = 'dictionaries/environment_list.html'
     context_object_name = 'environments'
     paginate_by = 50
 
 
-class EnvironmentCreateView(CreateView):
+class EnvironmentCreateView(LoginRequiredMixin, CreateView):
     model = Environment
     form_class = EnvironmentForm
     template_name = 'dictionaries/environment_form.html'
     success_url = reverse_lazy('dictionaries:environment_list')
 
     def form_valid(self, form):
-        form.instance.created_by = self.request.user.username if self.request.user.is_authenticated else 'System'
+        form.instance.created_by = self.request.user.username
         messages.success(self.request, 'Environment created successfully.')
         return super().form_valid(form)
 
 
-class EnvironmentUpdateView(UpdateView):
+class EnvironmentUpdateView(LoginRequiredMixin, UpdateView):
     model = Environment
     form_class = EnvironmentForm
     template_name = 'dictionaries/environment_form.html'
     success_url = reverse_lazy('dictionaries:environment_list')
 
     def form_valid(self, form):
-        form.instance.updated_by = self.request.user.username if self.request.user.is_authenticated else 'System'
+        form.instance.updated_by = self.request.user.username
         messages.success(self.request, 'Environment updated successfully.')
         return super().form_valid(form)
 
 
-class EnvironmentDeleteView(DeleteView):
+class EnvironmentDeleteView(LoginRequiredMixin, DeleteView):
     model = Environment
     success_url = reverse_lazy('dictionaries:environment_list')
     template_name = 'dictionaries/environment_confirm_delete.html'
@@ -610,40 +507,39 @@ class EnvironmentDeleteView(DeleteView):
         messages.success(self.request, 'Environment deleted successfully.')
         return super().form_valid(form)
 
-# Backup Tools
 
-class BackupToolListView(ListView):
+class BackupToolListView(LoginRequiredMixin, ListView):
     model = BackupTool
     template_name = 'dictionaries/backuptool_list.html'
     context_object_name = 'backup_tools'
     paginate_by = 50
 
 
-class BackupToolCreateView(CreateView):
+class BackupToolCreateView(LoginRequiredMixin, CreateView):
     model = BackupTool
     form_class = BackupToolForm
     template_name = 'dictionaries/backuptool_form.html'
     success_url = reverse_lazy('dictionaries:backup_tool_list')
 
     def form_valid(self, form):
-        form.instance.created_by = self.request.user.username if self.request.user.is_authenticated else 'System'
+        form.instance.created_by = self.request.user.username
         messages.success(self.request, 'Backup Tool created successfully.')
         return super().form_valid(form)
 
 
-class BackupToolUpdateView(UpdateView):
+class BackupToolUpdateView(LoginRequiredMixin, UpdateView):
     model = BackupTool
     form_class = BackupToolForm
     template_name = 'dictionaries/backuptool_form.html'
     success_url = reverse_lazy('dictionaries:backup_tool_list')
 
     def form_valid(self, form):
-        form.instance.updated_by = self.request.user.username if self.request.user.is_authenticated else 'System'
+        form.instance.updated_by = self.request.user.username
         messages.success(self.request, 'Backup Tool updated successfully.')
         return super().form_valid(form)
 
 
-class BackupToolDeleteView(DeleteView):
+class BackupToolDeleteView(LoginRequiredMixin, DeleteView):
     model = BackupTool
     success_url = reverse_lazy('dictionaries:backup_tool_list')
     template_name = 'dictionaries/backuptool_confirm_delete.html'
@@ -652,31 +548,27 @@ class BackupToolDeleteView(DeleteView):
         messages.success(self.request, 'Backup Tool deleted successfully.')
         return super().form_valid(form)
 
+
+@login_required
 def index(request):
     """GET / - Dashboard / Home page"""
     now = timezone.now()
     last_24h = now - timedelta(hours=24)
 
-    # Статистика
     total_systems = TargetSystem.objects.filter(is_active=True).count()
     new_systems = TargetSystem.objects.filter(created_at__gte=last_24h).count()
     total_backups = BackupOperation.objects.count()
-    
-    # Уникальные хосты (серверы), с которых делали бэкапы
     total_hosts = BackupOperation.objects.values('hostname').distinct().count()
 
-    # Статус за последние 24 часа
     ops_24h = BackupOperation.objects.filter(started_at__gte=last_24h)
     success_24h = ops_24h.filter(status='success').count()
     in_progress_24h = ops_24h.filter(status='in_progress').count()
     error_24h = ops_24h.filter(status='error').count()
 
-    # Последние операции
     recent_backups = BackupOperation.objects.select_related(
         'backup_configuration_version__backup_configuration__target_system_version__target_system'
     ).order_by('-started_at')[:10]
 
-    # Данные по системам
     systems = TargetSystem.objects.filter(is_active=True).select_related('system_type')
     systems_data = []
     for sys in systems:
@@ -707,6 +599,7 @@ def index(request):
     return render(request, 'index.html', context)
 
 
+@login_required
 def operations_list(request):
     """GET /operations/ - List of all backup operations"""
     operations = BackupOperation.objects.select_related(
@@ -714,6 +607,8 @@ def operations_list(request):
     ).order_by('-started_at')
     return render(request, 'operations/operation_list.html', {'operations': operations})
 
+
+@login_required
 def operation_detail(request, pk):
     """GET /operations/<pk>/ - Detail of a specific backup operation"""
     operation = get_object_or_404(BackupOperation, pk=pk)
