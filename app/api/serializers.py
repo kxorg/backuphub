@@ -192,7 +192,7 @@ class BackupOperationReadSerializer(serializers.ModelSerializer):
     ipAddress = serializers.CharField(source='ip_address', read_only=True, allow_null=True)
     startedAt = serializers.DateTimeField(source='started_at', read_only=True)
     finishedAt = serializers.DateTimeField(source='finished_at', read_only=True, allow_null=True)
-    sizeBytes = serializers.BigIntegerField(source='size_bytes', read_only=True, allow_null=True)
+    sizeBytes = serializers.IntegerField(source='size_bytes', read_only=True, allow_null=True)
     storageType = serializers.CharField(source='storage_type', read_only=True, allow_null=True)
     storagePath = serializers.CharField(source='storage_path', read_only=True, allow_null=True)
     errorMessage = serializers.CharField(source='error_message', read_only=True, allow_null=True)
