@@ -5,7 +5,7 @@ networks:
     external: true
 
 services:
-  app:
+  app: &app
     build:
       context: .
       dockerfile: compose/Dockerfile
@@ -16,8 +16,8 @@ services:
       - local.env
     env_file:
       - ./env
-    expose:
-      - "8000"
+    ports:
+      - "8000:8000"
     networks:
       - backuphub_network
 
