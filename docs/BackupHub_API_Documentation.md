@@ -1,6 +1,3 @@
-Конечно! Вот готовый markdown-файл с полной документацией API:
-
-```markdown
 # 📚 BackupHub API Documentation
 
 ## 📋 Содержание
