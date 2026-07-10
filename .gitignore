@@ -1,6 +1,12 @@
-__pycache__/
+.idea
+/__pycache__/
+/venv
 *.pyc
-.venv/
-.idea/
-.vscode/
-.DS_Store
+#local.env
+/app/logs/
+/app/vol/
+app/htmlcov
+coverage.xml*
+*.coverage
+
+# https://gitready.com/beginner/2009/01/19/ignoring-files.html
