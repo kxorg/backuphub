@@ -10,14 +10,12 @@ services:
       context: .
       dockerfile: compose/Dockerfile
     container_name: app_${STAGE}
-        command: /start
+    command: /start
     restart: always
     env_file:
-      - local.env
-    env_file:
       - ./env
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     networks:
       - backuphub_network
 
