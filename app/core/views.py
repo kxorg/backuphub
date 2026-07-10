@@ -1,4 +1,4 @@
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from datetime import timedelta
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
