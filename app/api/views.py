@@ -1,8 +1,16 @@
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import BasePermission, IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+
+# --- Новые импорты для UI Refresh API и Demo страницы ---
+from django.shortcuts import render
+from django.utils import timezone
+from datetime import timedelta
+from django.db.models import Q
+# --------------------------------------------------------
 
 from core.models import TargetSystem, BackupOperation
 from .authentication import ApiKeyAuthentication
@@ -11,7 +19,6 @@ from .serializers import (
     BackupOperationUpdateSerializer,
     BackupOperationReadSerializer,
 )
-
 
 class HasValidApiKey(BasePermission):
     """Проверяет, что запрос прошёл аутентификацию по API-ключу."""
@@ -167,3 +174,92 @@ class BackupOperationViewSet(viewsets.GenericViewSet,
     )
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
+
+# ==========================================
+# UI REFRESH API (Для веб-интерфейса)
+# ==========================================
+
+@api_view(['GET'])
+# @permission_classes([IsAuthenticated]) # Защищено сессией Django, а не API-ключом
+def api_ui_refresh_dashboard(request):
+    """API для живого обновления Дашборда"""
+    now = timezone.now()
+    last_24h = now - timedelta(hours=24)
+    
+    data = {
+        'total_systems': TargetSystem.objects.filter(is_active=True).count(),
+        'new_systems': TargetSystem.objects.filter(created_at__gte=last_24h).count(),
+        'total_backups': BackupOperation.objects.count(),
+        'total_hosts': BackupOperation.objects.values('hostname').distinct().count(),
+        'success_24h': BackupOperation.objects.filter(started_at__gte=last_24h, status='success').count(),
+        'in_progress_24h': BackupOperation.objects.filter(started_at__gte=last_24h, status='in_progress').count(),
+        'error_24h': BackupOperation.objects.filter(started_at__gte=last_24h, status='error').count(),
+    }
+    
+    recent_backups = BackupOperation.objects.select_related(
+        'backup_configuration_version__backup_configuration__target_system_version__target_system'
+    ).order_by('-started_at')[:10]
+    
+    ops_data = []
+    for op in recent_backups:
+        sys_name = op.backup_configuration_version.backup_configuration.target_system_version.target_system.name
+        ops_data.append({
+            'id': op.id,
+            'system_name': sys_name,
+            'hostname': op.hostname,
+            'status': op.status,
+            'started_at': op.started_at.strftime('%d.%m.%Y %H:%M') if op.started_at else '-',
+            'size_human': op.size_human or '-',
+        })
+        
+    data['recent_operations'] = ops_data
+    return Response(data)
+
+
+@api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+def api_ui_refresh_operations(request):
+    """API для живого обновления Списка операций"""
+    queryset = BackupOperation.objects.select_related(
+        'backup_configuration_version__backup_configuration__target_system_version__target_system',
+    ).order_by('-started_at')
+    
+    # Поддержка фильтров, если они переданы в URL
+    search_query = request.GET.get('q', '').strip()
+    if search_query:
+        queryset = queryset.filter(
+            Q(hostname__icontains=search_query) |
+            Q(external_job_id__icontains=search_query) |
+            Q(storage_path__icontains=search_query)
+        )
+    
+    status_filter = request.GET.get('status', '').strip()
+    if status_filter:
+        queryset = queryset.filter(status=status_filter)
+        
+    ops_data = []
+    for op in queryset[:50]: 
+        sys_name = op.backup_configuration_version.backup_configuration.target_system_version.target_system.name
+        ops_data.append({
+            'id': op.id,
+            'system_name': sys_name,
+            'hostname': op.hostname,
+            'status': op.status,
+            'started_at': op.started_at.strftime('%d.%m.%Y %H:%M') if op.started_at else '-',
+            'size_human': op.size_human or '-',
+        })
+        
+    return Response({'operations': ops_data})
+
+
+# ==========================================
+# ДЕМО-СТРАНИЦА (Для показа руководителю)
+# ==========================================
+
+def demo_dashboard(request):
+    """
+    Изолированная демо-страница внутри /api/.
+    Нужна только для того, чтобы показать руководителю работу AJAX 
+    без вмешательства в шаблоны /core/, которые сейчас переделывает фронтендер.
+    """
+    return render(request, 'demo_dashboard.html')
