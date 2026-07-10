@@ -10,7 +10,10 @@ services:
       context: .
       dockerfile: compose/Dockerfile
     container_name: app_${STAGE}
-    restart: unless-stopped
+        command: /start
+    restart: always
+    env_file:
+      - local.env
     env_file:
       - ./env
     expose:
