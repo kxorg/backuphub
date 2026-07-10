@@ -1,8 +1,10 @@
 from django.urls import path
+from . import views
 
-def logout_view(request):
-    logout(request)
-    return redirect('login')
+
+# def logout_view(request):
+#     logout(request)
+#     return redirect('login')
 
 
 # REST API Router
@@ -63,8 +65,8 @@ urlpatterns = [
     # path('api/v1/', include(router.urls)),
     
     # Authentication
-    path('login/', auth_views.LoginView.as_view(
-        template_name='registration/login.html'
-    ), name='login'),
-    path('logout/', logout_view, name='logout'),
+    # path('login/', auth_views.LoginView.as_view(
+    #     template_name='registration/login.html'
+    # ), name='login'),
+    # path('logout/', logout_view, name='logout'),
 ]
