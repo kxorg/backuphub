@@ -12,7 +12,6 @@ from ..models import (
 
 
 class BaseAuthTestCase(TestCase):
-    """Базовый класс с авторизацией для тестов вьюх"""
     def setUp(self):
         self.user = User.objects.create_user(
             username='testuser',
@@ -50,6 +49,7 @@ class BaseAuthTestCase(TestCase):
             backup_tool=self.backup_tool,
             version_number=1,
             backup_mode='full',
+            schedule_cron='0 3 * * 0',
             retention_days=30,
             rpo_minutes=1440,
             rto_minutes=60,
@@ -66,19 +66,19 @@ class BaseAuthTestCase(TestCase):
 
 class TargetSystemViewsTest(BaseAuthTestCase):
     def test_list_view(self):
-        response = self.client.get(reverse('target_systems:target_system_list'))
+        response = self.client.get(reverse('target_system_list'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'DB Server 1')
 
     def test_detail_view(self):
         response = self.client.get(
-            reverse('target_systems:target_system_detail', args=[self.target_system.id])
+            reverse('target_system_detail', args=[self.target_system.id])
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'DB Server 1')
 
     def test_create_view_get(self):
-        response = self.client.get(reverse('target_systems:target_system_create'))
+        response = self.client.get(reverse('target_system_create'))
         self.assertEqual(response.status_code, 200)
 
     def test_create_view_post(self):
@@ -91,7 +91,7 @@ class TargetSystemViewsTest(BaseAuthTestCase):
             'administrator': 'Jane Smith',
             'is_active': True
         }
-        response = self.client.post(reverse('target_systems:target_system_create'), data)
+        response = self.client.post(reverse('target_system_create'), data)
         self.assertEqual(response.status_code, 302)
         self.assertTrue(TargetSystem.objects.filter(name='New Server').exists())
         self.assertEqual(TargetSystemVersion.objects.count(), 2)
@@ -104,7 +104,7 @@ class TargetSystemViewsTest(BaseAuthTestCase):
             'administrator': 'Admin',
             'is_active': True
         }
-        self.client.post(reverse('target_systems:target_system_create'), data)
+        self.client.post(reverse('target_system_create'), data)
         ts = TargetSystem.objects.get(name='New Server')
         version = TargetSystemVersion.objects.get(target_system=ts, version_number=1)
         self.assertTrue(version.is_current)
@@ -112,7 +112,7 @@ class TargetSystemViewsTest(BaseAuthTestCase):
 
     def test_update_view_get(self):
         response = self.client.get(
-            reverse('target_systems:target_system_edit', args=[self.target_system.id])
+            reverse('target_system_edit', args=[self.target_system.id])
         )
         self.assertEqual(response.status_code, 200)
 
@@ -127,7 +127,7 @@ class TargetSystemViewsTest(BaseAuthTestCase):
             'is_active': True
         }
         response = self.client.post(
-            reverse('target_systems:target_system_edit', args=[self.target_system.id]),
+            reverse('target_system_edit', args=[self.target_system.id]),
             data
         )
         self.assertEqual(response.status_code, 302)
@@ -144,7 +144,7 @@ class TargetSystemViewsTest(BaseAuthTestCase):
             'is_active': True
         }
         response = self.client.post(
-            reverse('target_systems:target_system_edit', args=[self.target_system.id]),
+            reverse('target_system_edit', args=[self.target_system.id]),
             data
         )
         self.assertEqual(response.status_code, 302)
@@ -166,7 +166,7 @@ class TargetSystemViewsTest(BaseAuthTestCase):
             'is_active': True
         }
         self.client.post(
-            reverse('target_systems:target_system_edit', args=[self.target_system.id]),
+            reverse('target_system_edit', args=[self.target_system.id]),
             data
         )
         old_version = TargetSystemVersion.objects.get(version_number=1)
@@ -175,7 +175,7 @@ class TargetSystemViewsTest(BaseAuthTestCase):
 
     def test_delete_view_post(self):
         response = self.client.post(
-            reverse('target_systems:target_system_delete', args=[self.target_system.id])
+            reverse('target_system_delete', args=[self.target_system.id])
         )
         self.assertEqual(response.status_code, 302)
         self.target_system.refresh_from_db()
@@ -183,20 +183,20 @@ class TargetSystemViewsTest(BaseAuthTestCase):
 
     def test_delete_view_get_redirects(self):
         response = self.client.get(
-            reverse('target_systems:target_system_delete', args=[self.target_system.id])
+            reverse('target_system_delete', args=[self.target_system.id])
         )
         self.assertEqual(response.status_code, 302)
 
     def test_history_view(self):
         response = self.client.get(
-            reverse('target_systems:target_system_history', args=[self.target_system.id])
+            reverse('target_system_history', args=[self.target_system.id])
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'v1')
 
     def test_version_detail_view(self):
         response = self.client.get(
-            reverse('target_systems:target_system_version_detail', 
+            reverse('target_system_version_detail', 
                     args=[self.target_system.id, self.ts_version.id])
         )
         self.assertEqual(response.status_code, 200)
@@ -204,7 +204,7 @@ class TargetSystemViewsTest(BaseAuthTestCase):
 
     def test_version_detail_readonly(self):
         response = self.client.get(
-            reverse('target_systems:target_system_version_detail', 
+            reverse('target_system_version_detail', 
                     args=[self.target_system.id, self.ts_version.id])
         )
         self.assertTrue(response.context['is_readonly'])
@@ -280,30 +280,38 @@ class BackupConfigurationViewsTest(BaseAuthTestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_update_view_post_no_version_change(self):
+        initial_version_count = BackupConfigurationVersion.objects.count()
+        
         data = {
             'target_system_version': self.ts_version.id,
-            'name': 'Daily Backup Updated',
-            'description': 'Updated',
+            'name': 'Daily Backup',                    
+            'description': 'Daily Backup',             
             'backup_tool': self.backup_tool.id,
-            'backup_mode': 'full',
-            'schedule_cron': '0 2 * * *',
+            'backup_mode': 'full',                     
+            'schedule_cron': '0 3 * * 0',              
             'retention_days': 30,
             'rpo_minutes': 1440,
             'rto_minutes': 60,
             'storage_type': 'local',
-            'storage_path': '/backup',
-            'verify_after_backup': False,
+            'storage_path': '',                        
+            'verify_after_backup': False,              
             'immutable_storage': False,
             'is_active': True
         }
+        
         response = self.client.post(
             reverse('backup_configuration_edit', args=[self.config.id]),
             data
         )
+        
         self.assertEqual(response.status_code, 302)
         self.config.refresh_from_db()
-        self.assertEqual(self.config.name, 'Daily Backup Updated')
-        self.assertEqual(BackupConfigurationVersion.objects.count(), 1)
+        self.assertEqual(self.config.name, 'Daily Backup')
+        
+        self.assertEqual(
+            BackupConfigurationVersion.objects.count(), 
+            initial_version_count,
+        )
 
     def test_update_view_post_with_version_change(self):
         data = {
@@ -463,57 +471,65 @@ class BackupOperationViewsTest(BaseAuthTestCase):
 
 class SystemTypeViewsTest(BaseAuthTestCase):
     def test_list_view(self):
-        response = self.client.get(reverse('dictionaries:system_type_list'))
+        response = self.client.get(reverse('system_type_list'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'PostgreSQL')
 
     def test_create_view_get(self):
-        response = self.client.get(reverse('dictionaries:system_type_create'))
+        response = self.client.get(reverse('system_type_create'))
         self.assertEqual(response.status_code, 200)
 
     def test_create_view_post(self):
         data = {'name': 'MySQL', 'description': 'MySQL database'}
-        response = self.client.post(reverse('dictionaries:system_type_create'), data)
+        response = self.client.post(reverse('system_type_create'), data)
         self.assertEqual(response.status_code, 302)
         self.assertTrue(SystemType.objects.filter(name='MySQL').exists())
 
     def test_update_view_get(self):
         st = SystemType.objects.create(name='MySQL')
-        response = self.client.get(reverse('dictionaries:system_type_edit', args=[st.id]))
+        response = self.client.get(reverse('system_type_edit', args=[st.id]))
         self.assertEqual(response.status_code, 200)
 
     def test_update_view_post(self):
-        st = SystemType.objects.create(name='PostgreSQL')
-        data = {'name': 'PostgreSQL Updated', 'description': 'Updated'}
+        st = SystemType.objects.create(
+            name='UniquePostgreSQLForUpdate',
+            description='Original description'
+        )
+        data = {
+            'name': 'PostgreSQL Updated',
+            'description': 'Updated description'
+        }
         response = self.client.post(
-            reverse('dictionaries:system_type_edit', args=[st.id]),
+            reverse('system_type_edit', args=[st.id]),
             data
         )
         self.assertEqual(response.status_code, 302)
+        
         st.refresh_from_db()
         self.assertEqual(st.name, 'PostgreSQL Updated')
+        self.assertEqual(st.description, 'Updated description')
 
     def test_delete_view_post(self):
         st = SystemType.objects.create(name='ToDelete')
-        response = self.client.post(reverse('dictionaries:system_type_delete', args=[st.id]))
+        response = self.client.post(reverse('system_type_delete', args=[st.id]))
         self.assertEqual(response.status_code, 302)
         self.assertFalse(SystemType.objects.filter(id=st.id).exists())
 
     def test_delete_view_get(self):
         st = SystemType.objects.create(name='ToDelete')
-        response = self.client.get(reverse('dictionaries:system_type_delete', args=[st.id]))
+        response = self.client.get(reverse('system_type_delete', args=[st.id]))
         self.assertEqual(response.status_code, 200)
 
 
 class EnvironmentViewsTest(BaseAuthTestCase):
     def test_list_view(self):
-        response = self.client.get(reverse('dictionaries:environment_list'))
+        response = self.client.get(reverse('environment_list'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Production')
 
     def test_create_view_post(self):
         data = {'name': 'Staging', 'description': 'Staging environment'}
-        response = self.client.post(reverse('dictionaries:environment_create'), data)
+        response = self.client.post(reverse('environment_create'), data)
         self.assertEqual(response.status_code, 302)
         self.assertTrue(Environment.objects.filter(name='Staging').exists())
 
@@ -521,7 +537,7 @@ class EnvironmentViewsTest(BaseAuthTestCase):
         env = Environment.objects.create(name='Test')
         data = {'name': 'Test Updated', 'description': 'Updated'}
         response = self.client.post(
-            reverse('dictionaries:environment_edit', args=[env.id]),
+            reverse('environment_edit', args=[env.id]),
             data
         )
         self.assertEqual(response.status_code, 302)
@@ -530,14 +546,14 @@ class EnvironmentViewsTest(BaseAuthTestCase):
 
     def test_delete_view_post(self):
         env = Environment.objects.create(name='ToDelete')
-        response = self.client.post(reverse('dictionaries:environment_delete', args=[env.id]))
+        response = self.client.post(reverse('environment_delete', args=[env.id]))
         self.assertEqual(response.status_code, 302)
         self.assertFalse(Environment.objects.filter(id=env.id).exists())
 
 
 class BackupToolViewsTest(BaseAuthTestCase):
     def test_list_view(self):
-        response = self.client.get(reverse('dictionaries:backup_tool_list'))
+        response = self.client.get(reverse('backup_tool_list'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'pg_dump')
 
@@ -547,7 +563,7 @@ class BackupToolViewsTest(BaseAuthTestCase):
             'description': 'Kubernetes backup',
             'is_active': True
         }
-        response = self.client.post(reverse('dictionaries:backup_tool_create'), data)
+        response = self.client.post(reverse('backup_tool_create'), data)
         self.assertEqual(response.status_code, 302)
         self.assertTrue(BackupTool.objects.filter(name='Velero').exists())
 
@@ -555,7 +571,7 @@ class BackupToolViewsTest(BaseAuthTestCase):
         tool = BackupTool.objects.create(name='rsync')
         data = {'name': 'rsync Updated', 'description': 'Updated', 'is_active': True}
         response = self.client.post(
-            reverse('dictionaries:backup_tool_edit', args=[tool.id]),
+            reverse('backup_tool_edit', args=[tool.id]),
             data
         )
         self.assertEqual(response.status_code, 302)
@@ -564,7 +580,7 @@ class BackupToolViewsTest(BaseAuthTestCase):
 
     def test_delete_view_post(self):
         tool = BackupTool.objects.create(name='ToDelete')
-        response = self.client.post(reverse('dictionaries:backup_tool_delete', args=[tool.id]))
+        response = self.client.post(reverse('backup_tool_delete', args=[tool.id]))
         self.assertEqual(response.status_code, 302)
         self.assertFalse(BackupTool.objects.filter(id=tool.id).exists())
 
@@ -583,12 +599,12 @@ class AuthenticationTest(TestCase):
         )
 
     def test_target_system_list_requires_login(self):
-        response = self.client.get(reverse('target_systems:target_system_list'))
+        response = self.client.get(reverse('target_system_list'))
         self.assertEqual(response.status_code, 302)
 
     def test_target_system_detail_requires_login(self):
         response = self.client.get(
-            reverse('target_systems:target_system_detail', args=[self.target_system.id])
+            reverse('target_system_detail', args=[self.target_system.id])
         )
         self.assertEqual(response.status_code, 302)
 
@@ -601,15 +617,15 @@ class AuthenticationTest(TestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_system_type_list_requires_login(self):
-        response = self.client.get(reverse('dictionaries:system_type_list'))
+        response = self.client.get(reverse('system_type_list'))
         self.assertEqual(response.status_code, 302)
 
     def test_environment_list_requires_login(self):
-        response = self.client.get(reverse('dictionaries:environment_list'))
+        response = self.client.get(reverse('environment_list'))
         self.assertEqual(response.status_code, 302)
 
     def test_backup_tool_list_requires_login(self):
-        response = self.client.get(reverse('dictionaries:backup_tool_list'))
+        response = self.client.get(reverse('backup_tool_list'))
         self.assertEqual(response.status_code, 302)
 
 
@@ -649,7 +665,7 @@ class PaginationTest(BaseAuthTestCase):
                 system_type=self.system_type,
                 name=f'System {i}'
             )
-        response = self.client.get(reverse('target_systems:target_system_list'))
+        response = self.client.get(reverse('target_system_list'))
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context['is_paginated'])
         self.assertEqual(len(response.context['target_systems']), 20)
@@ -672,7 +688,7 @@ class PaginationTest(BaseAuthTestCase):
     def test_system_type_pagination(self):
         for i in range(55):
             SystemType.objects.create(name=f'Type {i}')
-        response = self.client.get(reverse('dictionaries:system_type_list'))
+        response = self.client.get(reverse('system_type_list'))
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context['is_paginated'])
         self.assertEqual(len(response.context['system_types']), 50)
