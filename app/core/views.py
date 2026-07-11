@@ -48,7 +48,7 @@ class TargetSystemCreateView(LoginRequiredMixin, CreateView):
     model = TargetSystem
     form_class = TargetSystemForm
     template_name = 'target_systems/targetsystem_form.html'
-    success_url = reverse_lazy('target_systems:target_system_list')
+    success_url = reverse_lazy('target_system_list')
 
     @transaction.atomic
     def form_valid(self, form):
@@ -81,7 +81,7 @@ class TargetSystemUpdateView(LoginRequiredMixin, UpdateView):
     model = TargetSystem
     form_class = TargetSystemForm
     template_name = 'target_systems/targetsystem_form.html'
-    success_url = reverse_lazy('target_systems:target_system_list')
+    success_url = reverse_lazy('target_system_list')
 
     @transaction.atomic
     def form_valid(self, form):
@@ -128,7 +128,7 @@ class TargetSystemUpdateView(LoginRequiredMixin, UpdateView):
 class TargetSystemDeleteView(LoginRequiredMixin, DeleteView):
     """POST /target-systems/<pk>/delete/"""
     model = TargetSystem
-    success_url = reverse_lazy('target_systems:target_system_list')
+    success_url = reverse_lazy('target_system_list')
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -139,7 +139,7 @@ class TargetSystemDeleteView(LoginRequiredMixin, DeleteView):
         return redirect(self.success_url)
 
     def get(self, request, *args, **kwargs):
-        return redirect('target_systems:target_system_list')
+        return redirect('target_system_list')
 
 
 class TargetSystemHistoryView(LoginRequiredMixin, DetailView):
@@ -268,8 +268,17 @@ class BackupConfigurationUpdateView(LoginRequiredMixin, UpdateView):
                 'verify_after_backup', 'immutable_storage'
             ]
 
+            versioned_fields_changed = False
             for field in versioned_fields:
-                if form.cleaned_data.get(field) != getattr(current_version, field):
+                form_value = form.cleaned_data.get(field)
+                current_value = getattr(current_version, field)
+
+                if form_value in (None, ''):
+                    form_value = None
+                if current_value in (None, ''):
+                    current_value = None
+
+                if form_value != current_value:
                     versioned_fields_changed = True
                     break
 
@@ -304,13 +313,6 @@ class BackupConfigurationUpdateView(LoginRequiredMixin, UpdateView):
             messages.success(self.request, f'Backup Configuration updated.')
 
         return redirect(self.get_success_url())
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title'] = 'Edit Backup Configuration'
-        context['action'] = 'edit'
-        context['current_version'] = self.object.current_version
-        return context
 
 
 class BackupConfigurationDeleteView(LoginRequiredMixin, DeleteView):
@@ -437,7 +439,7 @@ class SystemTypeCreateView(LoginRequiredMixin, CreateView):
     model = SystemType
     form_class = SystemTypeForm
     template_name = 'dictionaries/systemtype_form.html'
-    success_url = reverse_lazy('dictionaries:system_type_list')
+    success_url = reverse_lazy('system_type_list')
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user.username
@@ -449,7 +451,7 @@ class SystemTypeUpdateView(LoginRequiredMixin, UpdateView):
     model = SystemType
     form_class = SystemTypeForm
     template_name = 'dictionaries/systemtype_form.html'
-    success_url = reverse_lazy('dictionaries:system_type_list')
+    success_url = reverse_lazy('system_type_list')
 
     def form_valid(self, form):
         form.instance.updated_by = self.request.user.username
@@ -459,7 +461,7 @@ class SystemTypeUpdateView(LoginRequiredMixin, UpdateView):
 
 class SystemTypeDeleteView(LoginRequiredMixin, DeleteView):
     model = SystemType
-    success_url = reverse_lazy('dictionaries:system_type_list')
+    success_url = reverse_lazy('system_type_list')
     template_name = 'dictionaries/systemtype_confirm_delete.html'
 
     def form_valid(self, form):
@@ -478,7 +480,7 @@ class EnvironmentCreateView(LoginRequiredMixin, CreateView):
     model = Environment
     form_class = EnvironmentForm
     template_name = 'dictionaries/environment_form.html'
-    success_url = reverse_lazy('dictionaries:environment_list')
+    success_url = reverse_lazy('environment_list')
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user.username
@@ -490,7 +492,7 @@ class EnvironmentUpdateView(LoginRequiredMixin, UpdateView):
     model = Environment
     form_class = EnvironmentForm
     template_name = 'dictionaries/environment_form.html'
-    success_url = reverse_lazy('dictionaries:environment_list')
+    success_url = reverse_lazy('environment_list')
 
     def form_valid(self, form):
         form.instance.updated_by = self.request.user.username
@@ -500,7 +502,7 @@ class EnvironmentUpdateView(LoginRequiredMixin, UpdateView):
 
 class EnvironmentDeleteView(LoginRequiredMixin, DeleteView):
     model = Environment
-    success_url = reverse_lazy('dictionaries:environment_list')
+    success_url = reverse_lazy('environment_list')
     template_name = 'dictionaries/environment_confirm_delete.html'
 
     def form_valid(self, form):
@@ -519,7 +521,7 @@ class BackupToolCreateView(LoginRequiredMixin, CreateView):
     model = BackupTool
     form_class = BackupToolForm
     template_name = 'dictionaries/backuptool_form.html'
-    success_url = reverse_lazy('dictionaries:backup_tool_list')
+    success_url = reverse_lazy('backup_tool_list')
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user.username
@@ -531,7 +533,7 @@ class BackupToolUpdateView(LoginRequiredMixin, UpdateView):
     model = BackupTool
     form_class = BackupToolForm
     template_name = 'dictionaries/backuptool_form.html'
-    success_url = reverse_lazy('dictionaries:backup_tool_list')
+    success_url = reverse_lazy('backup_tool_list')
 
     def form_valid(self, form):
         form.instance.updated_by = self.request.user.username
@@ -541,7 +543,7 @@ class BackupToolUpdateView(LoginRequiredMixin, UpdateView):
 
 class BackupToolDeleteView(LoginRequiredMixin, DeleteView):
     model = BackupTool
-    success_url = reverse_lazy('dictionaries:backup_tool_list')
+    success_url = reverse_lazy('backup_tool_list')
     template_name = 'dictionaries/backuptool_confirm_delete.html'
 
     def form_valid(self, form):
@@ -605,11 +607,11 @@ def operations_list(request):
     operations = BackupOperation.objects.select_related(
         'backup_configuration_version__backup_configuration__target_system_version__target_system'
     ).order_by('-started_at')
-    return render(request, 'operations/operation_list.html', {'operations': operations})
+    return render(request, 'backup_operations/backupoperation_list.html', {'operations': operations})
 
 
 @login_required
 def operation_detail(request, pk):
     """GET /operations/<pk>/ - Detail of a specific backup operation"""
     operation = get_object_or_404(BackupOperation, pk=pk)
-    return render(request, 'operations/operation_detail.html', {'operation': operation})
+    return render(request, 'backup_operations/backupoperation_detail.html', {'operation': operation})

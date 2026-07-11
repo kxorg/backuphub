@@ -4,73 +4,116 @@
 
 {% block content %}
 <div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card card-stat border-primary">
+    <!-- Total Systems -->
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid var(--primary-color);">
             <div class="card-body">
-                <h6 class="card-title text-muted">Total Systems</h6>
-                <h2 class="mb-0" id="stat-total-systems">{{ total_systems }}</h2>
-                <small class="text-success" id="stat-new-systems"><i class="bi bi-plus-circle me-1"></i>{{ new_systems }} new</small>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 text-uppercase small fw-bold">Total Systems</p>
+                        <h3 class="mb-0 fw-bold" style="color: var(--secondary-color);">{{ total_systems }}</h3>
+                    </div>
+                    <div class="icon-box bg-primary bg-opacity-10 rounded-circle p-3">
+                        <i class="bi bi-hdd-stack text-primary" style="font-size: 1.5rem;"></i>
+                    </div>
+                </div>
+                <small class="text-success mt-2 d-block">
+                    <i class="bi bi-arrow-up"></i> {{ new_systems }} new
+                </small>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card card-stat border-success">
+
+    <!-- Total Backups -->
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid var(--success-color);">
             <div class="card-body">
-                <h6 class="card-title text-muted">Total Backups</h6>
-                <h2 class="mb-0" id="stat-total-backups">{{ total_backups }}</h2>
-                <small class="text-muted"><i class="bi bi-clock me-1"></i>All time</small>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 text-uppercase small fw-bold">Total Backups</p>
+                        <h3 class="mb-0 fw-bold" style="color: var(--secondary-color);">{{ total_backups }}</h3>
+                    </div>
+                    <div class="icon-box bg-success bg-opacity-10 rounded-circle p-3">
+                        <i class="bi bi-cloud-check text-success" style="font-size: 1.5rem;"></i>
+                    </div>
+                </div>
+                <small class="text-muted mt-2 d-block">All time</small>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card card-stat border-info">
+
+    <!-- Servers -->
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid var(--info-color);">
             <div class="card-body">
-                <h6 class="card-title text-muted">Servers</h6>
-                <h2 class="mb-0" id="stat-total-hosts">{{ total_hosts }}</h2>
-                <small class="text-muted"><i class="bi bi-hdd-network me-1"></i>Registered</small>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 text-uppercase small fw-bold">Servers</p>
+                        <h3 class="mb-0 fw-bold" style="color: var(--secondary-color);">{{ total_hosts }}</h3>
+                    </div>
+                    <div class="icon-box bg-info bg-opacity-10 rounded-circle p-3">
+                        <i class="bi bi-server text-info" style="font-size: 1.5rem;"></i>
+                    </div>
+                </div>
+                <small class="text-success mt-2 d-block">
+                    <i class="bi bi-check-circle"></i> Registered
+                </small>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card card-stat border-warning">
+
+    <!-- Backup Status (24h) -->
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
-                <h6 class="card-title text-muted">Backup Status (24h)</h6>
-                <div class="d-flex flex-column gap-1">
-                    <div>
-                        <span class="badge badge-success me-2" id="stat-success-24h">Success: {{ success_24h }}</span>
-                    </div>
-                    <div>
-                        <span class="badge badge-info me-2" id="stat-in-progress-24h">In Progress: {{ in_progress_24h }}</span>
-                    </div>
-                    <div>
-                        <span class="badge badge-error" id="stat-error-24h">Errors: {{ error_24h }}</span>
-                    </div>
+                <h6 class="text-muted text-uppercase small fw-bold mb-3">Backup Status (24h)</h6>
+                
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-check-circle-fill text-success me-2" style="font-size: 1.2rem;"></i>
+                    <span class="fw-semibold">Success</span>
+                    <span class="ms-auto fw-bold" style="color: var(--success-color);">{{ success_24h }}</span>
+                </div>
+                
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-arrow-repeat text-warning me-2" style="font-size: 1.2rem;"></i>
+                    <span class="fw-semibold">In Progress</span>
+                    <span class="ms-auto fw-bold" style="color: var(--warning-color);">{{ in_progress_24h }}</span>
+                </div>
+                
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-x-circle-fill text-danger me-2" style="font-size: 1.2rem;"></i>
+                    <span class="fw-semibold">Errors</span>
+                    <span class="ms-auto fw-bold" style="color: var(--danger-color);">{{ error_24h }}</span>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Quick Actions -->
 <div class="row mb-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-lightning-charge me-2"></i>Quick Actions</h5>
+    <div class="col-lg-4 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <h5 class="mb-0 fw-bold" style="color: var(--secondary-color);">
+                    <i class="bi bi-lightning-charge text-warning me-2"></i>Quick Actions
+                </h5>
             </div>
-            <div class="card-body">
-                <a href="{% url 'target_system_create' %}" class="btn btn-primary me-2">
-                    <i class="bi bi-plus-circle me-1"></i>Add System
-                </a>
-                <a href="{% url 'backup_configuration_create' %}" class="btn btn-success me-2">
-                    <i class="bi bi-plus-circle me-1"></i>Add Backup Config
-                </a>
-                <a href="{% url 'backup_operation_list' %}" class="btn btn-info me-2">
-                    <i class="bi bi-list-task me-1"></i>All Operations
-                </a>
+            <div class="card-body px-4 pb-4">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'target_system_create' %}" class="btn btn-outline-primary text-start text-decoration-none">
+                        <i class="bi bi-plus-circle me-2"></i>Add System
+                    </a>
+                    <a href="{% url 'backup_configuration_create' %}" class="btn btn-outline-primary text-start text-decoration-none">
+                        <i class="bi bi-plus-circle me-2"></i>Add Backup Config
+                    </a>
+                    <a href="{% url 'backup_operation_list' %}" class="btn btn-outline-primary text-start text-decoration-none">
+                        <i class="bi bi-list-ul me-2"></i>All Operations
+                    </a>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
 <div class="row mb-4">
     <div class="col-12">
@@ -273,7 +316,26 @@
         </div>
     </div>
 </div>
-
+<style>
+    .card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    }
+    .icon-box {
+        min-width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .btn-outline-primary:hover {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+</style>
 <!-- Live Update Script -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
