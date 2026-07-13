@@ -1,0 +1,36 @@
+name: PR tests
+
+on:
+  pull_request:
+    branches:
+      - DEV
+
+permissions:
+  contents: read
+
+jobs:
+  django_api_tests:
+    name: Django API tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Start local Docker Compose stack
+        run: docker compose -f local.docker-compose.yml up -d --build
+
+      - name: Show containers
+        run: |
+          docker compose -f local.docker-compose.yml ps
+
+      - name: Run API tests
+        run: docker exec bh_app_local python manage.py test api -v 2
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose -f local.docker-compose.yml logs --no-color --tail=200
+
+      - name: Stop local Docker Compose stack
+        if: always()
+        run: docker compose -f local.docker-compose.yml down -v --remove-orphans
