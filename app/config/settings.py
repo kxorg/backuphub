@@ -111,11 +111,6 @@ DATABASES = {
 #             "NAME": os.getenv("POSTGRES_DB"),
 #             "USER": os.getenv("POSTGRES_USER"),
 #             "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
-            
-#             "TEST": {
-#                 "ENGINE": "django.db.backends.sqlite3",
-#                 "NAME": "test_db.sqlite3",
-#             }
 #         },
 #     }
 
