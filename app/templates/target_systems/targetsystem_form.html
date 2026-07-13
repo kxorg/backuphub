@@ -35,12 +35,30 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="{{ form.system_type.id_for_label }}" class="form-label">System Type *</label>
-                            {{ form.system_type }}
+                            <label for="{{ form.system_type.id_for_label }}" class="form-label">
+                                System Type 
+                            </label>
+                            <div class="input-group">
+                                {{ form.system_type }}
+                                <a href="{% url 'system_type_create' %}" 
+                                   class="btn btn-outline-primary" 
+                                   title="Create new System Type">
+                                    <i class="bi bi-plus-lg"></i>
+                                </a>
+                            </div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="{{ form.environment.id_for_label }}" class="form-label">Environment</label>
-                            {{ form.environment }}
+                            <label for="{{ form.environment.id_for_label }}" class="form-label">
+                                Environment
+                            </label>
+                            <div class="input-group">
+                                {{ form.environment }}
+                                <a href="{% url 'environment_create' %}" 
+                                   class="btn btn-outline-primary" 
+                                   title="Create new Environment">
+                                    <i class="bi bi-plus-lg"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
 
