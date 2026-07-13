@@ -498,6 +498,7 @@ class BackupOperation(models.Model):
         verbose_name='Status'
     )
     started_at = models.DateTimeField(
+        auto_now_add=True,
         verbose_name='Started at'
     )
     finished_at = models.DateTimeField(
