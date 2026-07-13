@@ -109,14 +109,8 @@ class BackupOperationViewSet(viewsets.GenericViewSet,
     )
     def create(self, request, *args, **kwargs):
         """POST /api/backup-operations/"""
-        # 🔑 Получаем систему из request.auth (установлено в ApiKeyAuthentication)
-        target_system = request.auth
-        
         # Передаём target_system в контекст сериализатора
-        serializer = self.get_serializer(
-            data=request.data,
-            context={'target_system': target_system}
-        )
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         operation = serializer.save()
         return Response({'id': operation.id}, status=status.HTTP_201_CREATED)
@@ -171,6 +165,11 @@ class BackupOperationViewSet(viewsets.GenericViewSet,
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         updated = serializer.save()
+        
+        if updated.status in ['success', 'error'] and not updated.finished_at:
+            updated.finished_at = timezone.now()
+            updated.save()
+
         return Response(
             BackupOperationReadSerializer(updated).data,
             status=status.HTTP_200_OK
