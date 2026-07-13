@@ -7,6 +7,9 @@ EXPOSE 8000
 
 COPY requirements.txt /opt/requirements.txt
 
+RUN addgroup -S -g 10001 app && \
+    adduser -S -D -H -u 10001 -G app app
+
 RUN apk update && \
     apk add --no-cache \
         bash
@@ -14,9 +17,8 @@ RUN apk update && \
 RUN cd /opt/ && mkdir -p /opt/bh && python3 -m venv py && \
     /opt/py/bin/python3 -m pip install --upgrade pip && \
     /opt/py/bin/python3 -m pip install -r /opt/requirements.txt --no-build-isolation --disable-pip-version-check && \
-    chmod -R 777 /opt && \
     mkdir -p /opt/bh/logs/app && \
-    chmod 755 /opt/bh/logs
+    chown -R app:app /opt/bh /opt/py
 
 COPY ./compose/entrypoint /entrypoint
 COPY ./compose/start /start
@@ -39,5 +41,7 @@ ENV PATH="/opt/py/bin:$PATH"
 
 COPY ./app /opt/bh/
 WORKDIR /opt/bh/
+
+USER app:app
 
 ENTRYPOINT ["/entrypoint"]
