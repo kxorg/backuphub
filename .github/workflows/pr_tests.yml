@@ -28,6 +28,10 @@ jobs:
         run: |
           docker compose -f local.docker-compose.yml ps
 
+      - name: Run Ruff linter
+        continue-on-error: true
+        run: docker exec bh_app_local ruff check .
+
       - name: Run API tests
         run: docker exec bh_app_local python manage.py test api -v 2
 
