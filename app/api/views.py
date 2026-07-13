@@ -4,12 +4,10 @@ from rest_framework.response import Response
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from datetime import timedelta
-
 from core.models import TargetSystem, BackupOperation
 from .authentication import ApiKeyAuthentication
 from .serializers import (
@@ -18,9 +16,9 @@ from .serializers import (
     BackupOperationReadSerializer,
 )
 
+
 class HasValidApiKey(BasePermission):
     """Проверяет, что запрос прошёл аутентификацию по API-ключу."""
-    
     def has_permission(self, request, view):
         if request.method in ['POST', 'PATCH']:
             return hasattr(request, 'auth') and request.auth is not None
@@ -37,7 +35,6 @@ class BackupOperationViewSet(viewsets.GenericViewSet,
     ).all()
     http_method_names = ['get', 'post', 'patch', 'head', 'options']
     
-    # 🔐 Кастомная аутентификация
     authentication_classes = [ApiKeyAuthentication]
     permission_classes = [HasValidApiKey]
 
@@ -50,7 +47,6 @@ class BackupOperationViewSet(viewsets.GenericViewSet,
 
     def get_queryset(self):
         qs = super().get_queryset()
-
         api_status = self.request.query_params.get('status')
         if api_status:
             status_map = {
@@ -60,13 +56,13 @@ class BackupOperationViewSet(viewsets.GenericViewSet,
             }
             if api_status in status_map:
                 qs = qs.filter(status=status_map[api_status])
-
-        config_id = self.request.query_params.get('backupConfigurationId')
+        
+        config_id = self.request.query_params.get('backup_configuration_id')
         if config_id:
             qs = qs.filter(
                 backup_configuration_version__backup_configuration_id=config_id
             )
-
+        
         return qs.order_by('-started_at')
 
     def _get_operation_system(self, operation):
@@ -109,7 +105,6 @@ class BackupOperationViewSet(viewsets.GenericViewSet,
     )
     def create(self, request, *args, **kwargs):
         """POST /api/backup-operations/"""
-        # Передаём target_system в контекст сериализатора
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         operation = serializer.save()
@@ -149,13 +144,9 @@ class BackupOperationViewSet(viewsets.GenericViewSet,
         """PATCH /api/backup-operations/{id}/"""
         instance = self.get_object()
         
-        # 🔐 Получаем систему из API-ключа (установлено в ApiKeyAuthentication)
         target_system = request.auth
-        
-        # 🔐 Получаем систему, к которой привязана операция
         operation_system = self._get_operation_system(instance)
         
-        # 🔐 Проверяем, что API-ключ соответствует системе операции
         if target_system != operation_system:
             return Response(
                 {'error': 'API key does not match the operation\'s target system.'},
@@ -166,10 +157,11 @@ class BackupOperationViewSet(viewsets.GenericViewSet,
         serializer.is_valid(raise_exception=True)
         updated = serializer.save()
         
+        # Автоматически устанавливаем finished_at при смене статуса на SUCCESS/FAILED
         if updated.status in ['success', 'error'] and not updated.finished_at:
             updated.finished_at = timezone.now()
             updated.save()
-
+        
         return Response(
             BackupOperationReadSerializer(updated).data,
             status=status.HTTP_200_OK
@@ -187,7 +179,7 @@ class BackupOperationViewSet(viewsets.GenericViewSet,
                 enum=['RUNNING', 'SUCCESS', 'FAILED'],
             ),
             openapi.Parameter(
-                'backupConfigurationId', openapi.IN_QUERY,
+                'backup_configuration_id', openapi.IN_QUERY,
                 description='Filter by backup configuration ID',
                 type=openapi.TYPE_INTEGER,
             ),
@@ -207,17 +199,16 @@ class BackupOperationViewSet(viewsets.GenericViewSet,
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
-# ==========================================
-# UI REFRESH API 
-# ==========================================
 
+# ==========================================
+# UI REFRESH API
+# ==========================================
 @login_required
 def api_ui_refresh_dashboard(request):
     """API для живого обновления дашборда"""
     now = timezone.now()
     last_24h = now - timedelta(hours=24)
     
-    # Статистика
     data = {
         'total_systems': TargetSystem.objects.filter(is_active=True).count(),
         'new_systems': TargetSystem.objects.filter(created_at__gte=last_24h).count(),
@@ -228,7 +219,6 @@ def api_ui_refresh_dashboard(request):
         'error_24h': BackupOperation.objects.filter(started_at__gte=last_24h, status='error').count(),
     }
     
-    # Последние операции
     recent_backups = BackupOperation.objects.select_related(
         'backup_configuration_version__backup_configuration__target_system_version__target_system'
     ).order_by('-started_at')[:10]

@@ -12,17 +12,15 @@ from core.models import (
 
 
 class BackupOperationAPITests(TestCase):
-    """Тесты для Backup Operations API (обновлённый контракт)."""
+    """Тесты для Backup Operations API (snake_case + auto version)."""
 
     def setUp(self):
         self.client = APIClient()
 
-        # Справочники
         self.system_type = SystemType.objects.create(name='PostgreSQL')
         self.environment = Environment.objects.create(name='Production')
         self.backup_tool = BackupTool.objects.create(name='pg_dump')
 
-        # Целевая система с API-ключом
         self.target_system = TargetSystem.objects.create(
             name='PG Main DB',
             system_type=self.system_type,
@@ -30,7 +28,6 @@ class BackupOperationAPITests(TestCase):
         )
         self.api_key = str(self.target_system.api_key)
 
-        # Текущая версия системы
         self.system_version = TargetSystemVersion.objects.create(
             target_system=self.target_system,
             version_number=1,
@@ -39,14 +36,12 @@ class BackupOperationAPITests(TestCase):
             valid_from=timezone.now(),
         )
 
-        # Конфигурация
         self.config = BackupConfiguration.objects.create(
             name='Daily Backup',
             target_system_version=self.system_version,
             is_active=True,
         )
 
-        # Текущая версия конфигурации
         self.config_version = BackupConfigurationVersion.objects.create(
             backup_configuration=self.config,
             backup_tool=self.backup_tool,
@@ -59,11 +54,11 @@ class BackupOperationAPITests(TestCase):
         self.url = '/api/backup-operations/'
 
     def _payload(self, **overrides):
-        """Базовый payload для создания операции."""
+        """Базовый payload для создания операции (только snake_case)."""
         data = {
-            'backupConfigurationVersionId': self.config_version.id,
+            'backup_configuration_id': self.config.id,
             'hostname': 'backup-server-01',
-            'ipAddress': '10.10.10.15',
+            'ip_address': '10.10.10.15',
         }
         data.update(overrides)
         return data
@@ -97,9 +92,8 @@ class BackupOperationAPITests(TestCase):
         op = BackupOperation.objects.get(id=resp.data['id'])
         self.assertEqual(op.status, 'in_progress')
         self.assertEqual(op.hostname, 'backup-server-01')
-        # Привязка к переданной версии конфигурации
+        # Привязка к ТЕКУЩЕЙ версии конфигурации (бэкенд нашел её сам)
         self.assertEqual(op.backup_configuration_version, self.config_version)
-        # started_at должен быть установлен автоматически
         self.assertIsNotNone(op.started_at)
 
     # ==========================================
@@ -109,14 +103,13 @@ class BackupOperationAPITests(TestCase):
         """PATCH на SUCCESS → 200 OK, finished_at ставится автоматически."""
         op_id = self._create_op()
 
-        # finishedAt больше не передаётся в body
         resp = self.client.patch(
             f'{self.url}{op_id}/',
             {
                 'status': 'SUCCESS',
-                'sizeBytes': 5368709120,
-                'storageType': 's3',
-                'storagePath': 's3://backup/prod/backup.sql.gz',
+                'size_bytes': 5368709120,
+                'storage_type': 's3',
+                'storage_path': 's3://backup/prod/backup.sql.gz',
             },
             format='json',
             HTTP_X_API_KEY=self.api_key,
@@ -128,21 +121,20 @@ class BackupOperationAPITests(TestCase):
         op = BackupOperation.objects.get(id=op_id)
         self.assertEqual(op.status, 'success')
         self.assertEqual(op.size_bytes, 5368709120)
-        # Проверка, что finished_at установился автоматически
         self.assertIsNotNone(op.finished_at)
 
     # ==========================================
     # 3. Завершение с ошибкой (RUNNING → FAILED)
     # ==========================================
     def test_completion_with_error(self):
-        """PATCH на FAILED → 200 OK, finished_at ставится автоматически."""
+        """PATCH на FAILED → 200 OK."""
         op_id = self._create_op()
 
         resp = self.client.patch(
             f'{self.url}{op_id}/',
             {
                 'status': 'FAILED',
-                'errorMessage': 'Connection timeout to S3',
+                'error_message': 'Connection timeout to S3',
             },
             format='json',
             HTTP_X_API_KEY=self.api_key,
@@ -164,7 +156,6 @@ class BackupOperationAPITests(TestCase):
         op_id = self._create_op()
         url = f'{self.url}{op_id}/'
 
-        # Сначала завершаем успешно
         self.client.patch(
             url,
             {'status': 'SUCCESS'},
@@ -172,28 +163,26 @@ class BackupOperationAPITests(TestCase):
             HTTP_X_API_KEY=self.api_key,
         )
 
-        # Пытаемся изменить снова
         resp = self.client.patch(
             url,
-            {'status': 'FAILED', 'errorMessage': 'Late error'},
+            {'status': 'FAILED', 'error_message': 'Late error'},
             format='json',
             HTTP_X_API_KEY=self.api_key,
         )
 
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
-        # Статус в БД не изменился
         op = BackupOperation.objects.get(id=op_id)
         self.assertEqual(op.status, 'success')
 
     # ==========================================
-    # 5. Несуществующая версия конфигурации
+    # 5. Несуществующая конфигурация
     # ==========================================
-    def test_nonexistent_configuration_version(self):
-        """POST с несуществующим backupConfigurationVersionId → 400 Bad Request."""
+    def test_nonexistent_configuration(self):
+        """POST с несуществующим backup_configuration_id → 400 Bad Request."""
         resp = self.client.post(
             self.url,
-            {'backupConfigurationVersionId': 9999},
+            {'backup_configuration_id': 9999},
             format='json',
             HTTP_X_API_KEY=self.api_key,
         )
@@ -209,7 +198,6 @@ class BackupOperationAPITests(TestCase):
             self.url,
             self._payload(),
             format='json',
-            # Нет HTTP_X_API_KEY
         )
 
         self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -225,7 +213,6 @@ class BackupOperationAPITests(TestCase):
             f'{self.url}{op_id}/',
             {'status': 'SUCCESS'},
             format='json',
-            # Нет HTTP_X_API_KEY
         )
 
         self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)

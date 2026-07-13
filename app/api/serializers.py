@@ -8,139 +8,183 @@ from core.models import (
     BackupOperation,
 )
 
-
 # ==========================================
 # STATUS MAPPING
 # ==========================================
-
 API_TO_DB_STATUS = {
     'RUNNING': 'in_progress',
     'SUCCESS': 'success',
     'FAILED': 'error',
 }
-
 DB_TO_API_STATUS = {v: k for k, v in API_TO_DB_STATUS.items()}
 
 
 # ==========================================
-# CREATE SERIALIZER (без api_key — он в заголовке)
+# CREATE SERIALIZER
 # ==========================================
-
 class BackupOperationCreateSerializer(serializers.Serializer):
     """
     POST /api/backup-operations/
-    API-ключ передаётся через заголовок X-API-Key.
+    Обязательное: backup_configuration_id.
+    Опциональные: hostname, ip_address.
     """
-    hostname = serializers.CharField(max_length=255,required=False, allow_blank = True)
-    ipAddress = serializers.IPAddressField(required=False, allow_null=True)
-    backupConfigurationVersionId = serializers.IntegerField() 
+    backup_configuration_id = serializers.IntegerField(
+        help_text='ID of the backup configuration (required)'
+    )
+    hostname = serializers.CharField(
+        max_length=255,
+        required=False,
+        allow_blank=True,
+        help_text='Hostname of the server'
+    )
+    ip_address = serializers.IPAddressField(
+        required=False,
+        allow_null=True,
+        help_text='IP address'
+    )
 
-    def validate_backupConfigurationVersionId(self, value):
+    def validate_backup_configuration_id(self, value):
+        """Проверяет существование активной конфигурации."""
         try:
-            config_version = BackupConfigurationVersion.objects.get(
-                id=value,
-                is_current=True,
-                backup_configuration__is_active=True
-            )
-        except BackupConfigurationVersion.DoesNotExist:
-            raise serializers.ValidationError(
-                'Active backup configuration version not found.'
-            )
-        return config_version
+            config = BackupConfiguration.objects.get(id=value, is_active=True)
+        except BackupConfiguration.DoesNotExist:
+            raise serializers.ValidationError('Active backup configuration not found.')
+        return config
 
     def create(self, validated_data):
-        """Создаёт операцию, привязывая к текущей версии конфигурации."""
-        config_version = validated_data['backupConfigurationVersionId']
+        """Создаёт операцию, привязывая к ТЕКУЩЕЙ версии конфигурации."""
+        config = validated_data['backup_configuration_id']
+        
+        # Бэкенд сам ищет актуальную версию
+        current_version = config.versions.filter(is_current=True).first()
+        if not current_version:
+            raise serializers.ValidationError(
+                f"Configuration '{config.name}' has no current version."
+            )
         
         return BackupOperation.objects.create(
-            backup_configuration_version=config_version,
+            backup_configuration_version=current_version,
             hostname=validated_data.get('hostname', ''),
-            ip_address=validated_data.get('ipAddress'),
+            ip_address=validated_data.get('ip_address'),
             status='in_progress',
+            # started_at установится автоматически через auto_now_add
+            # external_job_id игнорируется
         )
 
 
 # ==========================================
-# UPDATE SERIALIZER (без изменений)
+# UPDATE SERIALIZER
 # ==========================================
-
 class BackupOperationUpdateSerializer(serializers.Serializer):
-    """PATCH /api/backup-operations/{id}/"""
-    status = serializers.ChoiceField(choices=['SUCCESS', 'FAILED'])
-    sizeBytes = serializers.IntegerField(required=False, min_value=0)
-    storageType = serializers.CharField(max_length=50, required=False, allow_blank=True)
-    storagePath = serializers.CharField(max_length=500, required=False, allow_blank=True)
-    metadata = serializers.JSONField(required=False)
-    errorMessage = serializers.CharField(required=False, allow_blank=True)
-    hostname = serializers.CharField(max_length =255, required = False, allow_blank = True)
-    ipAddress = serializers.IPAddressField(required = False, allow_null = True)
+    """
+    PATCH /api/backup-operations/{id}/
+    Все поля строго в snake_case. 
+    finished_at обрабатывается во view, hostname/ip_address здесь не нужны.
+    """
+    status = serializers.ChoiceField(
+        choices=['RUNNING', 'SUCCESS', 'FAILED'],  
+        help_text='Backup execution status'
+    )
+    size_bytes = serializers.IntegerField(
+        required=False, 
+        min_value=0, 
+        help_text='Backup size in bytes'
+    )
+    storage_type = serializers.CharField(
+        max_length=50, 
+        required=False, 
+        allow_blank=True, 
+        help_text='Storage type'
+    )
+    storage_path = serializers.CharField(
+        max_length=500, 
+        required=False, 
+        allow_blank=True, 
+        help_text='Path to backup file'
+    )
+    metadata = serializers.JSONField(
+        required=False, 
+        help_text='Technical data in JSON format'
+    )
+    error_message = serializers.CharField(
+        required=False, 
+        allow_blank=True, 
+        help_text='Required only if status=FAILED'
+    )
 
     def validate(self, attrs):
         instance = self.instance
-
+        
+        # Запрещаем изменять уже завершённые операции
         if instance.status in ['success', 'error']:
-            raise serializers.ValidationError(
-                "Cannot modify completed operation."
-            )
-
-        if attrs.get('status') == 'FAILED' and not attrs.get('errorMessage'):
+            raise serializers.ValidationError("Cannot modify completed operation.")
+        
+        # Если статус FAILED, сообщение об ошибке обязательно
+        if attrs.get('status') == 'FAILED' and not attrs.get('error_message'):
             raise serializers.ValidationError({
-                'errorMessage': 'This field is required for FAILED status.'
+                'error_message': 'This field is required for FAILED status.'
             })
-
+        
         return attrs
 
     def update(self, instance, validated_data):
-        field_mapping = {
-            'finishedAt': 'finished_at',
-            'sizeBytes': 'size_bytes',
-            'storageType': 'storage_type',
-            'storagePath': 'storage_path',
-            'errorMessage': 'error_message',
-        }
-
         if 'status' in validated_data:
-            instance.status = API_TO_DB_STATUS[validated_data['status']]
-
-        for api_field, db_field in field_mapping.items():
-            if api_field in validated_data:
-                setattr(instance, db_field, validated_data[api_field])
-
+            status_map = {
+                'RUNNING': 'in_progress', 
+                'SUCCESS': 'success', 
+                'FAILED': 'error'
+            }
+            instance.status = status_map[validated_data['status']]
+        
+        if 'size_bytes' in validated_data:
+            instance.size_bytes = validated_data['size_bytes']
+            
+        if 'storage_type' in validated_data:
+            instance.storage_type = validated_data['storage_type']
+            
+        if 'storage_path' in validated_data:
+            instance.storage_path = validated_data['storage_path']
+            
+        if 'error_message' in validated_data:
+            instance.error_message = validated_data['error_message']
+            
         if 'metadata' in validated_data:
             instance.metadata = validated_data['metadata']
         
-        instance.hostname = validated_data.get('hostname', instance.hostname)
-        instance.ip_address = validated_data.get('ipAddress', instance.ip_address)
-
         instance.save()
         return instance
 
 
 # ==========================================
-# READ SERIALIZER (без изменений)
+# READ SERIALIZER
 # ==========================================
-
 class BackupOperationReadSerializer(serializers.ModelSerializer):
     """GET /api/backup-operations/"""
-    backupConfigurationId = serializers.IntegerField(
+    backup_configuration_id = serializers.IntegerField(
         source='backup_configuration_version.backup_configuration.id',
         read_only=True
     )
-    ipAddress = serializers.CharField(source='ip_address', read_only=True, allow_null=True)
-    startedAt = serializers.DateTimeField(source='started_at', read_only=True)
-    finishedAt = serializers.DateTimeField(source='finished_at', read_only=True, allow_null=True)
-    sizeBytes = serializers.IntegerField(source='size_bytes', read_only=True, allow_null=True)
-    storageType = serializers.CharField(source='storage_type', read_only=True, allow_null=True)
-    storagePath = serializers.CharField(source='storage_path', read_only=True, allow_null=True)
-    errorMessage = serializers.CharField(source='error_message', read_only=True, allow_null=True)
+    backup_configuration_version_id = serializers.IntegerField(
+        source='backup_configuration_version.id',
+        read_only=True
+    )
 
     class Meta:
         model = BackupOperation
         fields = [
-            'id', 'backupConfigurationId',
-            'hostname', 'ipAddress', 'status',
-            'startedAt', 'finishedAt', 'sizeBytes',
-            'storageType', 'storagePath', 'metadata', 'errorMessage',
+            'id',
+            'backup_configuration_id',
+            'backup_configuration_version_id',
+            'hostname',
+            'ip_address',
+            'status',
+            'started_at',
+            'finished_at',
+            'size_bytes',
+            'storage_type',
+            'storage_path',
+            'metadata',
+            'error_message',
         ]
         read_only_fields = fields
 
