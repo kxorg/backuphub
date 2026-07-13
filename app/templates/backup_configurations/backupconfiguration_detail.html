@@ -3,148 +3,275 @@
 {% block title %}{{ backup_configuration.name }} | BackupHub{% endblock %}
 
 {% block content %}
-<nav aria-label="breadcrumb">
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{% url 'backup_configuration_list' %}">Backup Configurations</a></li>
         <li class="breadcrumb-item active">{{ backup_configuration.name }}</li>
     </ol>
 </nav>
 
+<!-- Header with Actions -->
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>{{ backup_configuration.name }}</h2>
     <div>
+        <h2 class="mb-1">
+            <i class="bi bi-gear me-2"></i>{{ backup_configuration.name }}
+        </h2>
+        <span class="badge {% if backup_configuration.is_active %}badge-success{% else %}badge-secondary{% endif %}">
+            {% if backup_configuration.is_active %}
+                <i class="bi bi-check-circle me-1"></i>Active
+            {% else %}
+                <i class="bi bi-slash-circle me-1"></i>Inactive
+            {% endif %}
+        </span>
+        <span class="badge badge-primary ms-2">
+            <i class="bi bi-server me-1"></i>
+            {{ backup_configuration.target_system_version.target_system.name }}
+        </span>
+    </div>
+    <div class="btn-group">
         <a href="{% url 'backup_configuration_edit' backup_configuration.id %}" class="btn btn-primary">
-            <i class="bi bi-pencil"></i> Edit
+            <i class="bi bi-pencil me-1"></i>Edit
         </a>
         <a href="{% url 'backup_configuration_history' backup_configuration.id %}" class="btn btn-info">
-            <i class="bi bi-clock-history"></i> History
+            <i class="bi bi-clock-history me-1"></i>Version History
         </a>
         <form method="post" action="{% url 'backup_configuration_delete' backup_configuration.id %}" class="d-inline">
             {% csrf_token %}
-            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure?')">
-                <i class="bi bi-trash"></i> Deactivate
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to deactivate this configuration?')">
+                <i class="bi bi-trash me-1"></i>Deactivate
             </button>
         </form>
     </div>
 </div>
 
-<div class="row">
+<!-- Main Info Cards -->
+<div class="row mb-4">
+    <!-- Configuration Information -->
     <div class="col-md-6">
-        <div class="card mb-4">
+        <div class="card h-100">
             <div class="card-header">
-                <h5 class="mb-0">Configuration Information</h5>
+                <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Configuration Information</h5>
             </div>
             <div class="card-body">
-                <table class="table table-borderless">
-                    <tr>
-                        <th style="width: 40%;">Name:</th>
-                        <td>{{ backup_configuration.name }}</td>
-                    </tr>
-                    <tr>
-                        <th>Target System:</th>
-                        <td>{{ backup_configuration.target_system_version.target_system.name }}</td>
-                    </tr>
-                    <tr>
-                        <th>System Version:</th>
-                        <td>v{{ backup_configuration.target_system_version.version_number }}</td>
-                    </tr>
-                    <tr>
-                        <th>Description:</th>
-                        <td>{{ backup_configuration.description|default:"—" }}</td>
-                    </tr>
-                    <tr>
-                        <th>Status:</th>
-                        <td>
-                            {% if backup_configuration.is_active %}
-                                <span class="badge badge-success">Active</span>
-                            {% else %}
-                                <span class="badge badge-secondary">Inactive</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Created:</th>
-                        <td>{{ backup_configuration.created_at|date:"d.m.Y H:i" }} by {{ backup_configuration.created_by|default:"System" }}</td>
-                    </tr>
-                    <tr>
-                        <th>Updated:</th>
-                        <td>{{ backup_configuration.updated_at|date:"d.m.Y H:i" }} by {{ backup_configuration.updated_by|default:"System" }}</td>
-                    </tr>
-                </table>
+                <div class="row mb-3">
+                    <div class="col-4">
+                        <strong class="text-muted">Target System:</strong>
+                    </div>
+                    <div class="col-8">
+                        <a href="{% url 'target_system_detail' backup_configuration.target_system_version.target_system.id %}">
+                            {{ backup_configuration.target_system_version.target_system.name }}
+                        </a>
+                        <span class="badge badge-secondary ms-1">v{{ backup_configuration.target_system_version.version_number }}</span>
+                    </div>
+                </div>
+                {% if backup_configuration.description %}
+                <div class="row mb-3">
+                    <div class="col-4">
+                        <strong class="text-muted">Description:</strong>
+                    </div>
+                    <div class="col-8">{{ backup_configuration.description }}</div>
+                </div>
+                {% endif %}
+                <hr>
+                <div class="row mb-2">
+                    <div class="col-4">
+                        <strong class="text-muted">Created:</strong>
+                    </div>
+                    <div class="col-8">
+                        {{ backup_configuration.created_at|date:"d.m.Y H:i" }} 
+                        <small class="text-muted">by {{ backup_configuration.created_by|default:"System" }}</small>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-4">
+                        <strong class="text-muted">Updated:</strong>
+                    </div>
+                    <div class="col-8">
+                        {{ backup_configuration.updated_at|date:"d.m.Y H:i" }} 
+                        <small class="text-muted">by {{ backup_configuration.updated_by|default:"System" }}</small>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Current Version Parameters -->
     <div class="col-md-6">
-        <div class="card mb-4">
+        <div class="card h-100">
             <div class="card-header">
-                <h5 class="mb-0">Current Version Parameters</h5>
+                <h5 class="mb-0"><i class="bi bi-sliders me-2"></i>Current Version Parameters</h5>
             </div>
             <div class="card-body">
                 {% if current_version %}
-                <table class="table table-borderless">
-                    <tr>
-                        <th style="width: 40%;">Version:</th>
-                        <td>{{ current_version.version_number }}</td>
-                    </tr>
-                    <tr>
-                        <th>Backup Tool:</th>
-                        <td>{{ current_version.backup_tool.name }}</td>
-                    </tr>
-                    <tr>
-                        <th>Backup Mode:</th>
-                        <td>{{ current_version.get_backup_mode_display }}</td>
-                    </tr>
-                    <tr>
-                        <th>Schedule:</th>
-                        <td><code>{{ current_version.schedule_cron|default:"—" }}</code></td>
-                    </tr>
-                    <tr>
-                        <th>Retention:</th>
-                        <td>{{ current_version.retention_days }} days</td>
-                    </tr>
-                    <tr>
-                        <th>RPO:</th>
-                        <td>{{ current_version.rpo_minutes }} minutes</td>
-                    </tr>
-                    <tr>
-                        <th>RTO:</th>
-                        <td>{{ current_version.rto_minutes }} minutes</td>
-                    </tr>
-                    <tr>
-                        <th>Storage Type:</th>
-                        <td>{{ current_version.get_storage_type_display }}</td>
-                    </tr>
-                    <tr>
-                        <th>Storage Path:</th>
-                        <td>{{ current_version.storage_path|default:"—" }}</td>
-                    </tr>
-                    <tr>
-                        <th>Verify After Backup:</th>
-                        <td>
-                            {% if current_version.verify_after_backup %}
-                                <span class="badge badge-success">Yes</span>
-                            {% else %}
-                                <span class="badge badge-secondary">No</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Immutable Storage:</th>
-                        <td>
-                            {% if current_version.immutable_storage %}
-                                <span class="badge badge-success">Yes</span>
-                            {% else %}
-                                <span class="badge badge-secondary">No</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                </table>
+                <div class="mb-3">
+                    <span class="badge badge-success fs-6">v{{ current_version.version_number }}</span>
+                    <span class="badge badge-info">Current</span>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4">
+                        <strong class="text-muted">Backup Tool:</strong>
+                    </div>
+                    <div class="col-8">
+                        <i class="bi bi-tools me-1"></i>{{ current_version.backup_tool.name }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4">
+                        <strong class="text-muted">Mode:</strong>
+                    </div>
+                    <div class="col-8">
+                        <span class="badge badge-primary">{{ current_version.get_backup_mode_display }}</span>
+                    </div>
+                </div>
+                {% if current_version.schedule_cron %}
+                <div class="row mb-3">
+                    <div class="col-4">
+                        <strong class="text-muted">Schedule:</strong>
+                    </div>
+                    <div class="col-8">
+                        <code>{{ current_version.schedule_cron }}</code>
+                    </div>
+                </div>
+                {% endif %}
+                <hr>
+                <div class="row mb-2">
+                    <div class="col-4">
+                        <strong class="text-muted">Retention:</strong>
+                    </div>
+                    <div class="col-8">{{ current_version.retention_days }} days</div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-4">
+                        <strong class="text-muted">RPO:</strong>
+                    </div>
+                    <div class="col-8">{{ current_version.rpo_minutes }} min</div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-4">
+                        <strong class="text-muted">RTO:</strong>
+                    </div>
+                    <div class="col-8">{{ current_version.rto_minutes }} min</div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-4">
+                        <strong class="text-muted">Storage:</strong>
+                    </div>
+                    <div class="col-8">
+                        {{ current_version.get_storage_type_display }}
+                        {% if current_version.storage_path %}
+                            <br><small class="text-muted">{{ current_version.storage_path }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-4">
+                        <strong class="text-muted">Options:</strong>
+                    </div>
+                    <div class="col-8">
+                        {% if current_version.verify_after_backup %}
+                            <span class="badge badge-info me-1">Verify</span>
+                        {% endif %}
+                        {% if current_version.immutable_storage %}
+                            <span class="badge badge-warning me-1">Immutable</span>
+                        {% endif %}
+                        {% if not current_version.verify_after_backup and not current_version.immutable_storage %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </div>
+                </div>
                 {% else %}
-                <p class="text-muted">No version information available</p>
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>No version information available
+                </div>
                 {% endif %}
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Recent Backup Operations -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="bi bi-clock-history me-2"></i>Recent Backup Operations
+        </h5>
+        <a href="{% url 'backup_operation_list' %}?configuration={{ backup_configuration.id }}" class="btn btn-sm btn-outline-primary">
+            View All <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+    </div>
+    <div class="card-body">
+        {% if current_version %}
+        {% with recent_ops=current_version.operations.all|slice:":10" %}
+        {% if recent_ops %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Hostname</th>
+                        <th>Status</th>
+                        <th>Duration</th>
+                        <th>Size</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for op in recent_ops %}
+                    <tr>
+                        <td>{{ op.started_at|date:"d.m.Y H:i" }}</td>
+                        <td>{{ op.hostname }}</td>
+                        <td>
+                            {% if op.status == 'success' %}
+                                <span class="badge badge-success"><i class="bi bi-check-circle me-1"></i>Success</span>
+                            {% elif op.status == 'error' %}
+                                <span class="badge badge-error"><i class="bi bi-x-circle me-1"></i>Error</span>
+                            {% elif op.status == 'in_progress' %}
+                                <span class="badge badge-info"><i class="bi bi-arrow-repeat me-1"></i>In Progress</span>
+                            {% elif op.status == 'warning' %}
+                                <span class="badge badge-warning"><i class="bi bi-exclamation-triangle me-1"></i>Warning</span>
+                            {% elif op.status == 'cancelled' %}
+                                <span class="badge badge-secondary"><i class="bi bi-slash-circle me-1"></i>Cancelled</span>
+                            {% else %}
+                                <span class="badge badge-secondary">{{ op.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if op.duration_seconds %}
+                                {{ op.duration_seconds }}s
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if op.size_human %}
+                                {{ op.size_human }}
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'backup_operation_detail' op.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="bi bi-inbox display-4 text-muted"></i>
+            <p class="text-muted mt-2 mb-0">No backup operations yet</p>
+        </div>
+        {% endif %}
+        {% endwith %}
+        {% else %}
+        <div class="text-center py-4">
+            <p class="text-muted">No version available to show operations</p>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
