@@ -357,7 +357,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let html = '';
         if (operations.length === 0) {
-            // Если операций нет, показываем заглушку (сохраняем стиль оригинала)
             html = `
                 <tr>
                     <td colspan="6" class="text-center py-4">
@@ -367,7 +366,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </tr>`;
         } else {
             operations.forEach(op => {
-                // Маппинг статусов на бейджи (копия логики из Django шаблона)
+                // Маппинг статусов на бейджи
                 let statusBadge = '';
                 if (op.status === 'success') {
                     statusBadge = '<span class="badge badge-success"><i class="bi bi-check-circle me-1"></i>Success</span>';
@@ -385,6 +384,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const timeDisplay = op.started_at ? `<i class="bi bi-clock me-1"></i>${op.started_at} ago` : '<span class="text-muted">—</span>';
                 const sizeDisplay = op.size_human ? `<i class="bi bi-database me-1"></i>${op.size_human}` : '<span class="text-muted">—</span>';
+                
+                // 👇 ДОБАВЛЕНО: логика отображения duration
+                const durationDisplay = (op.duration_seconds !== null && op.duration_seconds !== undefined) 
+                    ? `${op.duration_seconds}s` 
+                    : '<span class="text-muted">—</span>';
 
                 html += `
                     <tr>
@@ -396,7 +400,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td><span class="text-muted">${op.hostname}</span></td>
                         <td>${statusBadge}</td>
                         <td>${timeDisplay}</td>
-                        <td><span class="text-muted">—</span></td>
+                        <td>${durationDisplay}</td> <!-- 👈 ЗАМЕНЕНО: теперь используем переменную, а не жесткий прочерк -->
                         <td>${sizeDisplay}</td>
                     </tr>`;
             });

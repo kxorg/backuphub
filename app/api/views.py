@@ -242,6 +242,7 @@ def api_ui_refresh_dashboard(request):
             'hostname': op.hostname,
             'status': op.status,
             'started_at': op.started_at.strftime('%d.%m.%Y %H:%M') if op.started_at else '-',
+            'duration_seconds': op.duration_seconds, 
             'size_human': op.size_human or '-',
             'detail_url': f"/backup-operations/{op.id}/"
         })
