@@ -484,6 +484,7 @@ class BackupOperation(models.Model):
     )
     hostname = models.CharField(
         max_length=255,
+        blank = True,
         verbose_name='Hostname'
     )
     ip_address = models.GenericIPAddressField(
@@ -498,6 +499,7 @@ class BackupOperation(models.Model):
         verbose_name='Status'
     )
     started_at = models.DateTimeField(
+        auto_now_add=True,
         verbose_name='Started at'
     )
     finished_at = models.DateTimeField(

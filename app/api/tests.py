@@ -12,7 +12,7 @@ from core.models import (
 
 
 class BackupOperationAPITests(TestCase):
-    """Компактные тесты для Backup Operations API."""
+    """Тесты для Backup Operations API (обновлённый контракт)."""
 
     def setUp(self):
         self.client = APIClient()
@@ -61,10 +61,9 @@ class BackupOperationAPITests(TestCase):
     def _payload(self, **overrides):
         """Базовый payload для создания операции."""
         data = {
-            'externalJobId': 'JOB-001',
+            'backupConfigurationVersionId': self.config_version.id,
             'hostname': 'backup-server-01',
             'ipAddress': '10.10.10.15',
-            'startedAt': '2026-07-09T10:00:00Z',
         }
         data.update(overrides)
         return data
@@ -98,23 +97,25 @@ class BackupOperationAPITests(TestCase):
         op = BackupOperation.objects.get(id=resp.data['id'])
         self.assertEqual(op.status, 'in_progress')
         self.assertEqual(op.hostname, 'backup-server-01')
-        # Привязка к ТЕКУЩЕЙ версии конфигурации
+        # Привязка к переданной версии конфигурации
         self.assertEqual(op.backup_configuration_version, self.config_version)
+        # started_at должен быть установлен автоматически
+        self.assertIsNotNone(op.started_at)
 
     # ==========================================
     # 2. Успешное завершение (RUNNING → SUCCESS)
     # ==========================================
     def test_successful_completion(self):
-        """PATCH на SUCCESS → 200 OK."""
-        op_id = self._create_op(externalJobId='JOB-SUCCESS')
+        """PATCH на SUCCESS → 200 OK, finished_at ставится автоматически."""
+        op_id = self._create_op()
 
+        # finishedAt больше не передаётся в body
         resp = self.client.patch(
             f'{self.url}{op_id}/',
             {
                 'status': 'SUCCESS',
-                'finishedAt': '2026-07-09T10:30:00Z',
                 'sizeBytes': 5368709120,
-                'storageType': 'S3',
+                'storageType': 's3',
                 'storagePath': 's3://backup/prod/backup.sql.gz',
             },
             format='json',
@@ -127,19 +128,20 @@ class BackupOperationAPITests(TestCase):
         op = BackupOperation.objects.get(id=op_id)
         self.assertEqual(op.status, 'success')
         self.assertEqual(op.size_bytes, 5368709120)
+        # Проверка, что finished_at установился автоматически
+        self.assertIsNotNone(op.finished_at)
 
     # ==========================================
     # 3. Завершение с ошибкой (RUNNING → FAILED)
     # ==========================================
     def test_completion_with_error(self):
-        """PATCH на FAILED → 200 OK."""
-        op_id = self._create_op(externalJobId='JOB-FAILED')
+        """PATCH на FAILED → 200 OK, finished_at ставится автоматически."""
+        op_id = self._create_op()
 
         resp = self.client.patch(
             f'{self.url}{op_id}/',
             {
                 'status': 'FAILED',
-                'finishedAt': '2026-07-09T10:15:00Z',
                 'errorMessage': 'Connection timeout to S3',
             },
             format='json',
@@ -152,19 +154,20 @@ class BackupOperationAPITests(TestCase):
         op = BackupOperation.objects.get(id=op_id)
         self.assertEqual(op.status, 'error')
         self.assertEqual(op.error_message, 'Connection timeout to S3')
+        self.assertIsNotNone(op.finished_at)
 
     # ==========================================
     # 4. Попытка повторного завершения
     # ==========================================
     def test_attempt_to_complete_again(self):
         """PATCH завершённой операции → 400 Bad Request."""
-        op_id = self._create_op(externalJobId='JOB-RETRY')
+        op_id = self._create_op()
         url = f'{self.url}{op_id}/'
 
         # Сначала завершаем успешно
         self.client.patch(
             url,
-            {'status': 'SUCCESS', 'finishedAt': '2026-07-09T10:30:00Z'},
+            {'status': 'SUCCESS'},
             format='json',
             HTTP_X_API_KEY=self.api_key,
         )
@@ -184,13 +187,13 @@ class BackupOperationAPITests(TestCase):
         self.assertEqual(op.status, 'success')
 
     # ==========================================
-    # 5. Несуществующая конфигурация
+    # 5. Несуществующая версия конфигурации
     # ==========================================
-    def test_nonexistent_configuration(self):
-        """POST с configurationId=9999 → 400 Bad Request."""
+    def test_nonexistent_configuration_version(self):
+        """POST с несуществующим backupConfigurationVersionId → 400 Bad Request."""
         resp = self.client.post(
             self.url,
-            self._payload(configurationId=9999),
+            {'backupConfigurationVersionId': 9999},
             format='json',
             HTTP_X_API_KEY=self.api_key,
         )
@@ -216,11 +219,11 @@ class BackupOperationAPITests(TestCase):
     # ==========================================
     def test_patch_without_api_key(self):
         """PATCH без заголовка X-API-Key → 401 Unauthorized."""
-        op_id = self._create_op(externalJobId='JOB-NOKEY')
+        op_id = self._create_op()
 
         resp = self.client.patch(
             f'{self.url}{op_id}/',
-            {'status': 'SUCCESS', 'finishedAt': '2026-07-09T10:30:00Z'},
+            {'status': 'SUCCESS'},
             format='json',
             # Нет HTTP_X_API_KEY
         )
