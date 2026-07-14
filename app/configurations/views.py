@@ -55,7 +55,8 @@ class BackupConfigurationCreateView(LoginRequiredMixin, CreateView):
     model = BackupConfiguration
     form_class = BackupConfigurationForm
     template_name = 'backup_configurations/backupconfiguration_form.html'
-    success_url = reverse_lazy('backup_configuration_list')
+    def get_success_url(self):
+        return reverse_lazy('backup_configuration_detail', kwargs={'pk': self.object.pk})
 
     @transaction.atomic
     def form_valid(self, form):
@@ -82,7 +83,7 @@ class BackupConfigurationCreateView(LoginRequiredMixin, CreateView):
         )
 
         messages.success(self.request, f'Backup Configuration "{self.object.name}" created successfully.')
-        return redirect(self.get_success_url())
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
