@@ -1,0 +1,1927 @@
+ERROR|14.07.2026 04:04:44|signal|1|139817422859048|Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0x7f29c43a0440>> raised: ModuleNotFoundError("No module named 'api.v1.backup_operations'")
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/celery/utils/dispatch/signal.py", line 276, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 100, in on_import_modules
+    self.worker_fixup.validate_models()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 140, in validate_models
+    run_checks()
+    ~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/registry.py", line 89, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 16, in check_url_config
+    return check_resolver(resolver)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 26, in check_resolver
+    return check_method()
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 531, in check
+    for pattern in self.url_patterns:
+                   ^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 718, in url_patterns
+    patterns = getattr(self.urlconf_module, "urlpatterns", self.urlconf_module)
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+ModuleNotFoundError: No module named 'api.v1.backup_operations'
+ERROR|14.07.2026 04:04:44|signal|8|139803416574760|Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0x7f2681608440>> raised: ModuleNotFoundError("No module named 'api.v1.backup_operations'")
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 136, in check_custom_error_handlers
+    handler = resolver.resolve_error_handler(status_code)
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 732, in resolve_error_handler
+    callback = getattr(self.urlconf_module, "handler%s" % view_type, None)
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+ModuleNotFoundError: No module named 'api.v1.backup_operations'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/celery/utils/dispatch/signal.py", line 276, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 100, in on_import_modules
+    self.worker_fixup.validate_models()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 140, in validate_models
+    run_checks()
+    ~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/registry.py", line 89, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 138, in check_custom_error_handlers
+    path = getattr(resolver.urlconf_module, "handler%s" % status_code)
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+ModuleNotFoundError: No module named 'api.v1.backup_operations'
+ERROR|14.07.2026 04:04:50|signal|1|140035035663144|Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0x7f5c6f054440>> raised: ModuleNotFoundError("No module named 'api.v1.backup_operations'")
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/celery/utils/dispatch/signal.py", line 276, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 100, in on_import_modules
+    self.worker_fixup.validate_models()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 140, in validate_models
+    run_checks()
+    ~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/registry.py", line 89, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 16, in check_url_config
+    return check_resolver(resolver)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 26, in check_resolver
+    return check_method()
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 531, in check
+    for pattern in self.url_patterns:
+                   ^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 718, in url_patterns
+    patterns = getattr(self.urlconf_module, "urlpatterns", self.urlconf_module)
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+ModuleNotFoundError: No module named 'api.v1.backup_operations'
+ERROR|14.07.2026 04:04:51|signal|8|140690609396520|Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0x7ff512324440>> raised: ModuleNotFoundError("No module named 'api.v1.backup_operations'")
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 136, in check_custom_error_handlers
+    handler = resolver.resolve_error_handler(status_code)
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 732, in resolve_error_handler
+    callback = getattr(self.urlconf_module, "handler%s" % view_type, None)
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+ModuleNotFoundError: No module named 'api.v1.backup_operations'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/celery/utils/dispatch/signal.py", line 276, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 100, in on_import_modules
+    self.worker_fixup.validate_models()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 140, in validate_models
+    run_checks()
+    ~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/registry.py", line 89, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 138, in check_custom_error_handlers
+    path = getattr(resolver.urlconf_module, "handler%s" % status_code)
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+ModuleNotFoundError: No module named 'api.v1.backup_operations'
+ERROR|14.07.2026 04:04:56|signal|1|140158793894696|Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0x7f793f8d4440>> raised: ModuleNotFoundError("No module named 'api.v1.backup_operations'")
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/celery/utils/dispatch/signal.py", line 276, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 100, in on_import_modules
+    self.worker_fixup.validate_models()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 140, in validate_models
+    run_checks()
+    ~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/registry.py", line 89, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 16, in check_url_config
+    return check_resolver(resolver)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 26, in check_resolver
+    return check_method()
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 531, in check
+    for pattern in self.url_patterns:
+                   ^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 718, in url_patterns
+    patterns = getattr(self.urlconf_module, "urlpatterns", self.urlconf_module)
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+ModuleNotFoundError: No module named 'api.v1.backup_operations'
+ERROR|14.07.2026 04:04:57|signal|8|140698307369768|Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0x7ff6dd04c440>> raised: ModuleNotFoundError("No module named 'api.v1.backup_operations'")
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 136, in check_custom_error_handlers
+    handler = resolver.resolve_error_handler(status_code)
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 732, in resolve_error_handler
+    callback = getattr(self.urlconf_module, "handler%s" % view_type, None)
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+ModuleNotFoundError: No module named 'api.v1.backup_operations'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/celery/utils/dispatch/signal.py", line 276, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 100, in on_import_modules
+    self.worker_fixup.validate_models()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 140, in validate_models
+    run_checks()
+    ~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/registry.py", line 89, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 138, in check_custom_error_handlers
+    path = getattr(resolver.urlconf_module, "handler%s" % status_code)
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+ModuleNotFoundError: No module named 'api.v1.backup_operations'
+ERROR|14.07.2026 04:05:03|signal|1|140204191111976|Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0x7f83d1654440>> raised: ModuleNotFoundError("No module named 'api.v1.backup_operations'")
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/celery/utils/dispatch/signal.py", line 276, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 100, in on_import_modules
+    self.worker_fixup.validate_models()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 140, in validate_models
+    run_checks()
+    ~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/registry.py", line 89, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 16, in check_url_config
+    return check_resolver(resolver)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 26, in check_resolver
+    return check_method()
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 531, in check
+    for pattern in self.url_patterns:
+                   ^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 718, in url_patterns
+    patterns = getattr(self.urlconf_module, "urlpatterns", self.urlconf_module)
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+ModuleNotFoundError: No module named 'api.v1.backup_operations'
+ERROR|14.07.2026 04:05:04|signal|8|140364724321064|Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0x7fa931ebc440>> raised: ModuleNotFoundError("No module named 'api.v1.backup_operations'")
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 136, in check_custom_error_handlers
+    handler = resolver.resolve_error_handler(status_code)
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 732, in resolve_error_handler
+    callback = getattr(self.urlconf_module, "handler%s" % view_type, None)
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+ModuleNotFoundError: No module named 'api.v1.backup_operations'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/celery/utils/dispatch/signal.py", line 276, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 100, in on_import_modules
+    self.worker_fixup.validate_models()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 140, in validate_models
+    run_checks()
+    ~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/registry.py", line 89, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 138, in check_custom_error_handlers
+    path = getattr(resolver.urlconf_module, "handler%s" % status_code)
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+ModuleNotFoundError: No module named 'api.v1.backup_operations'
+ERROR|14.07.2026 04:05:10|signal|1|140327080827688|Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0x7fa06e3c0440>> raised: ModuleNotFoundError("No module named 'api.v1.backup_operations'")
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/celery/utils/dispatch/signal.py", line 276, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 100, in on_import_modules
+    self.worker_fixup.validate_models()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 140, in validate_models
+    run_checks()
+    ~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/registry.py", line 89, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 16, in check_url_config
+    return check_resolver(resolver)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 26, in check_resolver
+    return check_method()
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 531, in check
+    for pattern in self.url_patterns:
+                   ^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 718, in url_patterns
+    patterns = getattr(self.urlconf_module, "urlpatterns", self.urlconf_module)
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+ModuleNotFoundError: No module named 'api.v1.backup_operations'
+ERROR|14.07.2026 04:05:11|signal|7|139973861473064|Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0x7f4e30b84440>> raised: ModuleNotFoundError("No module named 'api.v1.backup_operations'")
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 136, in check_custom_error_handlers
+    handler = resolver.resolve_error_handler(status_code)
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 732, in resolve_error_handler
+    callback = getattr(self.urlconf_module, "handler%s" % view_type, None)
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+ModuleNotFoundError: No module named 'api.v1.backup_operations'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/celery/utils/dispatch/signal.py", line 276, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 100, in on_import_modules
+    self.worker_fixup.validate_models()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 140, in validate_models
+    run_checks()
+    ~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/registry.py", line 89, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 138, in check_custom_error_handlers
+    path = getattr(resolver.urlconf_module, "handler%s" % status_code)
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+ModuleNotFoundError: No module named 'api.v1.backup_operations'
+ERROR|14.07.2026 04:05:17|signal|1|140600014052136|Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0x7fdffa528440>> raised: ModuleNotFoundError("No module named 'django_filters'")
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/celery/utils/dispatch/signal.py", line 276, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 100, in on_import_modules
+    self.worker_fixup.validate_models()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 140, in validate_models
+    run_checks()
+    ~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/registry.py", line 89, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 16, in check_url_config
+    return check_resolver(resolver)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 26, in check_resolver
+    return check_method()
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 531, in check
+    for pattern in self.url_patterns:
+                   ^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 718, in url_patterns
+    patterns = getattr(self.urlconf_module, "urlpatterns", self.urlconf_module)
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+  File "/opt/bh/api/v1/backup_operations/views.py", line 14, in <module>
+    from api.v1.backup_operations.filters import BackupOperationFilter
+  File "/opt/bh/api/v1/backup_operations/filters.py", line 1, in <module>
+    import django_filters
+ModuleNotFoundError: No module named 'django_filters'
+ERROR|14.07.2026 04:05:19|signal|8|139812627069736|Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0x7f28a65c8440>> raised: ModuleNotFoundError("No module named 'django_filters'")
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 136, in check_custom_error_handlers
+    handler = resolver.resolve_error_handler(status_code)
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 732, in resolve_error_handler
+    callback = getattr(self.urlconf_module, "handler%s" % view_type, None)
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+  File "/opt/bh/api/v1/backup_operations/views.py", line 14, in <module>
+    from api.v1.backup_operations.filters import BackupOperationFilter
+  File "/opt/bh/api/v1/backup_operations/filters.py", line 1, in <module>
+    import django_filters
+ModuleNotFoundError: No module named 'django_filters'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/celery/utils/dispatch/signal.py", line 276, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 100, in on_import_modules
+    self.worker_fixup.validate_models()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 140, in validate_models
+    run_checks()
+    ~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/registry.py", line 89, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 138, in check_custom_error_handlers
+    path = getattr(resolver.urlconf_module, "handler%s" % status_code)
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+  File "/opt/bh/api/v1/backup_operations/views.py", line 14, in <module>
+    from api.v1.backup_operations.filters import BackupOperationFilter
+  File "/opt/bh/api/v1/backup_operations/filters.py", line 1, in <module>
+    import django_filters
+ModuleNotFoundError: No module named 'django_filters'
+ERROR|14.07.2026 04:05:38|signal|1|140101613112104|Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0x7f6bef464440>> raised: ModuleNotFoundError("No module named 'django_filters'")
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/celery/utils/dispatch/signal.py", line 276, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 100, in on_import_modules
+    self.worker_fixup.validate_models()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 140, in validate_models
+    run_checks()
+    ~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/registry.py", line 89, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 16, in check_url_config
+    return check_resolver(resolver)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 26, in check_resolver
+    return check_method()
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 531, in check
+    for pattern in self.url_patterns:
+                   ^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 718, in url_patterns
+    patterns = getattr(self.urlconf_module, "urlpatterns", self.urlconf_module)
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+  File "/opt/bh/api/v1/backup_operations/views.py", line 14, in <module>
+    from api.v1.backup_operations.filters import BackupOperationFilter
+  File "/opt/bh/api/v1/backup_operations/filters.py", line 1, in <module>
+    import django_filters
+ModuleNotFoundError: No module named 'django_filters'
+ERROR|14.07.2026 04:05:39|signal|8|140645881871144|Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0x7feaa83ac440>> raised: ModuleNotFoundError("No module named 'django_filters'")
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 136, in check_custom_error_handlers
+    handler = resolver.resolve_error_handler(status_code)
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 732, in resolve_error_handler
+    callback = getattr(self.urlconf_module, "handler%s" % view_type, None)
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+  File "/opt/bh/api/v1/backup_operations/views.py", line 14, in <module>
+    from api.v1.backup_operations.filters import BackupOperationFilter
+  File "/opt/bh/api/v1/backup_operations/filters.py", line 1, in <module>
+    import django_filters
+ModuleNotFoundError: No module named 'django_filters'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/celery/utils/dispatch/signal.py", line 276, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 100, in on_import_modules
+    self.worker_fixup.validate_models()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 140, in validate_models
+    run_checks()
+    ~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/registry.py", line 89, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 138, in check_custom_error_handlers
+    path = getattr(resolver.urlconf_module, "handler%s" % status_code)
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+  File "/opt/bh/api/v1/backup_operations/views.py", line 14, in <module>
+    from api.v1.backup_operations.filters import BackupOperationFilter
+  File "/opt/bh/api/v1/backup_operations/filters.py", line 1, in <module>
+    import django_filters
+ModuleNotFoundError: No module named 'django_filters'
+ERROR|14.07.2026 04:05:44|signal|1|140451540093736|Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0x7fbd688b4440>> raised: ModuleNotFoundError("No module named 'django_filters'")
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/celery/utils/dispatch/signal.py", line 276, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 100, in on_import_modules
+    self.worker_fixup.validate_models()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 140, in validate_models
+    run_checks()
+    ~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/registry.py", line 89, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 16, in check_url_config
+    return check_resolver(resolver)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 26, in check_resolver
+    return check_method()
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 531, in check
+    for pattern in self.url_patterns:
+                   ^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 718, in url_patterns
+    patterns = getattr(self.urlconf_module, "urlpatterns", self.urlconf_module)
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+  File "/opt/bh/api/v1/backup_operations/views.py", line 14, in <module>
+    from api.v1.backup_operations.filters import BackupOperationFilter
+  File "/opt/bh/api/v1/backup_operations/filters.py", line 1, in <module>
+    import django_filters
+ModuleNotFoundError: No module named 'django_filters'
+ERROR|14.07.2026 04:05:45|signal|8|140323012877096|Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0x7f9f7bc3c440>> raised: ModuleNotFoundError("No module named 'django_filters'")
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 136, in check_custom_error_handlers
+    handler = resolver.resolve_error_handler(status_code)
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 732, in resolve_error_handler
+    callback = getattr(self.urlconf_module, "handler%s" % view_type, None)
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+  File "/opt/bh/api/v1/backup_operations/views.py", line 14, in <module>
+    from api.v1.backup_operations.filters import BackupOperationFilter
+  File "/opt/bh/api/v1/backup_operations/filters.py", line 1, in <module>
+    import django_filters
+ModuleNotFoundError: No module named 'django_filters'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/celery/utils/dispatch/signal.py", line 276, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 100, in on_import_modules
+    self.worker_fixup.validate_models()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 140, in validate_models
+    run_checks()
+    ~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/registry.py", line 89, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 138, in check_custom_error_handlers
+    path = getattr(resolver.urlconf_module, "handler%s" % status_code)
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+  File "/opt/bh/api/v1/backup_operations/views.py", line 14, in <module>
+    from api.v1.backup_operations.filters import BackupOperationFilter
+  File "/opt/bh/api/v1/backup_operations/filters.py", line 1, in <module>
+    import django_filters
+ModuleNotFoundError: No module named 'django_filters'
+ERROR|14.07.2026 04:05:49|signal|1|139720106101544|Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0x7f131bb80440>> raised: ModuleNotFoundError("No module named 'django_filters'")
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/celery/utils/dispatch/signal.py", line 276, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 100, in on_import_modules
+    self.worker_fixup.validate_models()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 140, in validate_models
+    run_checks()
+    ~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/registry.py", line 89, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 16, in check_url_config
+    return check_resolver(resolver)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 26, in check_resolver
+    return check_method()
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 531, in check
+    for pattern in self.url_patterns:
+                   ^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 718, in url_patterns
+    patterns = getattr(self.urlconf_module, "urlpatterns", self.urlconf_module)
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+  File "/opt/bh/api/v1/backup_operations/views.py", line 14, in <module>
+    from api.v1.backup_operations.filters import BackupOperationFilter
+  File "/opt/bh/api/v1/backup_operations/filters.py", line 1, in <module>
+    import django_filters
+ModuleNotFoundError: No module named 'django_filters'
+ERROR|14.07.2026 04:05:50|signal|8|140573741566760|Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0x7fd9dc528440>> raised: ModuleNotFoundError("No module named 'django_filters'")
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 136, in check_custom_error_handlers
+    handler = resolver.resolve_error_handler(status_code)
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 732, in resolve_error_handler
+    callback = getattr(self.urlconf_module, "handler%s" % view_type, None)
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+  File "/opt/bh/api/v1/backup_operations/views.py", line 14, in <module>
+    from api.v1.backup_operations.filters import BackupOperationFilter
+  File "/opt/bh/api/v1/backup_operations/filters.py", line 1, in <module>
+    import django_filters
+ModuleNotFoundError: No module named 'django_filters'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/celery/utils/dispatch/signal.py", line 276, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 100, in on_import_modules
+    self.worker_fixup.validate_models()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 140, in validate_models
+    run_checks()
+    ~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/registry.py", line 89, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 138, in check_custom_error_handlers
+    path = getattr(resolver.urlconf_module, "handler%s" % status_code)
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+  File "/opt/bh/api/v1/backup_operations/views.py", line 14, in <module>
+    from api.v1.backup_operations.filters import BackupOperationFilter
+  File "/opt/bh/api/v1/backup_operations/filters.py", line 1, in <module>
+    import django_filters
+ModuleNotFoundError: No module named 'django_filters'
+ERROR|14.07.2026 04:05:55|signal|1|140134786546472|Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0x7f73a8934440>> raised: ModuleNotFoundError("No module named 'django_filters'")
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/celery/utils/dispatch/signal.py", line 276, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 100, in on_import_modules
+    self.worker_fixup.validate_models()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 140, in validate_models
+    run_checks()
+    ~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/registry.py", line 89, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 16, in check_url_config
+    return check_resolver(resolver)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 26, in check_resolver
+    return check_method()
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 531, in check
+    for pattern in self.url_patterns:
+                   ^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 718, in url_patterns
+    patterns = getattr(self.urlconf_module, "urlpatterns", self.urlconf_module)
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+  File "/opt/bh/api/v1/backup_operations/views.py", line 14, in <module>
+    from api.v1.backup_operations.filters import BackupOperationFilter
+  File "/opt/bh/api/v1/backup_operations/filters.py", line 1, in <module>
+    import django_filters
+ModuleNotFoundError: No module named 'django_filters'
+ERROR|14.07.2026 04:05:57|signal|8|140141982137128|Signal handler <bound method DjangoFixup.on_import_modules of <celery.fixups.django.DjangoFixup object at 0x7f75557d0440>> raised: ModuleNotFoundError("No module named 'django_filters'")
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 136, in check_custom_error_handlers
+    handler = resolver.resolve_error_handler(status_code)
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 732, in resolve_error_handler
+    callback = getattr(self.urlconf_module, "handler%s" % view_type, None)
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+  File "/opt/bh/api/v1/backup_operations/views.py", line 14, in <module>
+    from api.v1.backup_operations.filters import BackupOperationFilter
+  File "/opt/bh/api/v1/backup_operations/filters.py", line 1, in <module>
+    import django_filters
+ModuleNotFoundError: No module named 'django_filters'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/celery/utils/dispatch/signal.py", line 276, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 100, in on_import_modules
+    self.worker_fixup.validate_models()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/celery/fixups/django.py", line 140, in validate_models
+    run_checks()
+    ~~~~~~~~~~^^
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/registry.py", line 89, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+  File "/opt/py/lib/python3.13/site-packages/django/core/checks/urls.py", line 138, in check_custom_error_handlers
+    path = getattr(resolver.urlconf_module, "handler%s" % status_code)
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/app/urls.py", line 29, in <module>
+    path('api/', include('api.urls')),
+                 ~~~~~~~^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/urls.py", line 4, in <module>
+    path('v1/', include('api.v1.urls')),
+                ~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/bh/api/v1/urls.py", line 4, in <module>
+    from api.v1.backup_operations.views import BackupOperationViewSet
+  File "/opt/bh/api/v1/backup_operations/views.py", line 14, in <module>
+    from api.v1.backup_operations.filters import BackupOperationFilter
+  File "/opt/bh/api/v1/backup_operations/filters.py", line 1, in <module>
+    import django_filters
+ModuleNotFoundError: No module named 'django_filters'
+INFO|14.07.2026 04:08:41|beat|1|139668920195880|beat: Starting...
+INFO|14.07.2026 04:08:42|connection|8|140305943018280|Connected to redis://redis:6379/0
+INFO|14.07.2026 04:08:42|mingle|8|140305943018280|mingle: searching for neighbors
+INFO|14.07.2026 04:08:43|mingle|8|140305943018280|mingle: all alone
+INFO|14.07.2026 04:08:43|worker|8|140305943018280|celery@worker ready.
+INFO|14.07.2026 04:08:52|control|8|140305943018280|Events of group {task} enabled by remote.
+INFO|14.07.2026 04:47:31|beat|1|140121517771560|beat: Starting...
+INFO|14.07.2026 04:47:32|connection|8|140357963979560|Connected to redis://redis:6379/0
+INFO|14.07.2026 04:47:32|mingle|8|140357963979560|mingle: searching for neighbors
+INFO|14.07.2026 04:47:33|mingle|8|140357963979560|mingle: all alone
+INFO|14.07.2026 04:47:33|worker|8|140357963979560|celery@worker ready.
+INFO|14.07.2026 04:47:41|control|8|140357963979560|Events of group {task} enabled by remote.
+INFO|14.07.2026 04:53:42|trace|57|139961402420008|Task app.celery.debug_task[0e11283f-d997-4987-bafe-89d85ee4f23c] succeeded in 0.05825204099983239s: None
+INFO|14.07.2026 04:56:42|trace|63|140523365329704|Task app.celery.debug_task[2897f923-cef9-4ad7-8c8b-2ac6c1eed53c] succeeded in 0.06072540399964055s: None
+INFO|14.07.2026 09:34:07|beat|1|140431467297576|beat: Starting...
+INFO|14.07.2026 09:34:09|connection|8|140076313783080|Connected to redis://redis:6379/0
+INFO|14.07.2026 09:34:09|mingle|8|140076313783080|mingle: searching for neighbors
+INFO|14.07.2026 09:34:10|mingle|8|140076313783080|mingle: all alone
+INFO|14.07.2026 09:34:10|worker|8|140076313783080|celery@worker ready.
+INFO|14.07.2026 09:34:21|control|8|140076313783080|Events of group {task} enabled by remote.
+INFO|14.07.2026 09:35:52|trace|15|140487829314344|Task app.celery.debug_task[404c76a2-b819-48ac-984b-3f5f49f588db] succeeded in 0.12744574999999259s: None
+INFO|14.07.2026 10:10:11|beat|1|140213185649448|beat: Starting...
+INFO|14.07.2026 10:10:14|connection|8|140593846340392|Connected to redis://redis:6379/0
+INFO|14.07.2026 10:10:14|mingle|8|140593846340392|mingle: searching for neighbors
+INFO|14.07.2026 10:10:15|mingle|8|140593846340392|mingle: all alone
+INFO|14.07.2026 10:10:15|worker|8|140593846340392|celery@worker ready.
+INFO|14.07.2026 10:10:28|control|8|140593846340392|Events of group {task} enabled by remote.

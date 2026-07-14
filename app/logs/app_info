@@ -1,0 +1,174 @@
+INFO|14.07.2026 03:33:14|autoreload|11|139659938065192|Watching for file changes with StatReloader
+INFO|14.07.2026 03:33:16|basehttp|11|139659853257528|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:33:21|basehttp|11|139659853257528|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:33:26|basehttp|11|139659853257528|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:34:33|autoreload|12|139785729088296|Watching for file changes with StatReloader
+INFO|14.07.2026 03:37:55|basehttp|12|139785644047160|"GET / HTTP/1.1" 200 24223
+INFO|14.07.2026 03:38:01|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:38:06|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:38:11|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:38:16|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:38:21|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:38:26|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:38:31|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:38:36|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:38:41|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:38:46|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:38:51|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:38:56|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:39:01|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:39:06|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:39:11|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:39:16|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:39:21|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:39:26|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:39:31|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:39:36|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:39:41|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:39:46|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:39:51|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:39:56|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:40:01|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:40:06|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:40:11|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:40:16|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:40:21|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:40:26|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:40:31|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:40:36|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:40:41|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:40:46|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:40:51|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:40:56|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:41:01|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:41:06|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:41:11|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:41:27|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:42:15|basehttp|12|139785644047160|"GET / HTTP/1.1" 200 24223
+WARNING|14.07.2026 03:42:17|basehttp|12|139785644047160|"GET /admin/ HTTP/1.1" 404 11069
+WARNING|14.07.2026 03:42:17|basehttp|12|139785644047160|"GET /admin/ HTTP/1.1" 404 11069
+WARNING|14.07.2026 03:42:21|basehttp|12|139785644047160|"GET /a[o HTTP/1.1" 404 11062
+WARNING|14.07.2026 03:42:23|basehttp|12|139785644047160|"GET /api/docs/ HTTP/1.1" 404 13556
+WARNING|14.07.2026 03:42:23|basehttp|12|139785644047160|"GET /api/docs/ HTTP/1.1" 404 13556
+INFO|14.07.2026 03:42:26|basehttp|12|139785644047160|"GET /api HTTP/1.1" 301 0
+INFO|14.07.2026 03:42:26|basehttp|12|139785641937720|"GET /api/ HTTP/1.1" 200 5323
+INFO|14.07.2026 03:42:26|basehttp|12|139785644047160|"GET /static/rest_framework/css/prettify.css HTTP/1.1" 200 817
+INFO|14.07.2026 03:42:26|basehttp|12|139785640876856|"GET /static/rest_framework/css/bootstrap-tweaks.css HTTP/1.1" 200 3426
+INFO|14.07.2026 03:42:26|basehttp|12|139785637694264|"GET /static/rest_framework/js/ajax-form.js HTTP/1.1" 200 3796
+INFO|14.07.2026 03:42:26|basehttp|12|139785644047160|"GET /static/rest_framework/js/csrf.js HTTP/1.1" 200 1793
+INFO|14.07.2026 03:42:26|basehttp|12|139785639815992|"GET /static/rest_framework/css/default.css HTTP/1.1" 200 1152
+INFO|14.07.2026 03:42:26|basehttp|12|139785636633400|"GET /static/rest_framework/js/ajax-form.js HTTP/1.1" 200 3796
+INFO|14.07.2026 03:42:26|basehttp|12|139785639815992|"GET /static/rest_framework/js/load-ajax-form.js HTTP/1.1" 200 59
+INFO|14.07.2026 03:42:26|basehttp|12|139785637694264|"GET /static/rest_framework/js/prettify-min.js HTTP/1.1" 200 13632
+INFO|14.07.2026 03:42:26|basehttp|12|139785641937720|"GET /static/rest_framework/css/bootstrap.min.css HTTP/1.1" 200 121457
+INFO|14.07.2026 03:42:26|basehttp|12|139785644047160|"GET /static/rest_framework/js/default.js HTTP/1.1" 200 1268
+INFO|14.07.2026 03:42:26|basehttp|12|139785638755128|"GET /static/rest_framework/js/jquery-3.7.1.min.js HTTP/1.1" 200 87533
+INFO|14.07.2026 03:42:26|basehttp|12|139785635572536|"GET /static/rest_framework/js/csrf.js HTTP/1.1" 200 1793
+INFO|14.07.2026 03:42:26|basehttp|12|139785640876856|"GET /static/rest_framework/js/bootstrap.min.js HTTP/1.1" 200 39680
+INFO|14.07.2026 03:42:26|basehttp|12|139785636633400|"GET /static/rest_framework/js/load-ajax-form.js HTTP/1.1" 200 59
+INFO|14.07.2026 03:42:26|basehttp|12|139785644047160|"GET /static/rest_framework/img/grid.png HTTP/1.1" 200 1458
+INFO|14.07.2026 03:42:26|basehttp|12|139785636633400|"GET /static/rest_framework/js/prettify-min.js HTTP/1.1" 200 13632
+INFO|14.07.2026 03:42:26|basehttp|12|139785633450808|"GET /static/rest_framework/js/default.js HTTP/1.1" 200 1268
+INFO|14.07.2026 03:42:26|basehttp|12|139785634511672|"GET /static/rest_framework/js/bootstrap.min.js HTTP/1.1" 200 39680
+INFO|14.07.2026 03:42:26|basehttp|12|139785635572536|"GET /static/rest_framework/js/jquery-3.7.1.min.js HTTP/1.1" 200 87533
+INFO|14.07.2026 03:42:27|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:42:31|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:42:36|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:42:41|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:42:46|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:42:51|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:42:56|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:43:01|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:43:06|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:43:11|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:43:16|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:43:21|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:43:26|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:44:27|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:45:27|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:46:27|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:47:27|basehttp|12|139785644047160|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:48:19|autoreload|12|139785729088296|/opt/bh/app/wsgi.py changed, reloading.
+INFO|14.07.2026 03:48:20|autoreload|32|140458210179880|Watching for file changes with StatReloader
+INFO|14.07.2026 03:48:27|basehttp|32|140458124868408|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:49:09|autoreload|32|140458210179880|/opt/bh/app/urls.py changed, reloading.
+INFO|14.07.2026 03:49:10|autoreload|35|140677969148712|Watching for file changes with StatReloader
+INFO|14.07.2026 03:49:16|autoreload|35|140677969148712|/opt/bh/app/urls.py changed, reloading.
+INFO|14.07.2026 03:49:17|autoreload|37|139781842397992|Watching for file changes with StatReloader
+INFO|14.07.2026 03:49:27|basehttp|37|139781756803896|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:50:27|basehttp|37|139781756803896|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:51:27|basehttp|37|139781756803896|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 200 157
+INFO|14.07.2026 03:51:53|autoreload|37|139781842397992|/opt/bh/api/urls.py changed, reloading.
+INFO|14.07.2026 03:51:54|autoreload|40|140556282813224|Watching for file changes with StatReloader
+INFO|14.07.2026 04:00:18|autoreload|40|140556282813224|/opt/bh/api/apps.py changed, reloading.
+INFO|14.07.2026 04:00:19|autoreload|42|140704816892712|Watching for file changes with StatReloader
+INFO|14.07.2026 04:08:48|autoreload|12|140546927520552|Watching for file changes with StatReloader
+WARNING|14.07.2026 04:09:27|basehttp|12|140546841860920|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 404 11205
+WARNING|14.07.2026 04:10:27|basehttp|12|140546841860920|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 404 11205
+WARNING|14.07.2026 04:11:27|basehttp|12|140546841860920|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 404 11205
+WARNING|14.07.2026 04:12:27|basehttp|12|140546841860920|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 404 11205
+WARNING|14.07.2026 04:13:27|basehttp|12|140546841860920|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 404 11205
+WARNING|14.07.2026 04:14:27|basehttp|12|140546841860920|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 404 11205
+WARNING|14.07.2026 04:15:27|basehttp|12|140546841860920|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 404 11205
+WARNING|14.07.2026 04:16:27|basehttp|12|140546841860920|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 404 11205
+WARNING|14.07.2026 04:17:27|basehttp|12|140546841860920|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 404 11205
+WARNING|14.07.2026 04:18:27|basehttp|12|140546841860920|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 404 11205
+WARNING|14.07.2026 04:19:27|basehttp|12|140546841860920|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 404 11205
+WARNING|14.07.2026 04:19:38|basehttp|12|140546841860920|"GET /api/ui-refresh/dashboard/ HTTP/1.1" 404 11205
+INFO|14.07.2026 04:21:02|autoreload|12|140546927520552|/opt/bh/app/settings.py changed, reloading.
+INFO|14.07.2026 04:21:03|autoreload|15|140248092920616|Watching for file changes with StatReloader
+INFO|14.07.2026 04:21:15|autoreload|15|140248092920616|/opt/bh/app/settings.py changed, reloading.
+INFO|14.07.2026 04:21:16|autoreload|17|139796702681896|Watching for file changes with StatReloader
+INFO|14.07.2026 04:21:42|autoreload|17|139796702681896|/opt/bh/app/urls.py changed, reloading.
+INFO|14.07.2026 04:21:43|autoreload|19|140440067533608|Watching for file changes with StatReloader
+INFO|14.07.2026 04:21:51|autoreload|19|140440067533608|/opt/bh/app/urls.py changed, reloading.
+INFO|14.07.2026 04:21:52|autoreload|21|140688805440296|Watching for file changes with StatReloader
+INFO|14.07.2026 04:22:34|basehttp|21|140688719657784|"GET / HTTP/1.1" 200 24223
+WARNING|14.07.2026 04:22:38|basehttp|21|140688719657784|"GET /docs HTTP/1.1" 404 11556
+INFO|14.07.2026 04:22:41|basehttp|21|140688719657784|"GET /admin/ HTTP/1.1" 200 17680
+INFO|14.07.2026 04:22:41|basehttp|21|140688717548344|"GET /static/admin/css/dark_mode.css HTTP/1.1" 200 2808
+INFO|14.07.2026 04:22:41|basehttp|21|140688719657784|"GET /static/admin/css/base.css HTTP/1.1" 200 22154
+INFO|14.07.2026 04:22:41|basehttp|21|140688716487480|"GET /static/admin/js/theme.js HTTP/1.1" 200 1653
+INFO|14.07.2026 04:22:42|basehttp|21|140688716487480|"GET /static/admin/css/nav_sidebar.css HTTP/1.1" 200 2810
+INFO|14.07.2026 04:22:42|basehttp|21|140688719657784|"GET /static/admin/css/dashboard.css HTTP/1.1" 200 441
+INFO|14.07.2026 04:22:42|basehttp|21|140688717548344|"GET /static/admin/css/responsive.css HTTP/1.1" 200 16632
+INFO|14.07.2026 04:22:42|basehttp|21|140688717548344|"GET /static/admin/js/nav_sidebar.js HTTP/1.1" 200 3063
+INFO|14.07.2026 04:22:42|basehttp|21|140688719657784|"GET /static/admin/img/icon-changelink.svg HTTP/1.1" 200 380
+INFO|14.07.2026 04:22:42|basehttp|21|140688717548344|"GET /static/admin/img/icon-addlink.svg HTTP/1.1" 200 331
+INFO|14.07.2026 04:22:43|basehttp|21|140688717548344|"GET /api/docs/ HTTP/1.1" 200 4646
+INFO|14.07.2026 04:22:44|basehttp|21|140688717548344|"GET /api/schema/ HTTP/1.1" 200 19326
+INFO|14.07.2026 04:22:48|basehttp|21|140688717548344|"GET /api/v1/backup-operations/ HTTP/1.1" 200 52
+INFO|14.07.2026 04:22:49|basehttp|21|140688717548344|"GET /api/v1/backup-operations/ HTTP/1.1" 200 52
+INFO|14.07.2026 04:22:57|basehttp|21|140688717548344|"GET /api/v1/backup-operations/ HTTP/1.1" 200 52
+WARNING|14.07.2026 04:23:21|basehttp|21|140688717548344|"GET /api/v1/backup-operations/1/ HTTP/1.1" 404 153
+WARNING|14.07.2026 04:23:24|basehttp|21|140688717548344|"GET /api/v1/backup-operations/1/ HTTP/1.1" 404 153
+INFO|14.07.2026 04:23:55|basehttp|21|140688717548344|"GET /api/schema HTTP/1.1" 301 0
+INFO|14.07.2026 04:23:55|basehttp|21|140688719657784|"GET /api/schema/ HTTP/1.1" 200 10517
+INFO|14.07.2026 04:24:06|basehttp|21|140688719657784|"GET /api/redoc HTTP/1.1" 301 0
+INFO|14.07.2026 04:24:06|basehttp|21|140688716487480|"GET /api/redoc/ HTTP/1.1" 200 729
+INFO|14.07.2026 04:24:06|basehttp|21|140688716487480|"GET /api/schema/ HTTP/1.1" 200 10517
+WARNING|14.07.2026 04:24:32|basehttp|21|140688716487480|"POST /api/v1/backup-operations/ HTTP/1.1" 401 160
+INFO|14.07.2026 04:41:29|autoreload|21|140688805440296|/opt/bh/api/v1/backup_operations/filters.py changed, reloading.
+INFO|14.07.2026 04:41:30|autoreload|63|140005454416680|Watching for file changes with StatReloader
+INFO|14.07.2026 04:42:34|autoreload|63|140005454416680|/opt/bh/api/v1/backup_operations/views.py changed, reloading.
+INFO|14.07.2026 04:42:35|autoreload|65|139656822950696|Watching for file changes with StatReloader
+INFO|14.07.2026 04:42:37|autoreload|65|139656822950696|/opt/bh/api/v1/backup_operations/views.py changed, reloading.
+INFO|14.07.2026 04:42:38|autoreload|67|140069033622312|Watching for file changes with StatReloader
+INFO|14.07.2026 04:42:39|autoreload|67|140069033622312|/opt/bh/api/v1/backup_operations/views.py changed, reloading.
+INFO|14.07.2026 04:42:40|autoreload|69|140039411317544|Watching for file changes with StatReloader
+INFO|14.07.2026 04:47:36|autoreload|12|139833470581544|Watching for file changes with StatReloader
+INFO|14.07.2026 04:49:37|autoreload|12|139833470581544|/opt/bh/app/settings.py changed, reloading.
+INFO|14.07.2026 04:49:38|autoreload|27|140011256814376|Watching for file changes with StatReloader
+INFO|14.07.2026 04:50:07|autoreload|27|140011256814376|/opt/bh/operations/models.py changed, reloading.
+INFO|14.07.2026 04:50:08|autoreload|29|139702280002344|Watching for file changes with StatReloader
+INFO|14.07.2026 04:50:09|autoreload|29|139702280002344|/opt/bh/operations/models.py changed, reloading.
+INFO|14.07.2026 04:50:10|autoreload|31|140091353725736|Watching for file changes with StatReloader
+INFO|14.07.2026 09:34:23|autoreload|12|140175043529512|Watching for file changes with StatReloader
+INFO|14.07.2026 09:34:44|basehttp|12|140174957325112|"GET / HTTP/1.1" 302 0
+INFO|14.07.2026 09:34:44|basehttp|12|140174957325112|"GET /login/?next=/ HTTP/1.1" 200 1423
+INFO|14.07.2026 09:34:45|basehttp|12|140174957325112|"GET /static/style/bootstrap.min.css HTTP/1.1" 200 232111
+INFO|14.07.2026 09:34:45|basehttp|12|140174957325112|"GET /static/images/favicon.png HTTP/1.1" 200 24112
+INFO|14.07.2026 10:10:20|autoreload|12|139994360343336|Watching for file changes with StatReloader
+INFO|14.07.2026 10:10:24|basehttp|12|139994273270584|"GET /api/docs/ HTTP/1.1" 200 4646
+INFO|14.07.2026 10:10:25|basehttp|12|139994274331448|"GET /api/docs/ HTTP/1.1" 200 4646
+INFO|14.07.2026 10:10:25|basehttp|12|139994274331448|"GET /api/schema/ HTTP/1.1" 200 20025
