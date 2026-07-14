@@ -49,7 +49,7 @@ jobs:
 
       - name: Start local Docker Compose stack
         if: steps.changes.outputs.code_changed == 'true'
-        run: docker compose -f test.docker-compose.yml up -d --build
+        run: docker compose -f test.docker-compose.yml up -d --build --wait
 
       - name: Show containers
         if: steps.changes.outputs.code_changed == 'true'
