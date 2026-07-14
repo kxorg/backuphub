@@ -86,7 +86,17 @@
                         <strong class="text-muted">API Key:</strong>
                     </div>
                     <div class="col-8">
-                        <code class="text-break">{{ target_system.api_key }}</code>
+                        <div class="input-group input-group-sm" style="max-width: 400px;">
+                            <code class="form-control text-break font-monospace" id="apiKey" style="font-size: 0.75rem; letter-spacing: 1px;">
+                                {% if target_system.api_key %}••••••••••••••••••••••••{% endif %}
+                            </code>
+                            <button class="btn btn-outline-secondary" type="button" id="toggleApiKey" title="Show API Key" style="white-space: nowrap;">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn btn-outline-primary" type="button" id="copyApiKey" title="Copy to Clipboard" style="white-space: nowrap;">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <hr>
@@ -342,4 +352,67 @@
         {% endwith %}
     </div>
 </div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const apiKey = '{{ target_system.api_key }}';
+    const apiKeyElement = document.getElementById('apiKey');
+    const toggleBtn = document.getElementById('toggleApiKey');
+    const copyBtn = document.getElementById('copyApiKey');
+    let isHidden = true;
+    
+    toggleBtn.addEventListener('click', function() {
+        if (isHidden) {
+            apiKeyElement.textContent = apiKey;
+            toggleBtn.innerHTML = '<i class="bi bi-eye-slash"></i>';
+            toggleBtn.title = 'Hide API Key';
+            toggleBtn.classList.remove('btn-outline-secondary');
+            toggleBtn.classList.add('btn-outline-danger');
+        } else {
+            apiKeyElement.textContent = '••••••••••••••••••••••••';
+            toggleBtn.innerHTML = '<i class="bi bi-eye"></i>';
+            toggleBtn.title = 'Show API Key';
+            toggleBtn.classList.remove('btn-outline-danger');
+            toggleBtn.classList.add('btn-outline-secondary');
+        }
+        isHidden = !isHidden;
+    });
+    
+    copyBtn.addEventListener('click', function() {
+        navigator.clipboard.writeText(apiKey).then(function() {
+            const originalHTML = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="bi bi-check-lg"></i>';
+            copyBtn.classList.remove('btn-outline-primary');
+            copyBtn.classList.add('btn-success');
+            copyBtn.title = 'Copied!';
+            
+            setTimeout(function() {
+                copyBtn.innerHTML = originalHTML;
+                copyBtn.classList.remove('btn-success');
+                copyBtn.classList.add('btn-outline-primary');
+                copyBtn.title = 'Copy to Clipboard';
+            }, 2000);
+        }).catch(function(err) {
+            const textArea = document.createElement('textarea');
+            textArea.value = apiKey;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            const originalHTML = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="bi bi-check-lg"></i>';
+            copyBtn.classList.remove('btn-outline-primary');
+            copyBtn.classList.add('btn-success');
+            
+            setTimeout(function() {
+                copyBtn.innerHTML = originalHTML;
+                copyBtn.classList.remove('btn-success');
+                copyBtn.classList.add('btn-outline-primary');
+            }, 2000);
+        });
+    });
+});
+</script>
 {% endblock %}
