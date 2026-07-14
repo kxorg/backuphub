@@ -10,6 +10,7 @@ redis==5.0.7
 
 black==24.4.2
 flake8==7.1.0
+ruff>=0.6.0
 coverage==7.6.0
 
 
