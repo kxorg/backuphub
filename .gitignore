@@ -15,4 +15,5 @@ dump_files.py
 dump.txt
 /.env
 .pytest_cache
+coverage.xml
 # https://gitready.com/beginner/2009/01/19/ignoring-files.html
