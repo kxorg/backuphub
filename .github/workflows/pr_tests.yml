@@ -59,11 +59,11 @@ jobs:
       - name: Run Ruff linter
         if: steps.changes.outputs.code_changed == 'true'
         continue-on-error: true
-        run: docker exec bh_app_local ruff check .
+        run: docker compose -f local.docker-compose.yml exec -T app sh -c 'RUFF_CACHE_DIR=/tmp/ruff_cache ruff check .'
 
       - name: Run API tests
         if: steps.changes.outputs.code_changed == 'true'
-        run: docker compose -f local.docker-compose.yml exec -T app pytest --cov=app --cov-report=term-missing
+        run: docker compose -f local.docker-compose.yml exec -T app sh -c 'COVERAGE_FILE=/tmp/.coverage pytest -o cache_dir=/tmp/.pytest_cache --cov=app --cov-report=term-missing'
 
       - name: Show logs on failure
         if: failure() && steps.changes.outputs.code_changed == 'true'
