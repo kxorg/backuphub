@@ -15,7 +15,7 @@ permissions:
 jobs:
   deploy:
     name: Pull code and restart DEV app
-    runs-on: [self-hosted, dev]
+    runs-on: [self-hosted, Linux, X64, dev]
 
     steps:
       - name: Pull latest DEV code
