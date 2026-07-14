@@ -9,14 +9,12 @@ services:
       context: .
       dockerfile: compose/local.Dockerfile
     container_name: bh_app_local
-    command: /start
-    restart: always
+    command: ["sh", "-c", "tail -f /dev/null"]
+    restart: "no"
     env_file:
       - local.env
     volumes:
       - ./app:/opt/bh
-    ports:
-      - "8000:8000"
     depends_on:
       postgres:
         condition: service_healthy
