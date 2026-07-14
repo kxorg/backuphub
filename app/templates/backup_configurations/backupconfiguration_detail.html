@@ -189,7 +189,73 @@
         </div>
     </div>
 </div>
+<!-- ========================================== -->
+<!-- API cURL Examples (СВОРАЧИВАЕМЫЙ БЛОК)     -->
+<!-- ========================================== -->
+<div class="card mb-4 border-primary">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-terminal me-2"></i>API cURL Examples</h5>
+        <button class="btn btn-sm btn-light" type="button" data-bs-toggle="collapse" data-bs-target="#curlExamplesCollapse" aria-expanded="false" aria-controls="curlExamplesCollapse">
+            <i class="bi bi-chevron-down" id="curlToggleIcon"></i>
+            <span id="curlToggleText">Показать</span>
+        </button>
+    </div>
+    <div class="collapse" id="curlExamplesCollapse">
+        <div class="card-body">
+            <p class="text-muted mb-3">
+                Use these commands to manually trigger and complete a backup operation for this configuration.
+            </p>
+            
+            <!-- POST Request -->
+            <div class="mb-4">
+                <h6 class="text-primary"><i class="bi bi-plus-circle me-1"></i> 1. Create Backup Operation (POST)</h6>
+                <div class="position-relative">
+                    <pre class="bg-light border rounded p-3 mb-0" id="curl-post" style="font-size: 0.9em;"><code class="language-bash">curl -X POST "http://127.0.0.1:8000/api/v1/backup-operations/" \
+                        -H "X-API-Key: {{ api_key }}" \
+                        -H "Content-Type: application/json" \
+                        -d '{
+                            "backup_configuration_id": {{ config_id }},
+                            "hostname": "your-server-hostname",
+                            "ip_address": "10.0.0.1"
+                        }'</code>
+                    </pre>
+                    <button class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0 m-2" onclick="copyToClipboard('curl-post')" title="Copy to clipboard">
+                        <i class="bi bi-clipboard"></i> Copy
+                    </button>
+                </div>
+            </div>
 
+            <!-- PATCH Request -->
+            <div>
+                <h6 class="text-success"><i class="bi bi-check-circle me-1"></i> 2. Complete Backup Operation (PATCH)</h6>
+                <div class="position-relative">
+                    <pre class="bg-light border rounded p-3 mb-0" id="curl-patch" style="font-size: 0.9em;"><code class="language-bash">curl -X PATCH "http://127.0.0.1:8000/api/v1/backup-operations/{operation_id}/" \
+                        -H "X-API-Key: {{ api_key }}" \
+                        -H "Content-Type: application/json" \
+                        -d '{
+                            "status": "SUCCESS",
+                            "size_bytes": 1048576,
+                            "storage_type": "local",
+                            "storage_path": "/path/to/backup.tar.gz"
+                        }'</code>
+                    </pre>
+                    <button class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0 m-2" onclick="copyToClipboard('curl-patch')" title="Copy to clipboard">
+                        <i class="bi bi-clipboard"></i> Copy
+                    </button>
+                </div>
+                <div class="alert alert-info mt-3 mb-0 d-flex align-items-center">
+                    <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+                    <div>
+                        Replace <code>{operation_id}</code> with the <code>id</code> returned by the POST request above.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ========================================== -->
 <!-- Recent Backup Operations -->
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
@@ -274,4 +340,36 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
+{% block extra_js %}
+<script>
+// Функция копирования
+function copyToClipboard(elementId) {
+    const text = document.getElementById(elementId).innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector(`button[onclick="copyToClipboard('${elementId}')"]`);
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check"></i> Copied!';
+        btn.classList.replace('btn-outline-secondary', 'btn-success');
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.classList.replace('btn-success', 'btn-outline-secondary');
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+        alert('Failed to copy to clipboard');
+    });
+}
+
+// Переключение иконки и текста при сворачивании/разворачивании
+document.getElementById('curlExamplesCollapse').addEventListener('show.bs.collapse', function () {
+    document.getElementById('curlToggleIcon').classList.replace('bi-chevron-down', 'bi-chevron-up');
+    document.getElementById('curlToggleText').textContent = 'Скрыть';
+});
+
+document.getElementById('curlExamplesCollapse').addEventListener('hide.bs.collapse', function () {
+    document.getElementById('curlToggleIcon').classList.replace('bi-chevron-up', 'bi-chevron-down');
+    document.getElementById('curlToggleText').textContent = 'Показать';
+});
+</script>
 {% endblock %}
