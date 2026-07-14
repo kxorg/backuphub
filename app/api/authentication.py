@@ -1,34 +1,31 @@
 from rest_framework import authentication, exceptions
-from core.models import TargetSystem
+
+from systems.models import TargetSystem
 
 
 class ApiKeyAuthentication(authentication.BaseAuthentication):
     """
-    Custom authentication using X-API-Key header.
+    Custom authentication via X-API-Key header.
+    Returns (None, TargetSystem) — TargetSystem is used as the "auth" object
+    so permissions and throttling can access it via request.auth.
     """
-    
+    header = 'HTTP_X_API_KEY'
+
     def authenticate(self, request):
-        # Получаем API-ключ из заголовка
-        api_key = request.headers.get('X-API-Key')
-        
+        api_key = request.META.get(self.header)
         if not api_key:
-            # Если ключа нет — возвращаем None (DRF попробует другие методы)
             return None
-        
+
         try:
-            # Ищем систему по API-ключу
             system = TargetSystem.objects.get(api_key=api_key, is_active=True)
         except TargetSystem.DoesNotExist:
-            raise exceptions.AuthenticationFailed('Invalid API key.')
-        
-        # Возвращаем (user, auth) — но у нас нет пользователя,
-        # поэтому возвращаем саму систему как "пользователя"
+            raise exceptions.AuthenticationFailed('Invalid or inactive API key.')
+
         return (None, system)
-    
+
     def authenticate_header(self, request):
         """
-        Возвращает строку, которая будет использована в заголовке WWW-Authenticate
-        при ответе 401 Unauthorized. Без этого метода DRF возвращает 403.
+        Returns the challenge string used in WWW-Authenticate header
+        on 401 responses. Without this, DRF returns 403 instead of 401.
         """
         return 'X-API-Key'
-
