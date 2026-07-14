@@ -29,7 +29,7 @@ services:
     <<: *app
     container_name: bh_celery_worker_local
     volumes:
-      - ./app:/opt/bh      # ← было /opt/br/
+      - ./app:/opt/bh
     ports: []
     command: /start-celeryworker
 
@@ -37,7 +37,7 @@ services:
     <<: *app
     container_name: bh_celery_beat_local
     volumes:
-      - ./app:/opt/bh      # ← было /opt/br/
+      - ./app:/opt/bh
     ports: []
     command: /start-celerybeat
 
