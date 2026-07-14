@@ -8,5 +8,11 @@
 app/htmlcov
 coverage.xml*
 *.coverage
-
+app/db.sqlite3
+/app/dump_files.py
+dump_files.py
+/app/dump.txt
+dump.txt
+/.env
+.pytest_cache
 # https://gitready.com/beginner/2009/01/19/ignoring-files.html

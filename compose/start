@@ -7,6 +7,5 @@ python manage.py makemigrations
 python manage.py migrate
 
 python manage.py collectstatic --noinput
-#python manage.py run_webhook
 
-python manage.py runserver 0.0.0.0:8000
+gunicorn app.wsgi:application --bind 0.0.0.0:8000 --workers 3

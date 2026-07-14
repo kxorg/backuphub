@@ -1,43 +1,47 @@
-FROM python:3.10-alpine
+FROM python:3.13-alpine AS builder
 
-ENV PYTHONUNBUFFERED 1
-ENV PYTHONDONTWRITEBYTECODE 1
+RUN apk add --no-cache gcc musl-dev python3-dev postgresql-dev
 
-EXPOSE 8000
+WORKDIR /build
 
-COPY local.requirements.txt /opt/requirements.txt
+COPY local.requirements.txt .
 
-RUN apk update && \
-    apk add --no-cache \
-        bash
+RUN python -m venv /opt/py
 
-RUN cd /opt/ && mkdir -p /opt/bh && python3 -m venv py && \
-    /opt/py/bin/python3 -m pip install --upgrade pip && \
-    /opt/py/bin/python3 -m pip install -r /opt/requirements.txt --no-build-isolation --disable-pip-version-check && \
-    chmod -R 777 /opt && \
-    mkdir -p /opt/bh/logs/app && \
-    chmod 755 /opt/bh/logs
+RUN /opt/py/bin/pip install --upgrade pip && \
+    /opt/py/bin/pip install -r local.requirements.txt --no-cache-dir
+
+FROM python:3.13-alpine AS final
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PATH="/opt/py/bin:$PATH"
+
+RUN apk add --no-cache bash
+
+RUN addgroup -g 1000 bhgroup && \
+    adduser -u 1000 -G bhgroup -s /bin/bash -D bhuser
+
+WORKDIR /opt/bh
+
+COPY --from=builder /opt/py /opt/py
+
+COPY ./app .
 
 COPY ./compose/entrypoint /entrypoint
-COPY ./compose/start /start
-COPY ./compose/celery/worker/start /start-celeryworker
-COPY ./compose/celery/beat/start /start-celerybeat
-COPY ./compose/celery/flower/start /start-flower
+COPY ./compose/local.start /start
+COPY ./compose/celery/worker/local.start /start-celeryworker
+COPY ./compose/celery/beat/local.start /start-celerybeat
+COPY ./compose/celery/flower/local.start /start-flower
 
-RUN sed -i 's/\r$//g' /entrypoint && \
-    sed -i 's/\r$//g' /start && \
-    sed -i 's/\r$//g' /start-celeryworker && \
-    sed -i 's/\r$//g' /start-celerybeat && \
-    sed -i 's/\r$//g' /start-flower && \
-    chmod +x /entrypoint && \
-    chmod +x /start && \
-    chmod +x /start-celeryworker && \
-    chmod +x /start-celerybeat && \
-    chmod +x /start-flower
+RUN sed -i 's/\r$//g' /entrypoint /start /start-celeryworker /start-celerybeat /start-flower && \
+    chmod +x /entrypoint /start /start-celeryworker /start-celerybeat /start-flower
 
-ENV PATH="/opt/py/bin:$PATH"
+RUN mkdir -p /opt/bh/logs/app && \
+    chown -R bhuser:bhgroup /opt/bh /opt/py
 
-COPY ./app /opt/bh/
-WORKDIR /opt/bh/
+USER bhuser
+
+EXPOSE 8000
 
 ENTRYPOINT ["/entrypoint"]
