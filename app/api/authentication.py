@@ -29,3 +29,19 @@ class ApiKeyAuthentication(authentication.BaseAuthentication):
         on 401 responses. Without this, DRF returns 403 instead of 401.
         """
         return 'X-API-Key'
+    
+from drf_spectacular.extensions import OpenApiAuthenticationExtension
+
+class ApiKeyAuthenticationScheme(OpenApiAuthenticationExtension):
+    # Укажите точный путь к вашему классу аутентификации
+    target_class = 'api.authentication.ApiKeyAuthentication' 
+    # Это имя будет использоваться в схеме (должно совпадать с SECURITY в settings.py)
+    name = 'ApiKeyAuth' 
+
+    def get_security_definition(self, auto_schema):
+        return {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'X-API-Key',
+            'description': 'API key from TargetSystem (UUID). Required for operations.',
+        }

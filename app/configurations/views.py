@@ -47,6 +47,12 @@ class BackupConfigurationDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['current_version'] = self.object.current_version
+        
+        # Добавлено для cURL-запросов
+        target_system = self.object.target_system_version.target_system
+        context['api_key'] = str(target_system.api_key)
+        context['config_id'] = self.object.id
+        
         return context
 
 

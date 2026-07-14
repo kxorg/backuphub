@@ -4,10 +4,6 @@ on:
   pull_request:
     branches:
       - DEV
-    paths-ignore:
-      - "docs/**"
-      - "README.md"
-      - "**/*.md"
 
 permissions:
   contents: read
@@ -20,21 +16,59 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect code changes
+        id: changes
+        shell: bash
+        run: |
+          changed_files="$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}")"
+
+          code_changed=false
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+
+            case "$file" in
+              docs/*|README.md|*.md)
+                ;;
+              *)
+                code_changed=true
+                break
+                ;;
+            esac
+          done <<< "$changed_files"
+
+          echo "Changed files:"
+          echo "$changed_files"
+          echo "code_changed=$code_changed" >> "$GITHUB_OUTPUT"
+
+      - name: Skip code checks
+        if: steps.changes.outputs.code_changed != 'true'
+        run: echo "Only documentation or Markdown files changed. Docker checks are skipped."
 
       - name: Start local Docker Compose stack
+        if: steps.changes.outputs.code_changed == 'true'
         run: docker compose -f local.docker-compose.yml up -d --build
 
       - name: Show containers
+        if: steps.changes.outputs.code_changed == 'true'
         run: |
           docker compose -f local.docker-compose.yml ps
 
+      - name: Run Ruff linter
+        if: steps.changes.outputs.code_changed == 'true'
+        continue-on-error: true
+        run: docker compose -f local.docker-compose.yml exec -T app sh -c 'RUFF_CACHE_DIR=/tmp/ruff_cache ruff check .'
+
       - name: Run API tests
-        run: docker exec bh_app_local python manage.py test api -v 2
+        if: steps.changes.outputs.code_changed == 'true'
+        run: docker compose -f local.docker-compose.yml exec -T app sh -c 'COVERAGE_FILE=/tmp/.coverage pytest -o cache_dir=/tmp/.pytest_cache -o "addopts=-ra --strict-markers --tb=short --cov=app --cov-report=term-missing --cov-fail-under=70"'
 
       - name: Show logs on failure
-        if: failure()
+        if: failure() && steps.changes.outputs.code_changed == 'true'
         run: docker compose -f local.docker-compose.yml logs --no-color --tail=200
 
       - name: Stop local Docker Compose stack
-        if: always()
+        if: always() && steps.changes.outputs.code_changed == 'true'
         run: docker compose -f local.docker-compose.yml down -v --remove-orphans
