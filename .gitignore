@@ -3,7 +3,7 @@
 /venv
 *.pyc
 #local.env
-/app/logs/
+# /app/logs/
 /app/vol/
 app/htmlcov
 coverage.xml*
