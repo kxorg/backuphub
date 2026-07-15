@@ -5,6 +5,8 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.utils.timesince import timesince
 from rest_framework.decorators import api_view
+from django.db.models import Q
+from django.core.paginator import Paginator
 
 from systems.models import TargetSystem
 from operations.models import BackupOperation
@@ -42,7 +44,6 @@ def api_ui_refresh_dashboard(request):
     
     ops_data = []
     for op in recent_backups:
-        # Безопасное получение имени системы
         sys_name = 'Unknown'
         try:
             if (op.backup_configuration_version 
@@ -53,13 +54,11 @@ def api_ui_refresh_dashboard(request):
         except AttributeError:
             sys_name = 'Unknown'
         
-        # 🔥 БЕЗОПАСНОЕ формирование относительного времени
         time_display = '—'
         if op.started_at:
             try:
                 time_display = f"{timesince(op.started_at, now=now)} ago"
             except (ValueError, TypeError):
-                # Если timesince падает, используем запасной вариант
                 time_display = op.started_at.strftime('%d.%m.%Y %H:%M')
         
         ops_data.append({
@@ -67,7 +66,7 @@ def api_ui_refresh_dashboard(request):
             'system_name': sys_name,
             'hostname': op.hostname or '',
             'status': op.status,
-            'started_at': time_display,  # ← Теперь это безопасная строка
+            'started_at': time_display,  
             'size_human': op.size_human or '—',
             'detail_url': f"/backup-operations/{op.id}/",
         })
@@ -75,3 +74,81 @@ def api_ui_refresh_dashboard(request):
     data['recent_operations'] = ops_data
     
     return JsonResponse(data)
+
+@extend_schema(
+    tags=['Operations'],
+    summary='Refresh Operations List (Live Update)',
+    description='Returns a filtered and paginated list of operations for dynamic updates',
+)
+@api_view(['GET'])
+@login_required
+def api_ui_refresh_operations(request):
+    """API для живого обновления списка Backup Operations"""
+    
+    queryset = BackupOperation.objects.select_related(
+        'backup_configuration_version__backup_configuration',
+    ).order_by('-started_at')
+
+    search_query = request.GET.get('q', '').strip()
+    if search_query:
+        queryset = queryset.filter(
+            Q(hostname__icontains=search_query) |
+            Q(external_job_id__icontains=search_query) |
+            Q(storage_path__icontains=search_query)
+        )
+
+    status = request.GET.get('status', '').strip()
+    if status:
+        queryset = queryset.filter(status=status)
+
+    hostname = request.GET.get('hostname', '').strip()
+    if hostname:
+        queryset = queryset.filter(hostname__icontains=hostname)
+
+    config_id = request.GET.get('configuration', '').strip()
+    if config_id and config_id.isdigit():
+        queryset = queryset.filter(
+            backup_configuration_version__backup_configuration_id=int(config_id)
+        )
+
+    try:
+        page_number = int(request.GET.get('page', 1))
+    except ValueError:
+        page_number = 1
+
+    paginator = Paginator(queryset, 50)
+
+    try:
+        page_obj = paginator.page(page_number)
+    except:
+        page_obj = paginator.page(1)
+
+    operations_data = []
+    for op in page_obj:
+        config = op.backup_configuration_version.backup_configuration
+        operations_data.append({
+            'id': op.id,
+            'hostname': op.hostname or '',
+            'configuration_name': config.name if config else '—',
+            'configuration_id': config.id if config else None,
+            'version_number': op.backup_configuration_version.version_number,
+            'status': op.status,
+            'started_at': op.started_at.strftime('%d.%m.%Y %H:%M') if op.started_at else '—',
+            'duration_seconds': op.duration_seconds,
+            'size_human': getattr(op, 'size_human', None) or '—',
+            'detail_url': f"/backup-operations/{op.id}/",
+            'config_detail_url': f"/backup-configurations/{config.id}/" if config else '#',
+        })
+
+    return JsonResponse({
+        'operations': operations_data,
+        'page_obj': {
+            'number': page_obj.number,
+            'num_pages': paginator.num_pages,
+            'has_previous': page_obj.has_previous(),
+            'has_next': page_obj.has_next(),
+            'previous_page_number': page_obj.previous_page_number if page_obj.has_previous() else None,
+            'next_page_number': page_obj.next_page_number if page_obj.has_next() else None,
+        },
+        'total_count': paginator.count,
+    })

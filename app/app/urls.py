@@ -4,7 +4,7 @@ from django.contrib.auth import views as auth_views
 from django.contrib.auth import logout
 from django.shortcuts import redirect
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
-from api.views import api_ui_refresh_dashboard
+from api.views import api_ui_refresh_dashboard, api_ui_refresh_operations
 from app.views import index
 
 
@@ -41,4 +41,5 @@ urlpatterns = [
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     path('api/ui/refresh-dashboard/', api_ui_refresh_dashboard, name='api_ui_refresh_dashboard'),
+    path('api/ui/refresh-operations/', api_ui_refresh_operations, name='api_ui_refresh_operations'),
 ]
