@@ -405,7 +405,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateStat('stat-in-progress-24h', data.in_progress_24h);
                 updateStat('stat-error-24h', data.error_24h);
                 
-                // Обновляем таблицу
+                // Updating the table
                 updateOperationsTable(data.recent_operations);
                 
                 console.log('Dashboard updated:', new Date().toLocaleTimeString());
