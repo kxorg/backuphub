@@ -329,11 +329,11 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     
-    // 1. Безопасная функция обновления текста/HTML
+    // 1. Safe text/HTML update function
     function updateStat(elementId, newValue) {
         const el = document.getElementById(elementId);
         if (el) {
-            // Если новое значение содержит HTML-теги (например, иконку), используем innerHTML
+            // If the new value contains HTML tags (for example, an icon), use innerHTML
             if (typeof newValue === 'string' && newValue.includes('<')) {
                 el.innerHTML = newValue;
             } else {
@@ -342,7 +342,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // 2. Функция обновления таблицы (сохраняет оригинальный формат Django-шаблона)
+    // 2. Table update function 
 function updateOperationsTable(operations) {
     const tbody = document.getElementById('recent-operations-body');
     if (!tbody || !operations) return;
@@ -352,7 +352,7 @@ function updateOperationsTable(operations) {
         html = `<tr><td colspan="5" class="text-center py-4"><i class="bi bi-inbox display-4 text-muted"></i><p class="text-muted mt-2 mb-0">No backup operations registered yet</p></td></tr>`;
     } else {
         operations.forEach(op => {
-            // Маппинг статусов
+            // Status mapping
             let statusBadge = '';
             if (op.status === 'success') statusBadge = '<span class="badge badge-success"><i class="bi bi-check-circle me-1"></i>Success</span>';
             else if (op.status === 'error') statusBadge = '<span class="badge badge-error"><i class="bi bi-x-circle me-1"></i>Error</span>';
@@ -361,12 +361,12 @@ function updateOperationsTable(operations) {
             else if (op.status === 'cancelled') statusBadge = '<span class="badge badge-secondary"><i class="bi bi-slash-circle me-1"></i>Cancelled</span>';
             else statusBadge = `<span class="badge badge-secondary">${op.status}</span>`;
 
-            // 🔥 Время уже приходит готовым ("X minutes ago"), просто вставляем
+            // The time is already ready ("X minutes ago"), just insert it
             const timeDisplay = op.started_at !== '—' 
                 ? `<i class="bi bi-clock me-1"></i>${op.started_at}` 
                 : '<span class="text-muted">—</span>';
             
-            // Размер
+            // Size
             const sizeDisplay = (op.size_human && op.size_human !== '—') 
                 ? `<i class="bi bi-database me-1"></i>${op.size_human}` 
                 : '<span class="text-muted">—</span>';
@@ -391,7 +391,7 @@ function updateOperationsTable(operations) {
     }
 }
 
-    // 3. Запуск polling каждые 5 секунд
+    // 3. Run polling every 5 seconds
     setInterval(() => {
         fetch('/api/ui/refresh-dashboard/')
             .then(response => {
@@ -399,7 +399,7 @@ function updateOperationsTable(operations) {
                 return response.json();
             })
             .then(data => {
-                // Обновляем статистику
+                // Updating statistics
                 updateStat('stat-total-systems', data.total_systems);
                 updateStat('stat-new-systems', `<i class="bi bi-arrow-up"></i> ${data.new_systems} new`);
                 updateStat('stat-total-backups', data.total_backups);
@@ -408,12 +408,12 @@ function updateOperationsTable(operations) {
                 updateStat('stat-in-progress-24h', data.in_progress_24h);
                 updateStat('stat-error-24h', data.error_24h);
                 
-                // Обновляем таблицу
+                // Updating the table
                 updateOperationsTable(data.recent_operations);
             })
             .catch(error => console.error('Dashboard live update error:', error));
     }, 5000);
 
-}); // <-- Эта скобка корректно закрывает document.addEventListener
+}); 
 </script>
 {% endblock %}
