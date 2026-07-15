@@ -13,6 +13,12 @@ from .models import TargetSystem, TargetSystemVersion
 from .forms import TargetSystemForm
 
 class TargetSystemListView(LoginRequiredMixin, ListView):
+    """GET /target-systems/"""
+    model = TargetSystem
+    template_name = 'target_systems/targetsystem_list.html'
+    context_object_name = 'target_systems'
+    paginate_by = 20
+
     def get_queryset(self):
         return TargetSystem.objects.select_related(
             'system_type', 'environment'
@@ -23,12 +29,13 @@ class TargetSystemListView(LoginRequiredMixin, ListView):
                 to_attr='current_version_list'
             )
         ).filter(is_active=True).order_by('name')
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         for system in context['target_systems']:
             system.current_version_data = system.current_version_list[0] if system.current_version_list else None
         return context
+
 
 
 class TargetSystemDetailView(LoginRequiredMixin, DetailView):
@@ -48,7 +55,9 @@ class TargetSystemCreateView(LoginRequiredMixin, CreateView):
     model = TargetSystem
     form_class = TargetSystemForm
     template_name = 'target_systems/targetsystem_form.html'
-    success_url = reverse_lazy('target_system_list')
+
+    def get_success_url(self):
+        return reverse_lazy('target_system_detail', kwargs={'pk': self.object.pk})
 
     @transaction.atomic
     def form_valid(self, form):
@@ -67,7 +76,7 @@ class TargetSystemCreateView(LoginRequiredMixin, CreateView):
         )
 
         messages.success(self.request, f'Target System "{self.object.name}" created successfully.')
-        return redirect(self.get_success_url())
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

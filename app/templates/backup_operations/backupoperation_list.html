@@ -64,8 +64,7 @@
                             <a href="{% url 'backup_configuration_detail' operation.backup_configuration_version.backup_configuration.id %}">
                                 {{ operation.backup_configuration_version.backup_configuration.name }}
                             </a>
-                            <br>
-                            <small class="text-muted">v{{ operation.backup_configuration_version.version_number }}</small>
+                            <span class="badge badge-secondary ms-1">v{{ operation.backup_configuration_version.version_number }}</span>
                         </td>
                         <td>
                             {% if operation.status == 'success' %}
