@@ -193,4 +193,3 @@ BackupHub — система централизованного управлен
 10) Где генерируется api_key? Найди в модели TargetSystem и объясни, почему editable=False.
 
 Ответ: api_key генерируется автоматически полем UUIDField: default=uuid.uuid4, editable=False, unique=True (app/systems/models.py). editable=False защищает поле от редактирования через Django admin/forms и сигнализирует, что ключ должен быть сгенерирован системой (не вводиться вручную). Это уменьшает риск человеческой ошибки и утечки.
-https://telemost.yandex.ru/j/12720063998259
