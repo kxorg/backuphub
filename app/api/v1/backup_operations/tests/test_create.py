@@ -31,7 +31,7 @@ class TestCreateOperation:
         }
         resp = client.post(self.url, payload, format='json')
         assert resp.status_code == 201
-        assert resp.data['status'] == 'RUNNING'
+        assert resp.data['status'] == 'running'
         assert resp.data['hostname'] == 'srv-01'
         assert BackupOperation.objects.filter(id=resp.data['id']).exists()
 

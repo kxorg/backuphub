@@ -117,9 +117,9 @@ class BackupOperationUpdateSerializer(serializers.Serializer):
 
         # FAILED requires an error message
         new_status = attrs.get('status')
-        if new_status == 'FAILED' and not attrs.get('error_message'):
+        if new_status == 'failed' and not attrs.get('error_message'):
             raise serializers.ValidationError({
-                'error_message': 'This field is required when status is FAILED.',
+                'error_message': 'This field is required when status is failed.',
             })
 
         return attrs

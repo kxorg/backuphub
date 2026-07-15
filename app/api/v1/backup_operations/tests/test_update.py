@@ -21,20 +21,20 @@ class TestUpdateOperation:
     def test_complete_with_success(self, operation_with_client):
         client, op = operation_with_client
         resp = client.patch(self._url(op.id), {
-            'status': 'SUCCESS',
+            'status': 'success',
             'size_bytes': 1024,
             'storage_type': 's3',
             'storage_path': 's3://bucket/backup.sql',
         }, format='json')
         assert resp.status_code == 200
-        assert resp.data['status'] == 'SUCCESS'
+        assert resp.data['status'] == 'success'
         op.refresh_from_db()
         assert op.status == 'success'
         assert op.finished_at is not None
 
     def test_complete_with_failed_requires_error_message(self, operation_with_client):
         client, op = operation_with_client
-        resp = client.patch(self._url(op.id), {'status': 'FAILED'}, format='json')
+        resp = client.patch(self._url(op.id), {'status': 'failed'}, format='json')
         assert resp.status_code == 400
         assert 'error_message' in resp.data['error']['details']
 
@@ -42,5 +42,5 @@ class TestUpdateOperation:
         client, op = operation_with_client
         op.status = 'success'
         op.save()
-        resp = client.patch(self._url(op.id), {'status': 'FAILED'}, format='json')
+        resp = client.patch(self._url(op.id), {'status': 'failed'}, format='json')
         assert resp.status_code == 400
