@@ -69,7 +69,7 @@ class BackupOperationUpdateSerializer(serializers.Serializer):
     """
     status = serializers.ChoiceField(
         choices=API_STATUS_CHOICES,
-        help_text='New status: RUNNING, SUCCESS, FAILED',
+        help_text='New status: running, success, failed',
     )
     size_bytes = serializers.IntegerField(
         required=False,
@@ -97,7 +97,13 @@ class BackupOperationUpdateSerializer(serializers.Serializer):
         allow_blank=True,
         help_text='Required when status=FAILED',
     )
-
+    def to_internal_value(self, data):
+        """Приводит статус к нижнему регистру ДО валидации ChoiceField."""
+        if 'status' in data and isinstance(data['status'], str):
+            data = data.copy()  
+            data['status'] = data['status'].lower()
+        return super().to_internal_value(data)
+    
     def validate(self, attrs):
         instance = self.instance
         if instance is None:

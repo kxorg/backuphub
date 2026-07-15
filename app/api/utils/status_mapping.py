@@ -4,9 +4,9 @@ All other modules must import from here to avoid duplication.
 """
 
 API_TO_DB_STATUS = {
-    'RUNNING': 'in_progress',
-    'SUCCESS': 'success',
-    'FAILED': 'error',
+    'running': 'in_progress',
+    'success': 'success',
+    'failed': 'error',
 }
 
 DB_TO_API_STATUS = {v: k for k, v in API_TO_DB_STATUS.items()}
