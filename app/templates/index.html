@@ -11,13 +11,13 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <p class="text-muted mb-1 text-uppercase small fw-bold">Total Systems</p>
-                        <h3 class="mb-0 fw-bold" style="color: var(--secondary-color);">{{ total_systems }}</h3>
+                        <h3 id="stat-total-systems" class="mb-0 fw-bold" style="color: var(--secondary-color);">{{ total_systems }}</h3>
                     </div>
                     <div class="icon-box bg-primary bg-opacity-10 rounded-circle p-3">
                         <i class="bi bi-hdd-stack text-primary" style="font-size: 1.5rem;"></i>
                     </div>
                 </div>
-                <small class="text-success mt-2 d-block">
+                <small id="stat-new-systems" class="text-success mt-2 d-block">
                     <i class="bi bi-arrow-up"></i> {{ new_systems }} new
                 </small>
             </div>
@@ -31,7 +31,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <p class="text-muted mb-1 text-uppercase small fw-bold">Total Backups</p>
-                        <h3 class="mb-0 fw-bold" style="color: var(--secondary-color);">{{ total_backups }}</h3>
+                        <h3 id="stat-total-backups" class="mb-0 fw-bold" style="color: var(--secondary-color);">{{ total_backups }}</h3>
                     </div>
                     <div class="icon-box bg-success bg-opacity-10 rounded-circle p-3">
                         <i class="bi bi-cloud-check text-success" style="font-size: 1.5rem;"></i>
@@ -49,7 +49,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <p class="text-muted mb-1 text-uppercase small fw-bold">Servers</p>
-                        <h3 class="mb-0 fw-bold" style="color: var(--secondary-color);">{{ total_hosts }}</h3>
+                        <h3 id="stat-total-hosts" class="mb-0 fw-bold" style="color: var(--secondary-color);">{{ total_hosts }}</h3>
                     </div>
                     <div class="icon-box bg-info bg-opacity-10 rounded-circle p-3">
                         <i class="bi bi-server text-info" style="font-size: 1.5rem;"></i>
@@ -60,7 +60,7 @@
                 </small>
             </div>
         </div>
-    </div>
+    </div>  
 
     <!-- Backup Status (24h) -->
     <div class="col-xl-3 col-md-6 mb-3">
@@ -71,20 +71,19 @@
                 <div class="d-flex align-items-center mb-2">
                     <i class="bi bi-check-circle-fill text-success me-2" style="font-size: 1.2rem;"></i>
                     <span class="fw-semibold">Success</span>
-                    <span class="ms-auto fw-bold" style="color: var(--success-color);">{{ success_24h }}</span>
+                    <span id="stat-success-24h" class="ms-auto fw-bold" style="color: var(--success-color);">{{ success_24h }}</span>
                 </div>
                 
                 <div class="d-flex align-items-center mb-2">
                     <i class="bi bi-arrow-repeat text-warning me-2" style="font-size: 1.2rem;"></i>
                     <span class="fw-semibold">In Progress</span>
-                    <span class="ms-auto fw-bold" style="color: var(--warning-color);">{{ in_progress_24h }}</span>
+                    <span id="stat-in-progress-24h" class="ms-auto fw-bold" style="color: var(--warning-color);">{{ in_progress_24h }}</span>
                 </div>
                 
                 <div class="d-flex align-items-center">
                     <i class="bi bi-x-circle-fill text-danger me-2" style="font-size: 1.2rem;"></i>
                     <span class="fw-semibold">Errors</span>
-                    <span class="ms-auto fw-bold" style="color: var(--danger-color);">{{ error_24h }}</span>
-                </div>
+                    <span id="stat-error-24h" class="ms-auto fw-bold" style="color: var(--danger-color);">{{ error_24h }}</span>
             </div>
         </div>
     </div>
@@ -326,57 +325,47 @@
     }
 </style>
 <!-- Live Update Script -->
+<!-- Live Update Script -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Функция обновления текста с подсветкой изменения
+    
+    // Функция безопасного обновления текста
     function updateStat(elementId, newValue) {
         const el = document.getElementById(elementId);
-        if (el && el.textContent.trim() !== String(newValue).trim()) {
-            el.textContent = newValue;
-            el.style.transition = 'background-color 0.5s';
-            el.style.backgroundColor = '#fff3cd';
-            setTimeout(() => { el.style.backgroundColor = ''; }, 1500);
+        if (el) {
+            if (typeof newValue === 'string' && newValue.includes('<')) {
+                el.innerHTML = newValue;
+            } else {
+                el.textContent = newValue;
+            }
         }
     }
 
-    // Функция перерисовки таблицы Recent Operations
+    // Функция обновления таблицы Recent Operations
     function updateOperationsTable(operations) {
         const tbody = document.getElementById('recent-operations-body');
-        if (!tbody) return;
+        if (!tbody || !operations) return;
 
         let html = '';
         if (operations.length === 0) {
-            html = `
-                <tr>
-                    <td colspan="6" class="text-center py-4">
-                        <i class="bi bi-inbox display-4 text-muted"></i>
-                        <p class="text-muted mt-2 mb-0">No backup operations registered yet</p>
-                    </td>
-                </tr>`;
+            html = `<tr><td colspan="5" class="text-center py-4"><i class="bi bi-inbox display-4 text-muted"></i><p class="text-muted mt-2 mb-0">No backup operations registered yet</p></td></tr>`;
         } else {
             operations.forEach(op => {
-                // Маппинг статусов на бейджи
+                // Маппинг статусов
                 let statusBadge = '';
-                if (op.status === 'success') {
-                    statusBadge = '<span class="badge badge-success"><i class="bi bi-check-circle me-1"></i>Success</span>';
-                } else if (op.status === 'error') {
-                    statusBadge = '<span class="badge badge-error"><i class="bi bi-x-circle me-1"></i>Error</span>';
-                } else if (op.status === 'in_progress') {
-                    statusBadge = '<span class="badge badge-info"><i class="bi bi-arrow-repeat me-1"></i>In Progress</span>';
-                } else if (op.status === 'warning') {
-                    statusBadge = '<span class="badge badge-warning"><i class="bi bi-exclamation-triangle me-1"></i>Warning</span>';
-                } else if (op.status === 'cancelled') {
-                    statusBadge = '<span class="badge badge-secondary"><i class="bi bi-slash-circle me-1"></i>Cancelled</span>';
-                } else {
-                    statusBadge = `<span class="badge badge-secondary">${op.status}</span>`;
-                }
+                if (op.status === 'success') statusBadge = '<span class="badge badge-success"><i class="bi bi-check-circle me-1"></i>Success</span>';
+                else if (op.status === 'error') statusBadge = '<span class="badge badge-error"><i class="bi bi-x-circle me-1"></i>Error</span>';
+                else if (op.status === 'in_progress') statusBadge = '<span class="badge badge-info"><i class="bi bi-arrow-repeat me-1"></i>In Progress</span>';
+                else if (op.status === 'warning') statusBadge = '<span class="badge badge-warning"><i class="bi bi-exclamation-triangle me-1"></i>Warning</span>';
+                else if (op.status === 'cancelled') statusBadge = '<span class="badge badge-secondary"><i class="bi bi-slash-circle me-1"></i>Cancelled</span>';
+                else statusBadge = `<span class="badge badge-secondary">${op.status}</span>`;
 
-                const timeDisplay = op.started_at ? `<i class="bi bi-clock me-1"></i>${op.started_at} ago` : '<span class="text-muted">—</span>';
-                const sizeDisplay = op.size_human ? `<i class="bi bi-database me-1"></i>${op.size_human}` : '<span class="text-muted">—</span>';
+                const timeDisplay = op.started_at !== '—' 
+                    ? `<i class="bi bi-clock me-1"></i>${op.started_at}` 
+                    : '<span class="text-muted">—</span>';
                 
-                // 👇 ДОБАВЛЕНО: логика отображения duration
-                const durationDisplay = (op.duration_seconds !== null && op.duration_seconds !== undefined) 
-                    ? `${op.duration_seconds}s` 
+                const sizeDisplay = (op.size_human && op.size_human !== '—') 
+                    ? `<i class="bi bi-database me-1"></i>${op.size_human}` 
                     : '<span class="text-muted">—</span>';
 
                 html += `
@@ -386,43 +375,47 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <i class="bi bi-server me-1"></i>${op.system_name}
                             </a>
                         </td>
-                        <td><span class="text-muted">${op.hostname}</span></td>
+                        <td><span class="text-muted">${op.hostname || ''}</span></td>
                         <td>${statusBadge}</td>
                         <td>${timeDisplay}</td>
-                        <td>${durationDisplay}</td> <!-- 👈 ЗАМЕНЕНО: теперь используем переменную, а не жесткий прочерк -->
                         <td>${sizeDisplay}</td>
                     </tr>`;
             });
         }
 
-        // Обновляем DOM только если содержимое реально изменилось
         if (tbody.innerHTML.trim() !== html.trim()) {
             tbody.innerHTML = html;
         }
     }
 
-    // Запуск polling каждые 5 секунд
-    setInterval(() => {
-        fetch('/api/ui-refresh/dashboard/')
+    // Основная функция обновления дашборда
+    function updateDashboard() {
+        fetch('/api/ui/refresh-dashboard/')
             .then(response => {
-                if (!response.ok) throw new Error('Network error');
+                if (!response.ok) throw new Error('Network error: ' + response.status);
                 return response.json();
             })
             .then(data => {
-                // Обновляем статистику
+                // Обновляем ВСЕ карточки статистики
                 updateStat('stat-total-systems', data.total_systems);
-                updateStat('stat-new-systems', `${data.new_systems} new`);
+                updateStat('stat-new-systems', `<i class="bi bi-arrow-up"></i> ${data.new_systems} new`);
                 updateStat('stat-total-backups', data.total_backups);
                 updateStat('stat-total-hosts', data.total_hosts);
-                updateStat('stat-success-24h', `Success: ${data.success_24h}`);
-                updateStat('stat-in-progress-24h', `In Progress: ${data.in_progress_24h}`);
-                updateStat('stat-error-24h', `Errors: ${data.error_24h}`);
-
-                // Обновляем таблицу последних операций
+                updateStat('stat-success-24h', data.success_24h);
+                updateStat('stat-in-progress-24h', data.in_progress_24h);
+                updateStat('stat-error-24h', data.error_24h);
+                
+                // Updating the table
                 updateOperationsTable(data.recent_operations);
+                
+                console.log('Dashboard updated:', new Date().toLocaleTimeString());
             })
             .catch(error => console.error('Dashboard live update error:', error));
-    }, 5000);
+    }
+
+    // Запускаем сразу при загрузке, затем каждые 10 секунд
+    updateDashboard();
+    setInterval(updateDashboard, 5000);
 });
 </script>
 {% endblock %}

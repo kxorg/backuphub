@@ -35,10 +35,10 @@ class TestListOperations:
 
     def test_filter_by_status(self, system_with_operations):
         client, _ = system_with_operations
-        resp = client.get(self.url, {'status': 'SUCCESS'})
+        resp = client.get(self.url, {'status': 'success'})
         assert resp.status_code == 200
         assert resp.data['count'] == 1
-        assert resp.data['results'][0]['status'] == 'SUCCESS'
+        assert resp.data['results'][0]['status'] == 'success'
 
     def test_filter_by_hostname(self, system_with_operations):
         client, _ = system_with_operations
