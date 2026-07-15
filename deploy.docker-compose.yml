@@ -11,7 +11,7 @@ services:
     command: /start
     restart: always
     env_file:
-      - ./.env
+      - ./env
     expose:
       - "8000"
     networks:

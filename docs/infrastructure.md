@@ -34,6 +34,14 @@ PNG-версия схемы для быстрого просмотра:
 
 ![BackupHub infrastructure](infrastructure-overview.png)
 
+Дополнительные схемы:
+
+![CI/CD до внедрения SecOps](ci-cd-before-secops.png)
+
+![CI/CD после внедрения SecOps](ci-cd-after-secops.png)
+
+![GitHub runners](github-runners.png)
+
 
 ## 2. Серверы
 
