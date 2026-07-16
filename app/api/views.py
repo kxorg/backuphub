@@ -152,3 +152,52 @@ def api_ui_refresh_operations(request):
         },
         'total_count': paginator.count,
     })
+
+@extend_schema(
+    tags=['Operations'],
+    summary='Refresh Operation Detail',
+    description='Returns all operation details for live updates',
+)
+@api_view(['GET'])
+@login_required
+def api_ui_refresh_operation_detail(request, pk):
+    """API для живого обновления всех полей страницы детали операции"""
+    from operations.models import BackupOperation
+    from django.shortcuts import get_object_or_404
+    
+    operation = get_object_or_404(BackupOperation, pk=pk)
+    
+    # Динамический расчет длительности, если операция еще идет
+    duration = operation.duration_seconds
+    if not duration and operation.started_at and operation.status == 'in_progress':
+        duration = int((timezone.now() - operation.started_at).total_seconds())
+
+    # Данные конфигурации
+    config_name = '—'
+    config_version = '—'
+    config_id = None
+    if operation.backup_configuration_version:
+        config = operation.backup_configuration_version.backup_configuration
+        config_name = config.name
+        config_version = operation.backup_configuration_version.version_number
+        config_id = config.id
+
+    data = {
+        'status': operation.status,
+        'status_display': operation.get_status_display(),
+        'hostname': operation.hostname or '—',
+        'ip_address': operation.ip_address or '—',
+        'external_job_id': operation.external_job_id or '—',
+        'started_at': operation.started_at.strftime('%d.%m.%Y %H:%M:%S') if operation.started_at else '—',
+        'finished_at': operation.finished_at.strftime('%d.%m.%Y %H:%M:%S') if operation.finished_at else '—',
+        'duration_seconds': duration,
+        'size_human': operation.size_human or '—',
+        'storage_type': operation.storage_type or '—',
+        'storage_path': operation.storage_path or '—',
+        'error_message': operation.error_message,
+        'metadata': operation.metadata,
+        'config_name': config_name,
+        'config_version': config_version,
+        'config_id': config_id,
+    }
+    return JsonResponse(data)
