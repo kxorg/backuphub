@@ -9,10 +9,11 @@
 
 <div class="card mb-4">
     <div class="card-body">
-        <form method="get" class="row g-3">
+        <form id="filter-form" method="get" class="row g-3">
             <div class="col-md-4">
                 <label for="search" class="form-label">Search</label>
-                <input type="text" class="form-control" id="search" name="q" value="{{ search_query }}" placeholder="Hostname, Job ID, Path...">
+                <input type="text" class="form-control" id="search" name="q" 
+                       value="{{ search_query }}" placeholder="Hostname, Job ID, Path...">
             </div>
             <div class="col-md-2">
                 <label for="status" class="form-label">Status</label>
@@ -25,11 +26,13 @@
             </div>
             <div class="col-md-2">
                 <label for="hostname" class="form-label">Hostname</label>
-                <input type="text" class="form-control" id="hostname" name="hostname" value="{{ hostname_filter }}">
+                <input type="text" class="form-control" id="hostname" name="hostname" 
+                       value="{{ hostname_filter }}">
             </div>
             <div class="col-md-2">
                 <label for="configuration" class="form-label">Configuration ID</label>
-                <input type="text" class="form-control" id="configuration" name="configuration" value="{{ configuration_filter }}">
+                <input type="text" class="form-control" id="configuration" name="configuration" 
+                       value="{{ configuration_filter }}">
             </div>
             <div class="col-md-2 d-flex align-items-end">
                 <button type="submit" class="btn btn-primary w-100">Filter</button>
@@ -40,9 +43,8 @@
 
 <div class="card">
     <div class="card-body">
-        {% if operations %}
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table class="table table-hover" id="operations-table">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -55,7 +57,7 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="operations-body">
                     {% for operation in operations %}
                     <tr>
                         <td>{{ operation.id }}</td>
@@ -96,6 +98,8 @@
                             </a>
                         </td>
                     </tr>
+                    {% empty %}
+                    <tr><td colspan="8" class="text-center py-4 text-muted">No backup operations found</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -130,10 +134,81 @@
             </ul>
         </nav>
         {% endif %}
-
-        {% else %}
-        <p class="text-muted text-center">No backup operations found</p>
-        {% endif %}
+ 
     </div>
 </div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tbody = document.getElementById('operations-body');
+    const paginationContainer = document.getElementById('pagination-container');
+    const lastUpdated = document.getElementById('last-updated');
+
+    function getQueryParams() {
+        return window.location.search.substring(1); 
+    }
+
+    function getStatusBadge(status) {
+        const badges = {
+            'success': '<span class="badge badge-success">Success</span>',
+            'error': '<span class="badge badge-error">Error</span>',
+            'in_progress': '<span class="badge badge-info">In Progress</span>',
+            'warning': '<span class="badge badge-warning">Warning</span>',
+            'cancelled': '<span class="badge badge-secondary">Cancelled</span>'
+        };
+        return badges[status] || `<span class="badge badge-secondary">${status}</span>`;
+    }
+
+    function updateTable(data) {
+        let html = '';
+
+        if (data.operations.length === 0) {
+            html = `<tr><td colspan="8" class="text-center py-4 text-muted">No backup operations found</td></tr>`;
+        } else {
+            data.operations.forEach(op => {
+                html += `
+                    <tr>
+                        <td>${op.id}</td>
+                        <td>${op.hostname || ''}</td>
+                        <td>
+                            <a href="${op.config_detail_url}">${op.configuration_name}</a>
+                            <span class="badge badge-secondary ms-1">v${op.version_number}</span>
+                        </td>
+                        <td>${getStatusBadge(op.status)}</td>
+                        <td>${op.started_at}</td>
+                        <td>${op.duration_seconds ? op.duration_seconds + 's' : '—'}</td>
+                        <td>${op.size_human}</td>
+                        <td>
+                            <a href="${op.detail_url}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        tbody.innerHTML = html;
+        lastUpdated.textContent = `last update: ${new Date().toLocaleTimeString()}`;
+    }
+
+    function refreshOperations() {
+        const query = getQueryParams();
+        fetch(`/api/ui/refresh-operations/?${query}`)
+            .then(response => {
+                if (!response.ok) throw new Error('Network error');
+                return response.json();
+            })
+            .then(data => {
+                updateTable(data);
+            })
+            .catch(error => {
+                console.error('Live update error:', error);
+            });
+    }
+
+    refreshOperations();
+    setInterval(refreshOperations, 5000);  
+});
+</script>
 {% endblock %}
