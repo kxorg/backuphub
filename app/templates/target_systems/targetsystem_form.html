@@ -55,8 +55,7 @@
                                         {{ form.system_type }}
                                         <a href="{% url 'system_type_create' %}" 
                                            class="btn btn-outline-primary" 
-                                           title="Create new System Type"
-                                           target="_blank">
+                                           title="Create new System Type">
                                             <i class="bi bi-plus-lg"></i>
                                         </a>
                                     </div>
@@ -70,8 +69,7 @@
                                         {{ form.environment }}
                                         <a href="{% url 'environment_create' %}" 
                                            class="btn btn-outline-primary" 
-                                           title="Create new Environment"
-                                           target="_blank">
+                                           title="Create new Environment">
                                             <i class="bi bi-plus-lg"></i>
                                         </a>
                                     </div>
@@ -147,11 +145,16 @@
                         </div>
                     </div>
 
-                    <!-- Action Buttons -->
                     <div class="d-flex justify-content-between align-items-center">
-                        <a href="{% url 'target_system_list' %}" class="btn btn-secondary btn-lg">
-                            <i class="bi bi-arrow-left me-1"></i>Cancel
-                        </a>
+                        {% if object.pk %}
+                            <a href="{% url 'target_system_detail' object.pk %}" class="btn btn-secondary btn-lg">
+                                <i class="bi bi-arrow-left me-1"></i>Cancel
+                            </a>
+                        {% else %}
+                            <a href="{% url 'target_system_list' %}" class="btn btn-secondary btn-lg">
+                                <i class="bi bi-arrow-left me-1"></i>Cancel
+                            </a>
+                        {% endif %}
                         <button type="submit" class="btn btn-primary btn-lg">
                             <i class="bi bi-check-lg me-1"></i>Save System
                         </button>

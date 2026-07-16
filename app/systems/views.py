@@ -90,7 +90,9 @@ class TargetSystemUpdateView(LoginRequiredMixin, UpdateView):
     model = TargetSystem
     form_class = TargetSystemForm
     template_name = 'target_systems/targetsystem_form.html'
-    success_url = reverse_lazy('target_system_list')
+
+    def get_success_url(self):
+        return reverse_lazy('target_system_detail', kwargs={'pk': self.object.pk})
 
     @transaction.atomic
     def form_valid(self, form):
