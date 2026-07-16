@@ -24,6 +24,7 @@ class TargetSystemForm(forms.ModelForm):
         fields = [
             'system_type',
             'environment',
+            'information_system',
             'name',
             'description',
             'is_active',
@@ -33,7 +34,7 @@ class TargetSystemForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # При редактировании заполняем поля owner и administrator из текущей версии
+        # When editing, fill in the owner and administrator fields from the current version.
         if self.instance and self.instance.pk:
             current_version = self.instance.current_version
             if current_version:

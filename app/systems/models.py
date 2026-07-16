@@ -1,7 +1,7 @@
 import uuid
 from django.db import models
 from django.utils import timezone
-from dictionaries.models import SystemType, Environment
+from dictionaries.models import SystemType, Environment, InformationSystem
 
 
 # Create your models here.
@@ -22,9 +22,17 @@ class TargetSystem(models.Model):
         on_delete=models.PROTECT,
         related_name='target_systems',
         verbose_name='Environment',
-        null=True,      # ← Добавь
-        blank=True      # ← Добавь
-)
+        null=True,      
+        blank=True      
+    )
+    information_system = models.ForeignKey(
+        InformationSystem,  
+        on_delete=models.PROTECT,          
+        related_name='target_systems', 
+        verbose_name='Information System',
+        blank=True,
+        null=True
+    )
     name = models.CharField(
         max_length=255,
         verbose_name='System name'

@@ -2,10 +2,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.contrib import messages
-from .models import SystemType, Environment, BackupTool
-from .forms import SystemTypeForm, EnvironmentForm, BackupToolForm
-
-# Create your views here.
+from .models import SystemType, Environment, BackupTool, InformationSystem
+from .forms import SystemTypeForm, EnvironmentForm, BackupToolForm, InformationSystemForm
 
 class SystemTypeListView(LoginRequiredMixin, ListView):
     model = SystemType
@@ -92,13 +90,14 @@ class EnvironmentDeleteView(LoginRequiredMixin, DeleteView):
         return super().form_valid(form)
 
 
+
+
+
 class BackupToolListView(LoginRequiredMixin, ListView):
     model = BackupTool
     template_name = 'dictionaries/backuptool_list.html'
     context_object_name = 'backup_tools'
     paginate_by = 50
-
-
 
 
 class BackupToolCreateView(LoginRequiredMixin, CreateView):
@@ -134,3 +133,45 @@ class BackupToolDeleteView(LoginRequiredMixin, DeleteView):
         messages.success(self.request, 'Backup Tool deleted successfully.')
         return super().form_valid(form)
 
+
+
+
+class InformationSystemListView(LoginRequiredMixin, ListView):
+    model = InformationSystem
+    template_name = 'dictionaries/informationsystem_list.html'
+    context_object_name = 'information_systems'
+    paginate_by = 50
+
+
+class InformationSystemCreateView(LoginRequiredMixin, CreateView):
+    model = InformationSystem
+    form_class = InformationSystemForm  
+    template_name = 'dictionaries/informationsystem_form.html'
+    success_url = reverse_lazy('informationsystem_list')
+
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user.username
+        messages.success(self.request, 'Information System created successfully.')
+        return super().form_valid(form)
+
+
+class InformationSystemUpdateView(LoginRequiredMixin, UpdateView):
+    model = InformationSystem
+    form_class = InformationSystemForm  
+    template_name = 'dictionaries/information_system_form.html'
+    success_url = reverse_lazy('informationsystem_list')
+
+    def form_valid(self, form):
+        form.instance.updated_by = self.request.user.username
+        messages.success(self.request, 'Information System updated successfully.')
+        return super().form_valid(form)
+
+
+class InformationSystemDeleteView(LoginRequiredMixin, DeleteView):
+    model = InformationSystem
+    success_url = reverse_lazy('informationsystem_list')
+    template_name = 'dictionaries/informationsystem_confirm_delete.html'
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Information System deleted successfully.')
+        return super().form_valid(form)
