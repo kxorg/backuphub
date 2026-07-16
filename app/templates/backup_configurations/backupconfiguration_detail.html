@@ -112,32 +112,32 @@
                             <div class="mb-3">
                                 <strong class="d-block mb-2">1. Create Backup Operation (POST)</strong>
                                 <div class="position-relative">
-                                    <pre class="bg-dark text-light p-2 rounded small mb-1" style="overflow-x: auto;"><code>curl -X POST "http://127.0.0.1:8000/api/v1/backup-operations/" \
-  -H "X-API-Key: {{ backup_configuration.target_system_version.target_system.api_key }}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "backup_configuration_id": {{ backup_configuration.id }},
-    "hostname": "your-server-hostname",
-    "ip_address": "10.0.0.1"
-  }'</code></pre>
+                                    <pre class="bg-dark text-light p-2 rounded small mb-1" style="overflow-x: auto;"><code>curl -X POST "{{ request.scheme }}://{{ request.get_host }}/api/v1/backup-operations/" \
+                            -H "X-API-Key: {{ backup_configuration.target_system_version.target_system.api_key }}" \
+                            -H "Content-Type: application/json" \
+                            -d '{
+                                "backup_configuration_id": {{ backup_configuration.id }},
+                                "hostname": "your-server-hostname",
+                                "ip_address": "10.0.0.1"
+                            }'</code></pre>
                                     <button class="btn btn-sm btn-outline-light position-absolute top-0 end-0 m-1 copy-btn" data-copy="post-curl">
                                         <i class="bi bi-clipboard"></i> Copy
                                     </button>
                                 </div>
                             </div>
-                            
+
                             <div>
                                 <strong class="d-block mb-2">2. Complete Backup Operation (PATCH)</strong>
                                 <div class="position-relative">
-                                    <pre class="bg-dark text-light p-2 rounded small mb-1" style="overflow-x: auto;"><code>curl -X PATCH "http://127.0.0.1:8000/api/v1/backup-operations/{operation_id}/" \
-  -H "X-API-Key: {{ backup_configuration.target_system_version.target_system.api_key }}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "status": "success",
-    "size_bytes": 1048576,
-    "storage_type": "local",
-    "storage_path": "/path/to/backup.tar.gz"
-  }'</code></pre>
+                                    <pre class="bg-dark text-light p-2 rounded small mb-1" style="overflow-x: auto;"><code>curl -X PATCH "{{ request.scheme }}://{{ request.get_host }}/api/v1/backup-operations/{operation_id}/" \
+                            -H "X-API-Key: {{ backup_configuration.target_system_version.target_system.api_key }}" \
+                            -H "Content-Type: application/json" \
+                            -d '{
+                                "status": "success",
+                                "size_bytes": 1048576,
+                                "storage_type": "local",
+                                "storage_path": "/path/to/backup.tar.gz"
+                            }'</code></pre>
                                     <button class="btn btn-sm btn-outline-light position-absolute top-0 end-0 m-1 copy-btn" data-copy="patch-curl">
                                         <i class="bi bi-clipboard"></i> Copy
                                     </button>
