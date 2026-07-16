@@ -4,6 +4,18 @@
 
 BackupHub — система централизованного управления и мониторинга резервного копирования. Предназначена для операторов и интеграторов, которым нужно собирать факты выполнения бэкапов, версионировать конфигурации и предоставлять внешним системам удобный API для отправки статусов и результатов.
 
+Документация по инфраструктуре и эксплуатации:
+
+- [Архитектура](docs/ARCHITECTURE.md)
+- [Инфраструктура](docs/INFRASTRUCTURE.md)
+- [CI/CD и деплой](docs/DEPLOYMENT.md)
+- [Мониторинг](docs/MONITORING.md)
+- [Безопасность](docs/SECURITY.md)
+- [Бэкапы и restore](docs/BACKUPS.md)
+- [Runbook](docs/RUNBOOK.md)
+- [GitHub Runner](docs/github_runner.md)
+- [API](docs/BackupHub_API_Documentation.md)
+
 2. Стек
 
 | Компонент | Версия | Роль |
