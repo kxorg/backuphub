@@ -109,9 +109,6 @@ SPECTACULAR_SETTINGS = {
             }
         }
     },
-    'TAGS': [
-        {'name': 'backup-operations', 'description': 'Backup operation lifecycle'},
-    ],
 }
 
 MIDDLEWARE = [

@@ -72,6 +72,42 @@ git clone git@github.com:kim-andrey/backuphub.git
 cd backuphub && docker-compose -f docker-compose.local.yml up -d
 ```
 
+- Клонирование репозитория
+
+```shell
+git clone <ссылка_на_репозиторий>
+cd backuphub
+```
+
+- Скопируйте пример файла конфигурации и заполните необходимые переменные:
+
+```shell
+cp .env.example .env
+# Укажите актуальные данные в .env
+```
+
+- Соберите и запустите сервисы:
+
+```shell
+docker-compose up --build
+```
+
+- В отдельном терминале выполните миграции базы данных:
+
+```shell
+docker-compose exec app python manage.py migrate
+```
+
+Создание суперпользователя lля доступа в админ-панель:
+
+```shell
+docker-compose exec app python manage.py createsuperuser
+```
+
+- Доступ
+Приложение будет доступно по адресу http://localhost:8000 (проверьте docker-compose.yml на предмет актуальных портов).
+
+
 - http://0.0.0.0:8000/api/v1/ - Точка доступа REST API.
 - http://0.0.0.0:8000/admin/ - Панель администратора Django. (Создание суперпользователя: python manage.py createsuperuser).
 - http://0.0.0.0:5555/flower - Flower для отслеживания Celery задач.

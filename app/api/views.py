@@ -13,7 +13,7 @@ from operations.models import BackupOperation
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
 
 @extend_schema(
-    tags=['Dashboard'],
+    tags=['UI Live Updates'],
     summary='Refresh Dashboard Data',
     description='Returns aggregated statistics for the last 24 hours and recent backup operations.',
     responses={
@@ -76,7 +76,7 @@ def api_ui_refresh_dashboard(request):
     return JsonResponse(data)
 
 @extend_schema(
-    tags=['Operations'],
+    tags=['UI Live Updates'],
     summary='Refresh Operations List (Live Update)',
     description='Returns a filtered and paginated list of operations for dynamic updates',
 )
@@ -154,7 +154,7 @@ def api_ui_refresh_operations(request):
     })
 
 @extend_schema(
-    tags=['Operations'],
+    tags=['UI Live Updates'],
     summary='Refresh Operation Detail',
     description='Returns all operation details for live updates',
 )
@@ -203,7 +203,7 @@ def api_ui_refresh_operation_detail(request, pk):
     return JsonResponse(data)
 
 @extend_schema(
-    tags=['Systems'],
+    tags=['UI Live Updates'],
     summary='Refresh Target System Details',
     description='Returns target system details and recent operations for live updates',
 )
