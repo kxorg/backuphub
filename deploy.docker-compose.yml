@@ -12,6 +12,8 @@ services:
     restart: always
     env_file:
       - ./env
+    volumes:
+      - /opt/backuphub/static:/opt/bh/vol/static
     expose:
       - "8000"
     networks:
@@ -21,18 +23,21 @@ services:
     <<: *app
     container_name: celery_worker_${STAGE}
     command: /start-celeryworker
+    volumes: []
     expose: []
 
   celery_beat:
     <<: *app
     container_name: celery_beat_${STAGE}
     command: /start-celerybeat
+    volumes: []
     expose: []
 
   flower:
     <<: *app
     container_name: flower_${STAGE}
     command: /start-flower
+    volumes: []
     expose:
       - "5555"
     depends_on:
