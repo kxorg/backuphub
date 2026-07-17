@@ -1,0 +1,74 @@
+name: PR tests
+
+on:
+  pull_request:
+    branches:
+      - DEV
+
+permissions:
+  contents: read
+
+jobs:
+  django_api_tests:
+    name: Django API tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect code changes
+        id: changes
+        shell: bash
+        run: |
+          changed_files="$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}")"
+
+          code_changed=false
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+
+            case "$file" in
+              docs/*|README.md|*.md)
+                ;;
+              *)
+                code_changed=true
+                break
+                ;;
+            esac
+          done <<< "$changed_files"
+
+          echo "Changed files:"
+          echo "$changed_files"
+          echo "code_changed=$code_changed" >> "$GITHUB_OUTPUT"
+
+      - name: Skip code checks
+        if: steps.changes.outputs.code_changed != 'true'
+        run: echo "Only documentation or Markdown files changed. Docker checks are skipped."
+
+      - name: Start local Docker Compose stack
+        if: steps.changes.outputs.code_changed == 'true'
+        run: docker compose -f test.docker-compose.yml up -d --build --wait
+
+      - name: Show containers
+        if: steps.changes.outputs.code_changed == 'true'
+        run: |
+          docker compose -f test.docker-compose.yml ps
+
+      - name: Run Ruff linter
+        if: steps.changes.outputs.code_changed == 'true'
+        continue-on-error: true
+        run: docker compose -f test.docker-compose.yml exec -T app sh -c 'RUFF_CACHE_DIR=/tmp/ruff_cache ruff check .'
+
+      - name: Run API tests
+        if: steps.changes.outputs.code_changed == 'true'
+        run: docker compose -f test.docker-compose.yml exec -T app sh -c 'COVERAGE_FILE=/tmp/.coverage pytest -o cache_dir=/tmp/.pytest_cache -o "addopts=-ra --strict-markers --tb=short --cov=app --cov-report=term-missing --cov-fail-under=70"'
+
+      - name: Show logs on failure
+        if: failure() && steps.changes.outputs.code_changed == 'true'
+        run: docker compose -f test.docker-compose.yml logs --no-color --tail=200
+
+      - name: Stop local Docker Compose stack
+        if: always() && steps.changes.outputs.code_changed == 'true'
+        run: docker compose -f test.docker-compose.yml down -v --remove-orphans

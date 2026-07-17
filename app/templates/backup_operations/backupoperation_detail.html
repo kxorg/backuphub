@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Operation #{{ operation.id }} | BackupHub{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'backup_operation_list' %}">Backup Operations</a></li>
+        <li class="breadcrumb-item active">Operation #{{ operation.id }}</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Backup Operation #{{ operation.id }}</h1>
+    <a href="{% url 'backup_operation_list' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to List
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">Operation Details</div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-4"><strong>Status:</strong></div>
+                    <div class="col-8">
+                        {% if operation.status == 'success' %}
+                            <span class="badge badge-success"><i class="bi bi-check-circle me-1"></i>Success</span>
+                        {% elif operation.status == 'error' %}
+                            <span class="badge badge-error"><i class="bi bi-x-circle me-1"></i>Error</span>
+                        {% elif operation.status == 'in_progress' %}
+                            <span class="badge badge-info"><i class="bi bi-arrow-repeat me-1"></i>In Progress</span>
+                        {% elif operation.status == 'warning' %}
+                            <span class="badge badge-warning"><i class="bi bi-exclamation-triangle me-1"></i>Warning</span>
+                        {% elif operation.status == 'cancelled' %}
+                            <span class="badge badge-secondary"><i class="bi bi-slash-circle me-1"></i>Cancelled</span>
+                        {% else %}
+                            <span class="badge badge-secondary">{{ operation.status }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4"><strong>Hostname:</strong></div>
+                    <div class="col-8">{{ operation.hostname }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4"><strong>IP Address:</strong></div>
+                    <div class="col-8">{{ operation.ip_address|default:"—" }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4"><strong>External Job ID:</strong></div>
+                    <div class="col-8">{{ operation.external_job_id|default:"—" }}</div>
+                </div>
+                <div class="row">
+                    <div class="col-4"><strong>Configuration:</strong></div>
+                    <div class="col-8">
+                        {% if operation.backup_configuration_version %}
+                            <!-- Вот правильная HTML-ссылка, которую Django сгенерирует корректно -->
+                            <a href="{% url 'backup_configuration_detail' operation.backup_configuration_version.backup_configuration.id %}">
+                                {{ operation.backup_configuration_version.backup_configuration.name }}
+                            </a>
+                            <span class="text-muted">(v{{ operation.backup_configuration_version.version_number }})</span>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">Timing & Size</div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-4"><strong>Started:</strong></div>
+                    <div class="col-8">{{ operation.started_at|date:"d.m.Y H:i:s" }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4"><strong>Finished:</strong></div>
+                    <div class="col-8">{{ operation.finished_at|date:"d.m.Y H:i:s"|default:"—" }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4"><strong>Duration:</strong></div>
+                    <div class="col-8">
+                        {% if duration_seconds %}
+                            {{ duration_seconds }} seconds
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4"><strong>Size:</strong></div>
+                    <div class="col-8">{{ size_human|default:"—" }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4"><strong>Storage Type:</strong></div>
+                    <div class="col-8">{{ operation.storage_type|default:"—" }}</div>
+                </div>
+                <div class="row">
+                    <div class="col-4"><strong>Storage Path:</strong></div>
+                    <div class="col-8">{{ operation.storage_path|default:"—" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if operation.error_message %}
+<div class="card border-danger">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Error Message</h5>
+    </div>
+    <div class="card-body">
+        <pre class="mb-0">{{ operation.error_message }}</pre>
+    </div>
+</div>
+{% endif %}
+
+{% if operation.metadata %}
+<div class="card border-info mt-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Metadata</h5>
+    </div>
+    <div class="card-body">
+        <pre class="mb-0">{{ operation.metadata|pprint }}</pre>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const operationId = "{{ operation.id }}";
+    const apiUrl = '/api/ui/refresh-operation/' + operationId + '/';
+    
+    // Находим бейдж статуса (он первый в карточке Operation Details)
+    const statusElement = document.querySelector('.card-body .badge');
+    if (!statusElement) return;
+
+    const currentStatus = statusElement.textContent.trim();
+    const isCompleted = currentStatus === 'Success' || currentStatus === 'Error' || currentStatus === 'Cancelled';
+    
+    if (!isCompleted) {
+        setInterval(function() {
+            fetch(apiUrl)
+                .then(function(response) {
+                    if (!response.ok) throw new Error('Network error: ' + response.status);
+                    return response.json();
+                })
+                .then(function(data) {
+                    if (data.status && data.status_display) {
+                        let iconClass = 'bi-dash-circle';
+                        if (data.status === 'success') iconClass = 'bi-check-circle';
+                        else if (data.status === 'error') iconClass = 'bi-x-circle';
+                        else if (data.status === 'in_progress') iconClass = 'bi-arrow-repeat';
+                        else if (data.status === 'warning') iconClass = 'bi-exclamation-triangle';
+                        else if (data.status === 'cancelled') iconClass = 'bi-slash-circle';
+
+                        // Обновляем иконку и текст
+                        statusElement.innerHTML = '<i class="bi ' + iconClass + ' me-1"></i>' + data.status_display;
+                        
+                        // Обновляем цвет бейджа
+                        statusElement.className = 'badge ';
+                        if (data.status === 'success') statusElement.className += 'badge-success';
+                        else if (data.status === 'error') statusElement.className += 'badge-error';
+                        else if (data.status === 'in_progress') statusElement.className += 'badge-info';
+                        else if (data.status === 'warning') statusElement.className += 'badge-warning';
+                        else statusElement.className += 'badge-secondary';
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Live update error:', error);
+                });
+        }, 5000);
+    }
+});
+</script>
+{% endblock %}

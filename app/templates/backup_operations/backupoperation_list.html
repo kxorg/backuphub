@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Backup Operations | BackupHub{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Backup Operations</h2>
+
+<!-- Фильтры (оставлены как были, просто в читаемом виде) -->
+<form method="get" class="row g-3 mb-4">
+    <div class="col-md-3">
+        <input type="text" name="q" class="form-control" placeholder="Search..." value="{{ search_query }}">
+    </div>
+    <div class="col-md-2">
+        <select name="status" class="form-select">
+            <option value="">All Statuses</option>
+            {% for value, label in status_choices %}
+            <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-3">
+        <input type="text" name="hostname" class="form-control" placeholder="Hostname" value="{{ hostname_filter }}">
+    </div>
+    <div class="col-md-2">
+        <input type="text" name="configuration" class="form-control" placeholder="Configuration ID" value="{{ configuration_filter }}">
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">Filter</button>
+    </div>
+</form>
+
+<!-- Таблица операций -->
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>Hostname</th>
+                <th>Configuration</th>
+                <th>Status</th>
+                <th>Started</th>
+                <th>Duration</th>
+                <th>Size</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for operation in operations %}
+            <tr>
+                <td>{{ operation.id }}</td>
+                <td>{{ operation.hostname }}</td>
+                <td>
+                    <!-- ИСПРАВЛЕНО: Правильная HTML-ссылка с защитой от отсутствия версии -->
+                    {% if operation.backup_configuration_version %}
+                        <a href="{% url 'backup_configuration_detail' operation.backup_configuration_version.backup_configuration.id %}">
+                            {{ operation.backup_configuration_version.backup_configuration.name }}
+                        </a>
+                        <span class="text-muted">v{{ operation.backup_configuration_version.version_number }}</span>
+                    {% else %}
+                        <span class="text-muted">—</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if operation.status == 'success' %}
+                        <span class="badge badge-success">Success</span>
+                    {% elif operation.status == 'error' %}
+                        <span class="badge badge-error">Error</span>
+                    {% elif operation.status == 'in_progress' %}
+                        <span class="badge badge-info">In Progress</span>
+                    {% elif operation.status == 'warning' %}
+                        <span class="badge badge-warning">Warning</span>
+                    {% elif operation.status == 'cancelled' %}
+                        <span class="badge badge-secondary">Cancelled</span>
+                    {% else %}
+                        <span class="badge badge-secondary">{{ operation.status }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ operation.started_at|date:"d.m.Y H:i" }}</td>
+                <td>
+                    {% if operation.duration_seconds %}
+                        {{ operation.duration_seconds }}s
+                    {% else %}
+                        <span class="text-muted">—</span>
+                    {% endif %}
+                </td>
+                <td>{{ operation.size_human|default:"—" }}</td>
+                <td>
+                    <a href="{% url 'backup_operation_detail' operation.id %}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-eye"></i> View
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" class="text-center text-muted py-4">No backup operations found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Пагинация (оставлена оригинальная логика, но в правильном HTML) -->
+{% if is_paginated %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}&status={{ status_filter }}&hostname={{ hostname_filter }}&configuration={{ configuration_filter }}">Previous</a>
+        </li>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}&q={{ search_query }}&status={{ status_filter }}&hostname={{ hostname_filter }}&configuration={{ configuration_filter }}">{{ num }}</a>
+            </li>
+            {% endif %}
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ search_query }}&status={{ status_filter }}&hostname={{ hostname_filter }}&configuration={{ configuration_filter }}">Next</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tbody = document.getElementById('operations-body');
+    const paginationContainer = document.getElementById('pagination-container');
+    const lastUpdated = document.getElementById('last-updated');
+
+    function getQueryParams() {
+        return window.location.search.substring(1); 
+    }
+
+    function getStatusBadge(status) {
+        const badges = {
+            'success': '<span class="badge badge-success">Success</span>',
+            'error': '<span class="badge badge-error">Error</span>',
+            'in_progress': '<span class="badge badge-info">In Progress</span>',
+            'warning': '<span class="badge badge-warning">Warning</span>',
+            'cancelled': '<span class="badge badge-secondary">Cancelled</span>'
+        };
+        return badges[status] || `<span class="badge badge-secondary">${status}</span>`;
+    }
+
+    function updateTable(data) {
+        let html = '';
+
+        if (data.operations.length === 0) {
+            html = `<tr><td colspan="8" class="text-center py-4 text-muted">No backup operations found</td></tr>`;
+        } else {
+            data.operations.forEach(op => {
+                html += `
+                    <tr>
+                        <td>${op.id}</td>
+                        <td>${op.hostname || ''}</td>
+                        <td>
+                            <a href="${op.config_detail_url}">${op.configuration_name}</a>
+                            <span class="badge badge-secondary ms-1">v${op.version_number}</span>
+                        </td>
+                        <td>${getStatusBadge(op.status)}</td>
+                        <td>${op.started_at}</td>
+                        <td>${op.duration_seconds ? op.duration_seconds + 's' : '—'}</td>
+                        <td>${op.size_human}</td>
+                        <td>
+                            <a href="${op.detail_url}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        tbody.innerHTML = html;
+        lastUpdated.textContent = `last update: ${new Date().toLocaleTimeString()}`;
+    }
+
+    function refreshOperations() {
+        const query = getQueryParams();
+        fetch(`/api/ui/refresh-operations/?${query}`)
+            .then(response => {
+                if (!response.ok) throw new Error('Network error');
+                return response.json();
+            })
+            .then(data => {
+                updateTable(data);
+            })
+            .catch(error => {
+                console.error('Live update error:', error);
+            });
+    }
+
+    refreshOperations();
+    setInterval(refreshOperations, 5000);  
+});
+</script>
+{% endblock %}

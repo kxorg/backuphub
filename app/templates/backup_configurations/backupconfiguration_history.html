@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}History: {{ backup_configuration.name }} | BackupHub{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'backup_configuration_list' %}">Backup Configurations</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'backup_configuration_detail' backup_configuration.id %}">{{ backup_configuration.name }}</a></li>
+        <li class="breadcrumb-item active">History</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Version History: {{ backup_configuration.name }}</h2>
+    <a href="{% url 'backup_configuration_detail' backup_configuration.id %}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Configuration
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if versions %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Version</th>
+                        <th>Backup Tool</th>
+                        <th>Mode</th>
+                        <th>Schedule</th>
+                        <th>Retention</th>
+                        <th>RPO/RTO</th>
+                        <th>Valid From</th>
+                        <th>Valid To</th>
+                        <th>Created By</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for version in versions %}
+                    <tr>
+                        <td>
+                            <strong>v{{ version.version_number }}</strong>
+                        </td>
+                        <td>{{ version.backup_tool.name }}</td>
+                        <td>{{ version.get_backup_mode_display }}</td>
+                        <td><code>{{ version.schedule_cron|default:"—" }}</code></td>
+                        <td>{{ version.retention_days }} days</td>
+                        <td>{{ version.rpo_minutes }}/{{ version.rto_minutes }} min</td>
+                        <td>{{ version.valid_from|date:"d.m.Y H:i" }}</td>
+                        <td>{{ version.valid_to|date:"d.m.Y H:i"|default:"—" }}</td>
+                        <td>{{ version.created_by|default:"System" }}</td>
+                        <td>
+                            {% if version.is_current %}
+                                <span class="badge badge-success">Current</span>
+                            {% else %}
+                                <span class="badge badge-secondary">Historical</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'backup_configuration_version_detail' backup_configuration.id version.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted text-center">No version history available</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

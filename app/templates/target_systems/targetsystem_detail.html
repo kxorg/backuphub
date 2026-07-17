@@ -1,0 +1,418 @@
+{% extends "base.html" %}
+
+{% block title %}{{ target_system.name }} | BackupHub{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'target_system_list' %}">Target Systems</a></li>
+        <li class="breadcrumb-item active">{{ target_system.name }}</li>
+    </ol>
+</nav>
+
+<!-- Header with Actions -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">
+            <i class="bi bi-server me-2"></i>{{ target_system.name }}
+        </h2>
+        <span class="badge {% if target_system.is_active %}badge-success{% else %}badge-secondary{% endif %}">
+            {% if target_system.is_active %}
+                <i class="bi bi-check-circle me-1"></i>Active
+            {% else %}
+                <i class="bi bi-slash-circle me-1"></i>Inactive
+            {% endif %}
+        </span>
+    </div>
+    <div class="btn-group">
+        <a href="{% url 'target_system_edit' target_system.id %}" class="btn btn-primary">
+            <i class="bi bi-pencil me-1"></i>Edit
+        </a>
+        <a href="{% url 'target_system_history' target_system.id %}" class="btn btn-info">
+            <i class="bi bi-clock-history me-1"></i>Version History
+        </a>
+        <a href="{% url 'backup_configuration_create' %}?target_system={{ target_system.id }}" class="btn btn-success">
+            <i class="bi bi-plus-circle me-1"></i>Add Backup Config
+        </a>
+        <form method="post" action="{% url 'target_system_delete' target_system.id %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to deactivate this system?')">
+                <i class="bi bi-trash me-1"></i>Deactivate
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Main Info Cards -->
+<div class="row mb-4">
+    <!-- System Information -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>System Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-4">
+                        <strong class="text-muted">Type:</strong>
+                    </div>
+                    <div class="col-8">
+                        <span class="badge badge-primary">{{ target_system.system_type.name }}</span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4">
+                        <strong class="text-muted">Environment:</strong>
+                    </div>
+                    <div class="col-8">
+                        {% if target_system.environment %}
+                            <span class="badge badge-info">{{ target_system.environment.name }}</span>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if target_system.description %}
+                <div class="row mb-3">
+                    <div class="col-4">
+                        <strong class="text-muted">Description:</strong>
+                    </div>
+                    <div class="col-8">{{ target_system.description }}</div>
+                </div>
+                {% endif %}
+                <div class="row mb-3">
+                    <div class="col-4">
+                        <strong class="text-muted">API Key:</strong>
+                    </div>
+                    <div class="col-8">
+                        <div class="input-group input-group-sm" style="max-width: 400px;">
+                            <code class="form-control text-break font-monospace" id="apiKey" style="font-size: 0.75rem; letter-spacing: 1px;">
+                                {% if target_system.api_key %}••••••••••••••••••••••••{% endif %}
+                            </code>
+                            <button class="btn btn-outline-secondary" type="button" id="toggleApiKey" title="Show API Key" style="white-space: nowrap;">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn btn-outline-primary" type="button" id="copyApiKey" title="Copy to Clipboard" style="white-space: nowrap;">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="row mb-2">
+                    <div class="col-4">
+                        <strong class="text-muted">Created:</strong>
+                    </div>
+                    <div class="col-8">
+                        {{ target_system.created_at|date:"d.m.Y H:i" }} 
+                        <small class="text-muted">by {{ target_system.created_by|default:"System" }}</small>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-4">
+                        <strong class="text-muted">Updated:</strong>
+                    </div>
+                    <div class="col-8">
+                        {{ target_system.updated_at|date:"d.m.Y H:i" }} 
+                        <small class="text-muted">by {{ target_system.updated_by|default:"System" }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Version -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-layers me-2"></i>Current Version</h5>
+            </div>
+            <div class="card-body">
+                {% if current_version %}
+                <div class="mb-3">
+                    <span class="badge badge-success fs-6">v{{ current_version.version_number }}</span>
+                    <span class="badge badge-info">Current</span>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4">
+                        <strong class="text-muted">Owner:</strong>
+                    </div>
+                    <div class="col-8">
+                        <i class="bi bi-person me-1"></i>{{ current_version.owner|default:"—" }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4">
+                        <strong class="text-muted">Administrator:</strong>
+                    </div>
+                    <div class="col-8">
+                        <i class="bi bi-shield me-1"></i>{{ current_version.administrator|default:"—" }}
+                    </div>
+                </div>
+                <hr>
+                <div class="row mb-2">
+                    <div class="col-4">
+                        <strong class="text-muted">Valid From:</strong>
+                    </div>
+                    <div class="col-8">{{ current_version.valid_from|date:"d.m.Y H:i" }}</div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-4">
+                        <strong class="text-muted">Valid To:</strong>
+                    </div>
+                    <div class="col-8">{{ current_version.valid_to|date:"d.m.Y H:i"|default:"Current" }}</div>
+                </div>
+                <div class="row">
+                    <div class="col-4">
+                        <strong class="text-muted">Created By:</strong>
+                    </div>
+                    <div class="col-8">{{ current_version.created_by|default:"System" }}</div>
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>No version information available
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Backup Configurations Section -->
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="bi bi-gear me-2"></i>Backup Configurations
+        </h5>
+        <a href="{% url 'backup_configuration_create' %}?target_system={{ target_system.id }}" class="btn btn-sm btn-success">
+            <i class="bi bi-plus-circle me-1"></i>Add Configuration
+        </a>
+    </div>
+    <div class="card-body">
+        {% with backup_configs=target_system.versions.first.backup_configurations.all %}
+        {% if backup_configs %}
+        <div class="alert alert-info mb-3">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>{{ backup_configs.count }}</strong> backup configuration{{ backup_configs.count|pluralize }} found
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Current Version</th>
+                        <th>Backup Tool</th>
+                        <th>Mode</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for config in backup_configs %}
+                    <tr>
+                        <td>
+                            <strong>{{ config.name }}</strong>
+                        </td>
+                        <td>
+                            {% if config.current_version %}
+                                <span class="badge badge-primary">v{{ config.current_version.version_number }}</span>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if config.current_version %}
+                                {{ config.current_version.backup_tool.name }}
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if config.current_version %}
+                                <span class="badge badge-secondary">{{ config.current_version.get_backup_mode_display }}</span>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if config.is_active %}
+                                <span class="badge badge-success">Active</span>
+                            {% else %}
+                                <span class="badge badge-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'backup_configuration_detail' config.id %}" class="btn btn-outline-primary" title="View">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'backup_configuration_edit' config.id %}" class="btn btn-outline-secondary" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="bi bi-inbox display-4 text-muted"></i>
+            <p class="text-muted mt-2 mb-0">No backup configurations yet</p>
+            <a href="{% url 'backup_configuration_create' %}?target_system={{ target_system.id }}" class="btn btn-sm btn-primary mt-2">
+                <i class="bi bi-plus-circle me-1"></i>Create First Configuration
+            </a>
+        </div>
+        {% endif %}
+        {% endwith %}
+    </div>
+</div>
+
+<!-- Recent Backup Operations -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="bi bi-clock-history me-2"></i>Recent Backup Operations
+        </h5>
+        <a href="{% url 'backup_operation_list' %}?target_system={{ target_system.id }}" class="btn btn-sm btn-outline-primary">
+            View All <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+    </div>
+    <div class="card-body">
+        {% with recent_ops=target_system.versions.first.backup_configurations.first.versions.first.operations.all|slice:":10" %}
+        {% if recent_ops %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Configuration</th>
+                        <th>Hostname</th>
+                        <th>Status</th>
+                        <th>Duration</th>
+                        <th>Size</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for op in recent_ops %}
+                    <tr>
+                        <td>{{ op.started_at|date:"d.m.Y H:i" }}</td>
+                        <td>
+                            <a href="{% url 'backup_configuration_detail' op.backup_configuration_version.backup_configuration.id %}">
+                                {{ op.backup_configuration_version.backup_configuration.name }}
+                            </a>
+                        </td>
+                        <td>{{ op.hostname }}</td>
+                        <td>
+                            {% if op.status == 'success' %}
+                                <span class="badge badge-success"><i class="bi bi-check-circle me-1"></i>Success</span>
+                            {% elif op.status == 'error' %}
+                                <span class="badge badge-error"><i class="bi bi-x-circle me-1"></i>Error</span>
+                            {% elif op.status == 'in_progress' %}
+                                <span class="badge badge-info"><i class="bi bi-arrow-repeat me-1"></i>In Progress</span>
+                            {% elif op.status == 'warning' %}
+                                <span class="badge badge-warning"><i class="bi bi-exclamation-triangle me-1"></i>Warning</span>
+                            {% else %}
+                                <span class="badge badge-secondary">{{ op.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if op.duration_seconds %}
+                                {{ op.duration_seconds }}s
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if op.size_human %}
+                                {{ op.size_human }}
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'backup_operation_detail' op.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="bi bi-inbox display-4 text-muted"></i>
+            <p class="text-muted mt-2 mb-0">No backup operations yet</p>
+        </div>
+        {% endif %}
+        {% endwith %}
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const apiKey = '{{ target_system.api_key }}';
+    const apiKeyElement = document.getElementById('apiKey');
+    const toggleBtn = document.getElementById('toggleApiKey');
+    const copyBtn = document.getElementById('copyApiKey');
+    let isHidden = true;
+    
+    toggleBtn.addEventListener('click', function() {
+        if (isHidden) {
+            apiKeyElement.textContent = apiKey;
+            toggleBtn.innerHTML = '<i class="bi bi-eye-slash"></i>';
+            toggleBtn.title = 'Hide API Key';
+            toggleBtn.classList.remove('btn-outline-secondary');
+            toggleBtn.classList.add('btn-outline-danger');
+        } else {
+            apiKeyElement.textContent = '••••••••••••••••••••••••';
+            toggleBtn.innerHTML = '<i class="bi bi-eye"></i>';
+            toggleBtn.title = 'Show API Key';
+            toggleBtn.classList.remove('btn-outline-danger');
+            toggleBtn.classList.add('btn-outline-secondary');
+        }
+        isHidden = !isHidden;
+    });
+    
+    copyBtn.addEventListener('click', function() {
+        navigator.clipboard.writeText(apiKey).then(function() {
+            const originalHTML = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="bi bi-check-lg"></i>';
+            copyBtn.classList.remove('btn-outline-primary');
+            copyBtn.classList.add('btn-success');
+            copyBtn.title = 'Copied!';
+            
+            setTimeout(function() {
+                copyBtn.innerHTML = originalHTML;
+                copyBtn.classList.remove('btn-success');
+                copyBtn.classList.add('btn-outline-primary');
+                copyBtn.title = 'Copy to Clipboard';
+            }, 2000);
+        }).catch(function(err) {
+            const textArea = document.createElement('textarea');
+            textArea.value = apiKey;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            const originalHTML = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="bi bi-check-lg"></i>';
+            copyBtn.classList.remove('btn-outline-primary');
+            copyBtn.classList.add('btn-success');
+            
+            setTimeout(function() {
+                copyBtn.innerHTML = originalHTML;
+                copyBtn.classList.remove('btn-success');
+                copyBtn.classList.add('btn-outline-primary');
+            }, 2000);
+        });
+    });
+});
+</script>
+{% endblock %}

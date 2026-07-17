@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -o errexit
+set -o nounset
+
+celery -A app worker --loglevel=INFO -n worker
+#celery -A app worker --loglevel=INFO
+#celery -A app worker --pool=solo --loglevel=INFO
+#celery -A app worker --concurrency=4 --loglevel=INFO

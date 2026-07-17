@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} | BackupHub{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'backup_configuration_list' %}">Backup Configurations</a></li>
+        <li class="breadcrumb-item active">{{ title }}</li>
+    </ol>
+</nav>
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-gear me-2"></i>{{ title }}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post" id="backupConfigForm">
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Please correct the errors below:</strong>
+                        <ul class="mb-0 mt-2">
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                <li>{{ field.label }}: {{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                        </ul>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endif %}
+
+                    <!-- General Information -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0 text-primary">
+                                <i class="bi bi-info-circle me-2"></i>General Information
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.target_system_version.id_for_label }}" class="form-label">
+                                        Target System Version <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        {{ form.target_system_version }}
+                                        <a href="{% url 'target_system_create' %}" 
+                                           class="btn btn-outline-primary" 
+                                           title="Create new Target System"
+                                           target="_blank">
+                                            <i class="bi bi-plus-lg"></i>
+                                        </a>
+                                    </div>
+                                    <div class="form-text">Select the target system and its version</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.name.id_for_label }}" class="form-label">
+                                        Configuration Name <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.name }}
+                                    <div class="form-text">Enter a descriptive name for this configuration</div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                                {{ form.description }}
+                                <div class="form-text">Provide additional details about this backup configuration</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Backup Parameters -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0 text-success">
+                                <i class="bi bi-sliders me-2"></i>Backup Parameters
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.backup_tool.id_for_label }}" class="form-label">
+                                        Backup Tool <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        {{ form.backup_tool }}
+                                        <a href="{% url 'backup_tool_create' %}" 
+                                           class="btn btn-outline-primary" 
+                                           title="Create new Backup Tool"
+                                           target="_blank">
+                                            <i class="bi bi-plus-lg"></i>
+                                        </a>
+                                    </div>
+                                    <div class="form-text">Select the backup tool (pg_dump, Velero, etc.)</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.backup_mode.id_for_label }}" class="form-label">
+                                        Backup Mode <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.backup_mode }}
+                                    <div class="form-text">Choose the backup mode</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.schedule_cron.id_for_label }}" class="form-label">
+                                        <i class="bi bi-clock me-1"></i>Schedule (Cron Expression)
+                                    </label>
+                                    {{ form.schedule_cron }}
+                                    <div class="form-text">{{ form.schedule_cron.help_text|default:"Example: 0 2 * * * (daily at 2 AM)" }}</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.retention_days.id_for_label }}" class="form-label">
+                                        <i class="bi bi-calendar-check me-1"></i>Retention Period (days) <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.retention_days }}
+                                    <div class="form-text">Number of days to keep backups</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.rpo_minutes.id_for_label }}" class="form-label">
+                                        <i class="bi bi-clock-history me-1"></i>RPO (minutes) <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.rpo_minutes }}
+                                    <div class="form-text">Recovery Point Objective - maximum acceptable data loss</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.rto_minutes.id_for_label }}" class="form-label">
+                                        <i class="bi bi-hourglass-split me-1"></i>RTO (minutes) <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.rto_minutes }}
+                                    <div class="form-text">Recovery Time Objective - maximum acceptable downtime</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.storage_type.id_for_label }}" class="form-label">
+                                        <i class="bi bi-hdd me-1"></i>Storage Type <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.storage_type }}
+                                    <div class="form-text">Select storage type for backups</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.storage_path.id_for_label }}" class="form-label">
+                                        <i class="bi bi-folder me-1"></i>Storage Path
+                                    </label>
+                                    {{ form.storage_path }}
+                                    <div class="form-text">Path or URL where backups will be stored</div>
+                                </div>
+                            </div>
+
+                            <hr>
+                            
+                            <h6 class="mb-3 text-primary">
+                                <i class="bi bi-shield-check me-2"></i>Additional Options
+                            </h6>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-check form-switch">
+                                        {{ form.verify_after_backup }}
+                                        <label class="form-check-label" for="{{ form.verify_after_backup.id_for_label }}">
+                                            <i class="bi bi-check2-circle me-1"></i>Verify After Backup
+                                        </label>
+                                        <div class="form-text">Automatically verify backup integrity</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-check form-switch">
+                                        {{ form.immutable_storage }}
+                                        <label class="form-check-label" for="{{ form.immutable_storage.id_for_label }}">
+                                            <i class="bi bi-lock me-1"></i>Immutable Storage
+                                        </label>
+                                        <div class="form-text">Enable immutable storage (cannot be deleted/modified)</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-check form-switch mt-3">
+                                {{ form.is_active }}
+                                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                    <i class="bi bi-toggle-on me-1"></i>Active Configuration
+                                </label>
+                                <div class="form-text">Enable or disable this backup configuration</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'backup_configuration_list' %}" class="btn btn-secondary btn-lg">
+                            <i class="bi bi-arrow-left me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-check-lg me-1"></i>Save Configuration
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,96 @@
+networks:
+  bh-network:
+    name: bh-network
+    driver: bridge
+
+services:
+  app: &app
+    build:
+      context: .
+      dockerfile: compose/local.Dockerfile
+    container_name: bh_app_local
+    command: /start
+    restart: always
+    env_file:
+      - local.env
+    volumes:
+      - ./app:/opt/bh
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - bh-network
+
+  celery_worker:
+    <<: *app
+    container_name: bh_celery_worker_local
+    volumes:
+      - ./app:/opt/bh
+    ports: []
+    command: /start-celeryworker
+
+  celery_beat:
+    <<: *app
+    container_name: bh_celery_beat_local
+    volumes:
+      - ./app:/opt/bh
+    ports: []
+    command: /start-celerybeat
+
+  flower:
+    <<: *app
+    container_name: bh_flower_local
+    command: /start-flower
+    restart: always
+    env_file:
+      - local.env
+    ports:
+      - "5555:5555"
+    networks:
+      - bh-network
+    depends_on:
+      - celery_worker
+      - celery_beat
+      - redis
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: bh_postgres_local
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - local.env
+    environment:
+      - TZ=Europe/Moscow
+    ports:
+      - "5432:5432"
+    networks:
+      - bh-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres_user} -d ${POSTGRES_DB:-postgres_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  redis:
+    image: redis:8.8.0-alpine
+    container_name: bh_redis
+    restart: always
+    networks:
+      - bh-network
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres_data: {}
+  redis_data: {}

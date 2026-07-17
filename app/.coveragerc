@@ -1,0 +1,20 @@
+[run]
+source = app
+omit =
+    */migrations/*
+    */tests/*
+    */test_*
+    manage.py
+    app/asgi.py
+    app/wsgi.py
+    app/celery.py
+    */settings.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if __name__ == .__main__.
+    raise NotImplementedError
+fail_under = 70
+show_missing = True
