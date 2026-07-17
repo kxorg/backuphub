@@ -112,16 +112,7 @@ class BackupOperationUpdateSerializer(serializers.Serializer):
         # Block modifications of already completed operations
         if instance.status in ('success', 'error'):
             raise serializers.ValidationError(
-                'Cannot modify a completed operation.'
-            )
-
-        # FAILED requires an error message
-        new_status = attrs.get('status')
-        if new_status == 'failed' and not attrs.get('error_message'):
-            raise serializers.ValidationError({
-                'error_message': 'This field is required when status is failed.',
-            })
-
+                'Cannot modify a completed operation.')
         return attrs
 
     def update(self, instance, validated_data):
