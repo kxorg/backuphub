@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import SystemType, Environment, BackupTool
+from .models import SystemType, Environment, BackupTool, InformationSystem
 
 
 @admin.register(SystemType)
@@ -11,6 +11,13 @@ class SystemTypeAdmin(admin.ModelAdmin):
 
 @admin.register(Environment)
 class EnvironmentAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'description', 'created_at')
+    search_fields = ('name',)
+    ordering = ('name',)
+
+
+@admin.register(InformationSystem)
+class InformationSystemAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'description', 'created_at')
     search_fields = ('name',)
     ordering = ('name',)

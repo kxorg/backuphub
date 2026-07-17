@@ -31,6 +31,21 @@ class TargetSystemForm(forms.ModelForm):
             'owner',
             'administrator',
         ]
+        widgets = {
+                'system_type': forms.Select(attrs={'class': 'form-select'}),
+                'environment': forms.Select(attrs={'class': 'form-select'}),
+                'information_system': forms.Select(attrs={'class': 'form-select'}),
+                
+                'name': forms.TextInput(attrs={
+                    'class': 'form-control', 
+                    'placeholder': 'Enter system name...'
+                }),
+                'description': forms.Textarea(attrs={
+                    'class': 'form-control', 
+                    'rows': 4, 
+                    'placeholder': ''
+                }),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

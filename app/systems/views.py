@@ -21,7 +21,7 @@ class TargetSystemListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         return TargetSystem.objects.select_related(
-            'system_type', 'environment'
+            'system_type', 'environment', 'information_system'
         ).prefetch_related(
             Prefetch(
                 'versions',

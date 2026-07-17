@@ -17,6 +17,7 @@
             --warning-color: #f39c12;
             --danger-color: #e74c3c;
             --info-color: #3498db;
+            --primarySys-color: #2651fe;
             --light-bg: #f8f9fa;
             --card-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
@@ -120,6 +121,10 @@
         .badge-primary {
             background-color: var(--primary-color);
             color: white;
+        }
+        .badge-primarySys {
+            background-color: var(--primarySys-color); 
+            color: white; 
         }
         
         /* Cards */
@@ -324,6 +329,9 @@
                             <li><a class="dropdown-item" href="{% url 'environment_list' %}">
                                 <i class="bi bi-cloud"></i>Environments
                             </a></li>
+                            <li><a class="dropdown-item" href="{% url 'information_system_list' %}">
+                                <i class="bi bi-pc-display me-2"></i>Information Systems
+                            </a></li>
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
@@ -339,9 +347,6 @@
                             </a></li>
                             <li><a class="dropdown-item" href="{% url 'backup_tool_list' %}">
                                 <i class="bi bi-tools"></i>Backup Tools
-                            </a></li>
-                            <li><a class="dropdown-item" href="{% url 'informationsystem_list' %}">
-                                <i class="bi bi-book"></i>Information System
                             </a></li>
                         </ul>
                     </li>

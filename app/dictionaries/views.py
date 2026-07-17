@@ -147,7 +147,7 @@ class InformationSystemCreateView(LoginRequiredMixin, CreateView):
     model = InformationSystem
     form_class = InformationSystemForm  
     template_name = 'dictionaries/informationsystem_form.html'
-    success_url = reverse_lazy('informationsystem_list')
+    success_url = reverse_lazy('information_system_list')
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user.username
@@ -158,8 +158,8 @@ class InformationSystemCreateView(LoginRequiredMixin, CreateView):
 class InformationSystemUpdateView(LoginRequiredMixin, UpdateView):
     model = InformationSystem
     form_class = InformationSystemForm  
-    template_name = 'dictionaries/information_system_form.html'
-    success_url = reverse_lazy('informationsystem_list')
+    template_name = 'dictionaries/informationsystem_form.html'
+    success_url = reverse_lazy('information_system_list')
 
     def form_valid(self, form):
         form.instance.updated_by = self.request.user.username
@@ -169,7 +169,7 @@ class InformationSystemUpdateView(LoginRequiredMixin, UpdateView):
 
 class InformationSystemDeleteView(LoginRequiredMixin, DeleteView):
     model = InformationSystem
-    success_url = reverse_lazy('informationsystem_list')
+    success_url = reverse_lazy('information_system_list')
     template_name = 'dictionaries/informationsystem_confirm_delete.html'
 
     def form_valid(self, form):

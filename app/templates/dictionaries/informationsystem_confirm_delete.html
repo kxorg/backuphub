@@ -5,7 +5,7 @@
 {% block content %}
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'informationsystem_list' %}">Information Systems</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'information_system_list' %}">Information Systems</a></li>
         <li class="breadcrumb-item active">Delete</li>
     </ol>
 </nav>
@@ -23,7 +23,7 @@
                 <form method="post">
                     {% csrf_token %}
                     <div class="d-flex justify-content-between">
-                        <a href="{% url 'informationsystem_list' %}" class="btn btn-secondary">Cancel</a>
+                        <a href="{% url 'information_system_list' %}" class="btn btn-secondary">Cancel</a>
                         <button type="submit" class="btn btn-danger">Delete</button>
                     </div>
                 </form>

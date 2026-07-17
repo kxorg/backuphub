@@ -1,7 +1,7 @@
 import factory
 from django.utils import timezone
 from systems.models import TargetSystem, TargetSystemVersion
-from dictionaries.models import SystemType, Environment, BackupTool
+from dictionaries.models import SystemType, Environment, BackupTool, InformationSystem
 from configurations.models import BackupConfiguration, BackupConfigurationVersion
 from operations.models import BackupOperation
 
@@ -9,14 +9,12 @@ from operations.models import BackupOperation
 class SystemTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = SystemType
-        django_get_or_create = ('name',)
     name = factory.Sequence(lambda n: f'type_{n}')
 
 
 class EnvironmentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Environment
-        django_get_or_create = ('name',)
     name = factory.Sequence(lambda n: f'env_{n}')
 
 
@@ -26,6 +24,10 @@ class BackupToolFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: f'tool_{n}')
     is_active = True
 
+class InformationSystemFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = InformationSystem
+    name = factory.Sequence(lambda n: f'is_{n}')
 
 class TargetSystemFactory(factory.django.DjangoModelFactory):
     class Meta:
