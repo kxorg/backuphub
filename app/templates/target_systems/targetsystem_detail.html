@@ -467,7 +467,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 const duration = op.duration_seconds ? op.duration_seconds + 's' : '<span class="text-muted">—</span>';
                                 const size = op.size_human !== '—' ? op.size_human : '<span class="text-muted">—</span>';
                                 const configLink = op.configuration_id ? 
-                                    `<a href="/backup-configurations/${op.configuration_id}/">${op.configuration_name}</a>` : 
+                                    `<a href="/backup-configuration/${op.configuration_id}/">${op.configuration_name}</a>` : 
                                     '<span class="text-muted">—</span>';
 
                                 html += `
