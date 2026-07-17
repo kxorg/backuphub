@@ -56,9 +56,9 @@ Grafana: Визуализация аналитики, дашборды для м
 Ручное тестирование в локальном Docker-окружении:
 
 ## CI:
-Проверка линтерами (Lint).
-Интеграционные тесты (Pytest).
-Запуск тестов внутри контейнера: 
+- Проверка линтерами (Lint).
+- Интеграционные тесты (Pytest).
+- Запуск тестов внутри контейнера: 
 
 ```shell
 docker exec -it bh_app_local pytest -v
@@ -72,26 +72,26 @@ git clone git@github.com:kim-andrey/backuphub.git
 cd backuphub && docker-compose -f docker-compose.local.yml up -d
 ```
 
-http://0.0.0.0:8000/api/v1/ - Точка доступа REST API.
-http://0.0.0.0:8000/admin/ - Панель администратора Django. (Создание суперпользователя: python manage.py createsuperuser).
-http://0.0.0.0:5555/flower - Flower для отслеживания Celery задач.
-http://0.0.0.0:3000/ - Grafana дашборды
+- http://0.0.0.0:8000/api/v1/ - Точка доступа REST API.
+- http://0.0.0.0:8000/admin/ - Панель администратора Django. (Создание суперпользователя: python manage.py createsuperuser).
+- http://0.0.0.0:5555/flower - Flower для отслеживания Celery задач.
+- http://0.0.0.0:3000/ - Grafana дашборды
 
 ## Endpoints v1 (X-API-KEY Auth)
-Target Systems
-GET /api/v1/targets/ - Получить список целевых систем.
-POST /api/v1/targets/ - Зарегистрировать новую систему.
+- Target Systems
+- GET /api/v1/targets/ - Получить список целевых систем.
+- POST /api/v1/targets/ - Зарегистрировать новую систему.
 
 ## Backup Configurations
-GET /api/v1/configurations/ - Список настроенных правил расписания бэкапов.
-POST /api/v1/configurations/ - Создать новое расписание.
-PATCH /api/v1/configurations/{id}/ - Частичное обновление (например, отключение активности расписания).
+- GET /api/v1/configurations/ - Список настроенных правил расписания бэкапов.
+- POST /api/v1/configurations/ - Создать новое расписание.
+- PATCH /api/v1/configurations/{id}/ - Частичное обновление (например, отключение активности расписания).
 
 ## Operations
-GET /api/v1/operations/ - История и статусы запусков резервного копирования.
+- GET /api/v1/operations/ - История и статусы запусков резервного копирования.
 
 ## Infrastructure and CI/CD
-Основано на CentOS / Ubuntu (в зависимости от целевого хоста).
+- Основано на CentOS / Ubuntu (в зависимости от целевого хоста).
 
 ## Server configuration
 ```shell
