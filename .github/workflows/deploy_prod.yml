@@ -1,9 +1,9 @@
-name: Deploy DEV
+name: Deploy PROD
 
 on:
   push:
     branches:
-      - DEV
+      - PROD
     paths-ignore:
       - "docs/**"
       - "README.md"
@@ -14,18 +14,18 @@ permissions:
 
 jobs:
   deploy:
-    name: Pull code and restart DEV app
+    name: Pull code and restart PROD app
     runs-on:
       group: Default
-      labels: [self-hosted, Linux, X64, dev]
+      labels: [self-hosted, Linux, X64, prod]
 
     steps:
-      - name: Pull latest DEV code
+      - name: Pull latest PROD code
         working-directory: /opt/backuphub/app
         run: |
-          git fetch origin DEV
-          git checkout DEV
-          git pull --ff-only origin DEV
+          git fetch origin PROD
+          git checkout PROD
+          git pull --ff-only origin PROD
 
       - name: Prepare static files directory
         run: |
@@ -44,4 +44,4 @@ jobs:
         working-directory: /opt/backuphub/app
         run: |
           docker compose -f deploy.docker-compose.yml ps
-          curl -k -I https://dev.backuphub.spb.ru/
+          curl -k -I https://prod.backuphub.spb.ru/

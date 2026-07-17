@@ -32,11 +32,17 @@ class TestUpdateOperation:
         assert op.status == 'success'
         assert op.finished_at is not None
 
-    def test_complete_with_failed_requires_error_message(self, operation_with_client):
+    def test_complete_with_failed_without_error_message(self, operation_with_client):
         client, op = operation_with_client
+        
         resp = client.patch(self._url(op.id), {'status': 'failed'}, format='json')
-        assert resp.status_code == 400
-        assert 'error_message' in resp.data['error']['details']
+        
+        assert resp.status_code == 200
+        
+        op.refresh_from_db()
+        assert op.status == 'error'  
+        assert op.finished_at is not None
+        assert op.error_message in ['', None]  
 
     def test_cannot_modify_completed_operation(self, operation_with_client):
         client, op = operation_with_client

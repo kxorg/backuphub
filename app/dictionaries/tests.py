@@ -13,8 +13,7 @@ pytestmark = pytest.mark.django_db
 
 
 class TestSystemType:
-    """Тесты модели SystemType"""
-
+    
     def test_create_system_type(self):
         st = SystemTypeFactory(description="Тестовый тип системы")
         assert st.pk is not None
@@ -24,7 +23,7 @@ class TestSystemType:
     def test_name_unique(self):
         SystemTypeFactory(name="PostgreSQL")
         with pytest.raises(IntegrityError):
-            with transaction.atomic():  # Оборачиваем только создание дубликата
+            with transaction.atomic():  
                 SystemTypeFactory(name="PostgreSQL")
 
     def test_str_returns_name(self):
@@ -33,7 +32,6 @@ class TestSystemType:
 
 
 class TestEnvironment:
-    """Тесты модели Environment"""
 
     def test_create_environment(self):
         env = EnvironmentFactory(description="Продакшен")
@@ -52,7 +50,6 @@ class TestEnvironment:
 
 
 class TestBackupTool:
-    """Тесты модели BackupTool"""
 
     def test_create_backup_tool(self):
         tool = BackupToolFactory(description="Утилита бэкапа")
@@ -66,7 +63,6 @@ class TestBackupTool:
 
 
 class TestInformationSystem:
-    """Тесты модели InformationSystem"""
 
     def test_create_information_system(self):
         isys = InformationSystemFactory(description="Ключевая система")

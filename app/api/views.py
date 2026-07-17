@@ -13,7 +13,7 @@ from operations.models import BackupOperation
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
 
 @extend_schema(
-    tags=['Dashboard'],
+    tags=['UI Live Updates'],
     summary='Refresh Dashboard Data',
     description='Returns aggregated statistics for the last 24 hours and recent backup operations.',
     responses={
@@ -76,7 +76,7 @@ def api_ui_refresh_dashboard(request):
     return JsonResponse(data)
 
 @extend_schema(
-    tags=['Operations'],
+    tags=['UI Live Updates'],
     summary='Refresh Operations List (Live Update)',
     description='Returns a filtered and paginated list of operations for dynamic updates',
 )
@@ -154,7 +154,7 @@ def api_ui_refresh_operations(request):
     })
 
 @extend_schema(
-    tags=['Operations'],
+    tags=['UI Live Updates'],
     summary='Refresh Operation Detail',
     description='Returns all operation details for live updates',
 )
@@ -200,4 +200,50 @@ def api_ui_refresh_operation_detail(request, pk):
         'config_version': config_version,
         'config_id': config_id,
     }
+    return JsonResponse(data)
+
+@extend_schema(
+    tags=['UI Live Updates'],
+    summary='Refresh Target System Details',
+    description='Returns target system details and recent operations for live updates',
+)
+@api_view(['GET'])
+@login_required
+def api_ui_refresh_target_system(request, pk):
+    """API для живого обновления страницы детали целевой системы"""
+    from systems.models import TargetSystem
+    from django.shortcuts import get_object_or_404
+    
+    ts = get_object_or_404(TargetSystem, pk=pk)
+    
+    data = {
+        'id': ts.id,
+        'name': ts.name,
+        'is_active': ts.is_active,
+    }
+    
+    # Последние операции для этой целевой системы
+    recent_ops = BackupOperation.objects.filter(
+        backup_configuration_version__backup_configuration__target_system_version__target_system=ts
+    ).select_related(
+        'backup_configuration_version__backup_configuration'
+    ).order_by('-started_at')[:10]
+    
+    operations_data = []
+    for op in recent_ops:
+        config = op.backup_configuration_version.backup_configuration if op.backup_configuration_version else None
+        operations_data.append({
+            'id': op.id,
+            'started_at': op.started_at.strftime('%d.%m.%Y %H:%M') if op.started_at else '—',
+            'configuration_name': config.name if config else '—',
+            'configuration_id': config.id if config else None,
+            'hostname': op.hostname or '—',
+            'status': op.status,
+            'status_display': op.get_status_display(),
+            'duration_seconds': op.duration_seconds,
+            'size_human': op.size_human or '—',
+            'detail_url': f'/backup-operations/{op.id}/',
+        })
+        
+    data['recent_operations'] = operations_data
     return JsonResponse(data)
