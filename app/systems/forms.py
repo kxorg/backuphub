@@ -24,16 +24,32 @@ class TargetSystemForm(forms.ModelForm):
         fields = [
             'system_type',
             'environment',
+            'information_system',
             'name',
             'description',
             'is_active',
             'owner',
             'administrator',
         ]
+        widgets = {
+                'system_type': forms.Select(attrs={'class': 'form-select'}),
+                'environment': forms.Select(attrs={'class': 'form-select'}),
+                'information_system': forms.Select(attrs={'class': 'form-select'}),
+                
+                'name': forms.TextInput(attrs={
+                    'class': 'form-control', 
+                    'placeholder': 'Enter system name...'
+                }),
+                'description': forms.Textarea(attrs={
+                    'class': 'form-control', 
+                    'rows': 4, 
+                    'placeholder': ''
+                }),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # При редактировании заполняем поля owner и administrator из текущей версии
+        # When editing, fill in the owner and administrator fields from the current version.
         if self.instance and self.instance.pk:
             current_version = self.instance.current_version
             if current_version:

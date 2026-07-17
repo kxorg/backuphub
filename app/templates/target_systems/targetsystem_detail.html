@@ -72,6 +72,21 @@
                             <span class="text-muted">—</span>
                         {% endif %}
                     </div>
+                </div>  
+                <div class="row mb-3">
+                    <div class="col-4">
+                        <strong class="text-muted">Information System:</strong>
+                    </div>
+
+                    <div class="col-8">
+                        {% if target_system.information_system %}
+                            <span class="badge badge-primarySys">
+                                {{ target_system.information_system.name }}
+                            </span>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </div>
                 </div>
                 {% if target_system.description %}
                 <div class="row mb-3">

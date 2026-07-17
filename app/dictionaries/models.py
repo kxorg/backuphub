@@ -142,3 +142,46 @@ class BackupTool(models.Model):
     def __str__(self):
         return self.name
 
+
+class InformationSystem(models.Model):
+    """
+    INFORMATION_SYSTEM - Lookup table for Information Systems
+    """
+    name = models.CharField(
+        max_length=255,
+        unique=True,
+        verbose_name='Information system name'
+    )
+    description = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name='Description'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Created at'
+    )
+    created_by = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name='Created by'
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name='Updated at'
+    )
+    updated_by = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name='Updated by'
+    )
+
+    class Meta:
+        verbose_name = 'Information System'
+        verbose_name_plural = 'Information Systems'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name

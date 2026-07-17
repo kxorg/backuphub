@@ -75,10 +75,30 @@ class BackupConfigurationForm(forms.ModelForm):
             'verify_after_backup',
             'immutable_storage',
         ]
+        widgets = {
+            'target_system_version': forms.Select(attrs={'class': 'form-select'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': ''}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': ''}),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # При редактировании заполняем поля из текущей версии
+        for field_name, field in self.fields.items():
+            if field_name in ['target_system_version', 'name', 'description']:
+                continue
+                
+            if isinstance(field.widget, (forms.Select, forms.NullBooleanSelect)):
+                field.widget.attrs.update({'class': 'form-select'})
+            elif isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs.update({'class': 'form-check-input'})
+            else:
+                field.widget.attrs.update({'class': 'form-control'})
+
+        if 'schedule_cron' in self.fields:
+            self.fields['schedule_cron'].widget.attrs.update({'placeholder': ''})
+        if 'storage_path' in self.fields:
+            self.fields['storage_path'].widget.attrs.update({'placeholder': ''})
+
         if self.instance and self.instance.pk:
             current_version = self.instance.current_version
             if current_version:
