@@ -27,6 +27,12 @@ jobs:
           git checkout DEV
           git pull --ff-only origin DEV
 
+      - name: Prepare static files directory
+        run: |
+          sudo mkdir -p /opt/backuphub/static
+          sudo chown -R 1000:1000 /opt/backuphub/static
+          sudo chmod 755 /opt/backuphub/static
+
       - name: Restart application container
         working-directory: /opt/backuphub/app
         run: |
