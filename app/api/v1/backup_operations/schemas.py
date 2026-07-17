@@ -6,7 +6,7 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiRespon
 
 
 backup_operation_create_schema = extend_schema(
-    tags=['backup-operations'],
+    tags=['Backup Operations API'],
     summary='Create a backup operation',
     description=(
         'Registers the start of a backup operation. '
@@ -54,7 +54,7 @@ backup_operation_create_schema = extend_schema(
 
 
 backup_operation_update_schema = extend_schema(
-    tags=['backup-operations'],
+    tags=['Backup Operations API'],
     summary='Update operation status',
     description=(
         'Updates the operation status (RUNNING -> SUCCESS/FAILED). '
@@ -92,7 +92,7 @@ backup_operation_update_schema = extend_schema(
 
 
 backup_operation_list_schema = extend_schema(
-    tags=['backup-operations'],
+    tags=['Backup Operations API'],
     summary='List operations',
     description='Returns a paginated list of operations with optional filters.',
     parameters=[
