@@ -251,12 +251,12 @@ def api_ui_refresh_target_system(request, pk):
     return JsonResponse(data)
 
 @extend_schema(
-    tags=['Backup Operations API'],
+    tags=['Search'],
     summary='Global Search',
     description='Unified search across all models with pagination',
 )
 @api_view(['GET'])
-# @login_required
+@login_required
 def api_global_search(request):
     """
     Универсальный поиск по всем моделям системы.
