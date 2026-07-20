@@ -70,7 +70,8 @@ INSTALLED_APPS = [
     'systems',
     'configurations',
     'operations',
-
+    'search',
+    
 ]
 
 REST_FRAMEWORK = {
