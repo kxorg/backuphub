@@ -6,20 +6,20 @@ from dictionaries.models import SystemType, Environment, BackupTool, Information
 
 
 class GlobalSearchService:
-    """Сервис глобального поиска по всем моделям"""
+    """Global search service across all models"""
     
     @staticmethod
     def search(query, page=1, page_size=25):
         """
-        Ищет по всем моделям и возвращает унифицированные результаты
+        Searches across all models and returns unified results.
         
         Args:
-            query: поисковый запрос
-            page: номер страницы
-            page_size: количество результатов на странице
+            query: search query
+            page: page number
+            page_size: number of results per page
             
         Returns:
-            dict с полями: count, next, results
+            dict with fields: count, next, results
         """
         if not query or len(query.strip()) < 2:
             return {
@@ -51,10 +51,10 @@ class GlobalSearchService:
         # 7. Information Systems
         all_results.extend(GlobalSearchService._search_information_systems(query))
         
-        # Сортировка по релевантности (простая: сначала точные совпадения)
+        # Sort by relevance (simple: exact matches first)
         all_results.sort(key=lambda x: GlobalSearchService._relevance_score(x, query), reverse=True)
         
-        # Пагинация
+        # Pagination
         total_count = len(all_results)
         start = (page - 1) * page_size
         end = start + page_size
@@ -68,7 +68,7 @@ class GlobalSearchService:
     
     @staticmethod
     def _search_target_systems(query):
-        """Поиск по TargetSystem"""
+        """Search by TargetSystem"""
         results = []
         systems = TargetSystem.objects.filter(
             Q(name__icontains=query) |
@@ -91,7 +91,7 @@ class GlobalSearchService:
     
     @staticmethod
     def _search_backup_configurations(query):
-        """Поиск по BackupConfiguration"""
+        """Search by BackupConfiguration"""
         results = []
         configs = BackupConfiguration.objects.filter(
             Q(name__icontains=query) |
@@ -117,7 +117,7 @@ class GlobalSearchService:
     
     @staticmethod
     def _search_backup_operations(query):
-        """Поиск по BackupOperation"""
+        """Search by BackupOperation"""
         results = []
         operations = BackupOperation.objects.filter(
             Q(hostname__icontains=query) |
@@ -151,7 +151,7 @@ class GlobalSearchService:
     
     @staticmethod
     def _search_system_types(query):
-        """Поиск по SystemType"""
+        """Search by SystemType"""
         results = []
         types = SystemType.objects.filter(
             Q(name__icontains=query) |
@@ -173,7 +173,7 @@ class GlobalSearchService:
     
     @staticmethod
     def _search_environments(query):
-        """Поиск по Environment"""
+        """Search by Environment"""
         results = []
         envs = Environment.objects.filter(
             Q(name__icontains=query) |
@@ -195,7 +195,7 @@ class GlobalSearchService:
     
     @staticmethod
     def _search_backup_tools(query):
-        """Поиск по BackupTool"""
+        """Search in BackupTool"""
         results = []
         tools = BackupTool.objects.filter(
             Q(name__icontains=query) |
@@ -217,7 +217,7 @@ class GlobalSearchService:
     
     @staticmethod
     def _search_information_systems(query):
-        """Поиск по InformationSystem"""
+        """Search InformationSystem"""
         results = []
         info_systems = InformationSystem.objects.filter(
             Q(name__icontains=query) |
@@ -239,22 +239,24 @@ class GlobalSearchService:
     
     @staticmethod
     def _relevance_score(result, query):
-        """Вычисляет релевантность результата (чем выше, тем лучше)"""
+        """Calculates the relevance of the result (the higher, the better)"""
         score = 0
         query_lower = query.lower()
         
-        # Точное совпадение в названии
-        if result['title'].lower() == query_lower:
+        # Protection against None values ​​in the title and subtitle fields
+        title_str = str(result.get('title') or '').lower()
+        subtitle_str = str(result.get('subtitle') or '').lower()
+        
+        if title_str == query_lower:
             score += 100
-        # Начало слова совпадает
-        elif result['title'].lower().startswith(query_lower):
+        
+        elif title_str.startswith(query_lower):
             score += 50
-        # Содержит запрос
-        elif query_lower in result['title'].lower():
+        
+        elif query_lower in title_str:
             score += 25
         
-        # Совпадение в subtitle
-        if query_lower in result['subtitle'].lower():
+        if query_lower in subtitle_str:
             score += 10
         
         return score

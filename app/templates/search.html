@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Search | BackupHub{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-lg-8 offset-lg-2">
+        <div class="input-group input-group-lg">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control" id="searchInput" 
+                   placeholder="Search systems, configs, operations..." 
+                   autofocus>
+        </div>
+        <small class="text-muted mt-2 d-block">
+            Type to search across all models. Results load as you scroll.
+        </small>
+    </div>
+</div>
+
+<div id="searchResults" class="row"></div>
+
+<div id="loadingIndicator" class="text-center py-4" style="display:none;">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="text-muted mt-2">Loading...</p>
+</div>
+
+<div id="noResults" class="text-center py-5" style="display:none;">
+    <i class="bi bi-search display-1 text-muted"></i>
+    <h5 class="mt-3">No results found</h5>
+    <p class="text-muted">Try adjusting your search query</p>
+</div>
+
+<div id="endMessage" class="text-center py-4 text-muted" style="display:none;">
+    — End of results —
+</div>
+
+<style>
+    .border-purple { border-left-color: #6f42c1 !important; }
+    .text-purple { color: #6f42c1 !important; }
+    .bg-purple { background-color: #6f42c1 !important; color: #fff; }
+
+    .border-bluedark { border-left-color: #2633df !important; }
+    .text-bluedark { color: #2633df !important; }
+    .bg-bluedark { background-color: #2633df !important; color: #fff; }
+
+</style>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    let currentPage = 1;
+    let currentQuery = '';
+    let isLoading = false;
+    let hasMore = true;
+    let debounceTimer;
+    
+    const searchInput = document.getElementById('searchInput');
+    const resultsContainer = document.getElementById('searchResults');
+    const loading = document.getElementById('loadingIndicator');
+    const noResults = document.getElementById('noResults');
+    const endMsg = document.getElementById('endMessage');
+    
+    // Type mapping → icons and colors
+    const typeConfig = {
+        'target_system': { icon: 'bi-server', color: 'bluedark', label: 'Target System' },
+        'backup_configuration': { icon: 'bi-gear', color: 'success', label: 'Backup Config' },
+        'backup_operation': { icon: 'bi-clock-history', color: 'dark', label: 'Operation' },
+        'backup_tool': { icon: 'bi-tools', color: 'warning', label: 'Backup Tool' },
+        'system_type': { icon: 'bi-diagram-3', color: 'primary', label: 'System Type' },
+        'environment': { icon: 'bi-cloud', color: 'info', label: 'Environment' },
+        'information_system': { icon: 'bi-hdd-network', color: 'purple', label: 'Info System' },
+    };
+
+    function performSearch(query, page = 1, append = false) {
+        if (isLoading) return;
+        isLoading = true;
+        currentQuery = query;
+        currentPage = page;
+        
+        if (!append) {
+            resultsContainer.innerHTML = '';
+            noResults.style.display = 'none';
+            endMsg.style.display = 'none';
+        }
+        loading.style.display = 'block';
+        
+        fetch(`/api/search/?q=${encodeURIComponent(query)}&page=${page}&page_size=25`)
+            .then(r => {
+                if (!r.ok) throw new Error('Network error');
+                return r.json();
+            })
+            .then(data => {
+                loading.style.display = 'none';
+                isLoading = false;
+                
+                if (data.results.length === 0 && page === 1) {
+                    noResults.style.display = 'block';
+                    hasMore = false;
+                    return;
+                }
+                
+                renderResults(data.results);
+                hasMore = data.has_next;
+                
+                if (!hasMore) endMsg.style.display = 'block';
+            })
+            .catch(err => {
+                console.error(err);
+                loading.style.display = 'none';
+                isLoading = false;
+            });
+    }
+    
+    function renderResults(results) {
+        results.forEach(item => {
+            const config = typeConfig[item.type] || { icon: 'bi-search', color: 'secondary', label: item.type };
+            
+            const col = document.createElement('div');
+            col.className = 'col-md-6 mb-3';
+            col.innerHTML = `
+                <a href="${item.url}" class="text-decoration-none">
+                    <div class="card h-100 border-start border-4 border-${config.color}">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="bi ${config.icon} fs-3 text-${config.color}"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">${item.title}</h6>
+                                <small class="text-muted">${item.subtitle}</small>
+                                ${item.description ? `<p class="small text-muted mb-0 mt-1">${item.description.substring(0, 100)}${item.description.length > 100 ? '...' : ''}</p>` : ''}
+                                <div class="mt-1">
+                                    <span class="badge bg-${config.color}">${config.label}</span>
+                                </div>
+                            </div>
+                            <i class="bi bi-arrow-right text-muted"></i>
+                        </div>
+                    </div>
+                </a>
+            `;
+            resultsContainer.appendChild(col);
+        });
+    }
+    
+    // Input debounce (300ms)
+    searchInput.addEventListener('input', (e) => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            const q = e.target.value.trim();
+            if (q.length >= 2) {
+                performSearch(q, 1, false);
+            } else {
+                resultsContainer.innerHTML = '';
+                noResults.style.display = 'none';
+                endMsg.style.display = 'none';
+            }
+        }, 300);
+    });
+    
+    // Infinite scroll
+    window.addEventListener('scroll', () => {
+        if (!hasMore || isLoading) return;
+        if (currentQuery.length < 2) return;
+        
+        const scrollBottom = window.innerHeight + window.scrollY;
+        const docHeight = document.documentElement.offsetHeight;
+        
+        if (scrollBottom >= docHeight - 500) {
+            performSearch(currentQuery, currentPage + 1, true);
+        }
+    });
+})();
+</script>
+{% endblock %}
