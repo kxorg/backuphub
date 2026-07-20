@@ -22,6 +22,8 @@ urlpatterns = [
     path('', include('configurations.urls')),
     # Operations
     path('', include('operations.urls')),
+    # Search
+    path('search/', include('search.urls')),
 
     # Dashboard
     path('', index, name='index'),

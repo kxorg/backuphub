@@ -4,14 +4,16 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.utils import timezone
 from django.utils.timesince import timesince
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from django.db.models import Q
 from django.core.paginator import Paginator
+from rest_framework.permissions import IsAuthenticated
 
-from systems.models import TargetSystem, SystemType, Environment, InformationSystem
+from dictionaries.models import Environment, SystemType, BackupTool, InformationSystem
+from systems.models import TargetSystem
 from operations.models import BackupOperation
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
-from configurations.models import BackupConfiguration, BackupTool
+from configurations.models import BackupConfiguration
 from django.core.paginator import Paginator
 
 @extend_schema(
@@ -204,6 +206,7 @@ def api_ui_refresh_operation_detail(request, pk):
     }
     return JsonResponse(data)
 
+
 @extend_schema(
     tags=['UI Live Updates'],
     summary='Refresh Target System Details',
@@ -250,17 +253,18 @@ def api_ui_refresh_target_system(request, pk):
     data['recent_operations'] = operations_data
     return JsonResponse(data)
 
+
 @extend_schema(
     tags=['Search'],
     summary='Global Search',
     description='Unified search across all models with pagination',
 )
 @api_view(['GET'])
-@login_required
+@permission_classes([IsAuthenticated])
 def api_global_search(request):
     """
-    Универсальный поиск по всем моделям системы.
-    Возвращает результаты в едином формате с пагинацией.
+    Universal search across all system models.
+    Returns results in a unified format with pagination.
     """
     query = request.GET.get('q', '').strip()
     
@@ -274,7 +278,7 @@ def api_global_search(request):
     except (ValueError, TypeError):
         page_size = 25
     
-    # Ограничиваем максимальный размер страницы
+    # Limiting the maximum page size
     page_size = min(page_size, 100)
 
     all_results = []
@@ -289,7 +293,7 @@ def api_global_search(request):
             Q(information_system__name__icontains=query)
         ).select_related(
             'system_type', 'environment', 'information_system'
-        )[:200]  # Ограничиваем для производительности
+        )[:200]  # Limiting for performance
     else:
         systems = TargetSystem.objects.all().order_by('-created_at')[:200]
     
@@ -304,7 +308,7 @@ def api_global_search(request):
             'type': 'target_system',
             'id': sys.id,
             'title': sys.name,
-            'subtitle': ' • '.join(subtitle_parts) if subtitle_parts else 'Система',
+            'subtitle': ' • '.join(subtitle_parts) if subtitle_parts else 'System',
             'description': sys.description or None,
             'url': f'/target-systems/{sys.id}/',
         })
@@ -331,7 +335,7 @@ def api_global_search(request):
             'type': 'backup_configuration',
             'id': config.id,
             'title': config.name,
-            'subtitle': target_system_name or 'Конфигурация',
+            'subtitle': target_system_name or 'Configuration',
             'description': config.description or None,
             'url': f'/backup-configuration/{config.id}/',
         })
@@ -345,7 +349,7 @@ def api_global_search(request):
             'type': 'backup_configuration',
             'id': config.id,
             'title': config.name,
-            'subtitle': target_system_name or 'Конфигурация',
+            'subtitle': target_system_name or 'Configuration',
             'description': config.description or None,
             'url': f'/backup-configuration/{config.id}/',
         })
@@ -382,7 +386,6 @@ def api_global_search(request):
         })
 
     # 4. BackupTool
-    from configurations.models import BackupTool
     if query:
         tools = BackupTool.objects.filter(
             Q(name__icontains=query) | 
@@ -396,9 +399,9 @@ def api_global_search(request):
             'type': 'backup_tool',
             'id': tool.id,
             'title': tool.name,
-            'subtitle': 'Инструмент резервного копирования',
+            'subtitle': 'Backup tool',
             'description': tool.description or None,
-            'url': f'/backup-tools/{tool.id}/',
+            'url': f'/backup-tools/{tool.id}/edit/',
         })
 
     # 5. SystemType
@@ -415,13 +418,12 @@ def api_global_search(request):
             'type': 'system_type',
             'id': st.id,
             'title': st.name,
-            'subtitle': 'Тип системы',
+            'subtitle': 'System type',
             'description': st.description or None,
-            'url': f'/system-types/{st.id}/',
+            'url': f'/system-types/{st.id}/edit/',
         })
 
     # 6. Environment
-    from systems.models import Environment
     if query:
         environments = Environment.objects.filter(
             Q(name__icontains=query) | 
@@ -435,13 +437,12 @@ def api_global_search(request):
             'type': 'environment',
             'id': env.id,
             'title': env.name,
-            'subtitle': 'Окружение',
+            'subtitle': 'Environment',
             'description': env.description or None,
-            'url': f'/environments/{env.id}/',
+            'url': f'/environments/{env.id}/edit/',
         })
 
     # 7. InformationSystem
-    from systems.models import InformationSystem
     if query:
         info_systems = InformationSystem.objects.filter(
             Q(name__icontains=query) | 
@@ -455,16 +456,15 @@ def api_global_search(request):
             'type': 'information_system',
             'id': info_sys.id,
             'title': info_sys.name,
-            'subtitle': 'Информационная система',
+            'subtitle': 'Information system',
             'description': info_sys.description or None,
-            'url': f'/information-systems/{info_sys.id}/',
+            'url': f'/information-systems/{info_sys.id}/edit/',
         })
 
-    # Сортируем результаты: сначала по релевантности (если есть query), потом по ID
-    # Для простоты сортируем по type и id
+    # Sorting results: first by relevance (if a query is present), then by ID.
+    # For simplicity, we sort by type and id.
     all_results.sort(key=lambda x: (x['type'], x['id']))
 
-    # Пагинация
     paginator = Paginator(all_results, page_size)
     
     try:
