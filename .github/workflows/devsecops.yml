@@ -38,8 +38,8 @@ jobs:
       - name: Report to DefectDojo
         if: always()
         run: |
-          curl -X POST "$DOJO_URL/api/v2/import-scan/" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=Semgrep JSON Report" -F "file=@sast.json" -F "product_id=$DOJO_PRODUCT_ID" -F "engagement_name=Build-${{ github.run_number }}"
-          curl -X POST "$DOJO_URL/api/v2/import-scan/" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=Anchore Grype" -F "file=@sca.json" -F "product_id=$DOJO_PRODUCT_ID" -F "engagement_name=Build-${{ github.run_number }}"
+          [ -f sast.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=Semgrep JSON Report" -F "file=@sast.json" -F "product_id=$DOJO_PRODUCT_ID" -F "engagement_name=Build-${{ github.run_number }}" || echo "sast.json not found"
+          [ -f sca.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=Anchore Grype" -F "file=@sca.json" -F "product_id=$DOJO_PRODUCT_ID" -F "engagement_name=Build-${{ github.run_number }}" || echo "sca.json not found"
 
   deploy:
     needs: security-and-build
@@ -52,7 +52,6 @@ jobs:
         run: |
           echo "$REGISTRY_PASSWORD" | docker login $REGISTRY_URL -u "$REGISTRY_USER" --password-stdin
           cd /opt/backuphub/app
-          # Улучшенный sed: найдет 'image:' и заменит всю строку целиком, независимо от того, что там было написано ранее
           sed -i "s|image:.*|image: $REGISTRY_URL/backuphub/app:${{ github.sha }}|g" deploy.docker-compose.yml
           docker compose -f deploy.docker-compose.yml pull
           docker compose -f deploy.docker-compose.yml up -d
@@ -73,4 +72,4 @@ jobs:
       - name: Report DAST to Dojo
         if: always()
         run: |
-          [ -f dast.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=ZAP Scan" -F "file=@dast.json" -F "product_id=$DOJO_PRODUCT_ID" -F "engagement_name=Build-${{ github.run_number }}"
+          [ -f dast.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=ZAP Scan" -F "file=@dast.json" -F "product_id=$DOJO_PRODUCT_ID" -F "engagement_name=Build-${{ github.run_number }}" || echo "dast.json not found"
