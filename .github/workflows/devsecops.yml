@@ -26,8 +26,9 @@ jobs:
 
       - name: SCA Grype Scan
         run: |
-          docker compose -f /opt/backuphub/devsecops/docker-compose.yml run --rm -v /var/run/docker.sock:/var/run/docker.sock sca-grype docker:$REGISTRY_URL/backuphub/app:${{ github.sha }} -o json > sca.json
-          docker compose -f /opt/backuphub/devsecops/docker-compose.yml run --rm -v /var/run/docker.sock:/var/run/docker.sock sca-grype docker:$REGISTRY_URL/backuphub/app:${{ github.sha }} --fail-on critical
+          mkdir -p ~/.cache/grype
+          docker compose -f /opt/backuphub/devsecops/docker-compose.yml run --rm -v ~/.cache/grype:/.cache/grype -v /var/run/docker.sock:/var/run/docker.sock sca-grype docker:$REGISTRY_URL/backuphub/app:${{ github.sha }} -o json > sca.json
+          docker compose -f /opt/backuphub/devsecops/docker-compose.yml run --rm -v ~/.cache/grype:/.cache/grype -v /var/run/docker.sock:/var/run/docker.sock sca-grype docker:$REGISTRY_URL/backuphub/app:${{ github.sha }} --fail-on critical
 
       - name: Push to Registry
         run: |
