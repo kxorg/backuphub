@@ -130,6 +130,8 @@ def api_ui_refresh_operations(request):
     operations_data = []
     for op in page_obj:
         config = op.backup_configuration_version.backup_configuration
+        duration = op.duration_seconds() if callable(op.duration_seconds) else op.duration_seconds
+        size = op.size_human() if callable(op.size_human) else op.size_human
         operations_data.append({
             'id': op.id,
             'hostname': op.hostname or '',
