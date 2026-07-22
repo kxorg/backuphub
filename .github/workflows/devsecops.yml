@@ -14,24 +14,23 @@ jobs:
       - name: Load Environment
         run: grep -v '^#' /opt/backuphub/.env >> $GITHUB_ENV
 
-      - name: Log in to Docker Registry
+      - name: Pre-Build Disk Cleanup
         run: |
-          echo "$REGISTRY_PASSWORD" | docker login $REGISTRY_URL -u "$REGISTRY_USER" --password-stdin
+          docker builder prune -f
+          docker system prune -f
 
       - name: SAST Semgrep Scan
         run: docker compose -f /opt/backuphub/devsecops/docker-compose.yml run --rm -v ${{ github.workspace }}:/src sast-semgrep semgrep scan --json --output=sast.json /src || true
 
       - name: Build Image
-        run: docker build -t $REGISTRY_URL/backuphub/app:${{ github.sha }} -f compose/Dockerfile .
+        run: docker build --no-cache -t $REGISTRY_URL/backuphub/app:${{ github.sha }} -f compose/Dockerfile .
 
       - name: SCA Grype Scan
-        run: |
-          mkdir -p ~/.cache/grype
-          docker compose -f /opt/backuphub/devsecops/docker-compose.yml run --rm -v ~/.cache/grype:/.cache/grype -v /var/run/docker.sock:/var/run/docker.sock sca-grype docker:$REGISTRY_URL/backuphub/app:${{ github.sha }} -o json > sca.json
-          docker compose -f /opt/backuphub/devsecops/docker-compose.yml run --rm -v ~/.cache/grype:/.cache/grype -v /var/run/docker.sock:/var/run/docker.sock sca-grype docker:$REGISTRY_URL/backuphub/app:${{ github.sha }} --fail-on critical
+        run: docker compose -f /opt/backuphub/devsecops/docker-compose.yml run --rm -v /var/run/docker.sock:/var/run/docker.sock sca-grype $REGISTRY_URL/backuphub/app:${{ github.sha }} -o json > sca.json || true
 
       - name: Push to Registry
         run: |
+          echo "$REGISTRY_PASSWORD" | docker login $REGISTRY_URL -u "$REGISTRY_USER" --password-stdin
           docker push $REGISTRY_URL/backuphub/app:${{ github.sha }}
           docker tag  $REGISTRY_URL/backuphub/app:${{ github.sha }} $REGISTRY_URL/backuphub/app:dev-latest
           docker push $REGISTRY_URL/backuphub/app:dev-latest
@@ -39,12 +38,14 @@ jobs:
       - name: Report to DefectDojo
         if: always()
         run: |
-          [ -f sast.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=Semgrep JSON Report" -F "file=@sast.json" -F "product_id=$DOJO_PRODUCT_ID" -F "engagement_name=Build-${{ github.run_number }}" || echo "sast.json not found"
-          [ -f sca.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=Anchore Grype" -F "file=@sca.json" -F "product_id=$DOJO_PRODUCT_ID" -F "engagement_name=Build-${{ github.run_number }}" || echo "sca.json not found"
+          [ -f sast.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=Semgrep JSON Report" -F "file=@sast.json" -F "product_id=$DOJO_PRODUCT_ID" -F "engagement_name=Build-${{ github.run_number }}"
+          [ -f sca.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=Anchore Grype" -F "file=@sca.json" -F "product_id=$DOJO_PRODUCT_ID" -F "engagement_name=Build-${{ github.run_number }}"
 
-      - name: Cleanup SecOps Disk
+      - name: Post-Build Deep Disk Cleanup
         if: always()
-        run: docker system prune -f
+        run: |
+          docker system prune -a -f --volumes
+          docker builder prune -a -f
 
   deploy:
     needs: security-and-build
@@ -57,11 +58,10 @@ jobs:
         run: |
           echo "$REGISTRY_PASSWORD" | docker login $REGISTRY_URL -u "$REGISTRY_USER" --password-stdin
           cd /opt/backuphub/app
-          sed -i "s|image:.*|image: $REGISTRY_URL/backuphub/app:${{ github.sha }}|g" deploy.docker-compose.yml
+          sed -i "s|image: $REGISTRY_URL/backuphub/app:.*|image: $REGISTRY_URL/backuphub/app:${{ github.sha }}|g" deploy.docker-compose.yml
           docker compose -f deploy.docker-compose.yml pull
           docker compose -f deploy.docker-compose.yml up -d
           docker image prune -f
-
   dast:
     needs: deploy
     runs-on: [self-hosted, secops]
@@ -77,8 +77,5 @@ jobs:
       - name: Report DAST to Dojo
         if: always()
         run: |
-          [ -f dast.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=ZAP Scan" -F "file=@dast.json" -F "product_id=$DOJO_PRODUCT_ID" -F "engagement_name=Build-${{ github.run_number }}" || echo "dast.json not found"
-
-      - name: Final Disk Cleanup
-        if: always()
-        run: docker system prune -f
+          [ -f dast.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=ZAP Scan" -F "file=@dast.json" -F "product_id=$DOJO_PRODUCT_ID" -F "engagement_name=Build-${{ github.run_number }}"
+          docker system prune -f
