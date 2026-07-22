@@ -130,8 +130,10 @@ def api_ui_refresh_operations(request):
     operations_data = []
     for op in page_obj:
         config = op.backup_configuration_version.backup_configuration
-        duration = op.duration_seconds() if callable(op.duration_seconds) else op.duration_seconds
-        size = op.size_human() if callable(op.size_human) else op.size_human
+        
+        duration = op.duration_seconds or 0  
+        size = op.size_human or '—'
+        
         operations_data.append({
             'id': op.id,
             'hostname': op.hostname or '',
@@ -140,11 +142,14 @@ def api_ui_refresh_operations(request):
             'version_number': op.backup_configuration_version.version_number,
             'status': op.status,
             'started_at': op.started_at.strftime('%d.%m.%Y %H:%M') if op.started_at else '—',
-            'duration_seconds': op.duration_seconds,
-            'size_human': getattr(op, 'size_human', None) or '—',
+            
+            'duration_seconds': duration,
+            'size_human': size,
+            
             'detail_url': f"/backup-operations/{op.id}/",
             'config_detail_url': f"/backup-configurations/{config.id}/" if config else '#',
         })
+
 
     return JsonResponse({
         'operations': operations_data,
