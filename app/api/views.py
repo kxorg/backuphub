@@ -142,7 +142,7 @@ def api_ui_refresh_operations(request):
             'duration_seconds': op.duration_seconds,
             'size_human': getattr(op, 'size_human', None) or '—',
             'detail_url': f"/backup-operations/{op.id}/",
-            'config_detail_url': f"/backup-configurations/{config.id}/" if config else '#',
+            'config_detail_url': f"/backup-configuration/{config.id}/" if config else '#',
         })
 
     return JsonResponse({
