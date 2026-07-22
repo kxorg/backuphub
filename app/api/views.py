@@ -174,8 +174,8 @@ def api_ui_refresh_operations(request):
             'num_pages': paginator.num_pages,
             'has_previous': page_obj.has_previous(),
             'has_next': page_obj.has_next(),
-            'previous_page_number': page_obj.previous_page_number if page_obj.has_previous() else None,
-            'next_page_number': page_obj.next_page_number if page_obj.has_next() else None,
+            'previous_page_number': page_obj.previous_page_number() if page_obj.has_previous() else None,
+            'next_page_number': page_obj.next_page_number() if page_obj.has_next() else None,
         },
         'total_count': paginator.count,
     })
