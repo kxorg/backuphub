@@ -1,15 +1,15 @@
 from django.db.models import Q
-from systems.models import TargetSystem, TargetSystemVersion
-from configurations.models import BackupConfiguration, BackupConfigurationVersion
+from django.core.paginator import Paginator
+from systems.models import TargetSystem, SystemType, Environment, InformationSystem
+from configurations.models import BackupConfiguration, BackupTool
 from operations.models import BackupOperation
-from dictionaries.models import SystemType, Environment, BackupTool, InformationSystem
 
 
 class GlobalSearchService:
     """Global search service across all models"""
     
     @staticmethod
-    def search(query, page=1, page_size=25):
+    def search(query: str, page: int = 1, page_size: int = 25) -> dict:
         """
         Searches across all models and returns unified results.
         
@@ -19,244 +19,217 @@ class GlobalSearchService:
             page_size: number of results per page
             
         Returns:
-            dict with fields: count, next, results
+            dict with fields: count, page, page_size, has_next, results
         """
-        if not query or len(query.strip()) < 2:
-            return {
-                'count': 0,
-                'next': False,
-                'results': []
-            }
-        
+        page_size = min(page_size, 100)
         all_results = []
         
-        # 1. Target Systems
+        # 1. TargetSystem
         all_results.extend(GlobalSearchService._search_target_systems(query))
         
-        # 2. Backup Configurations
+        # 2. BackupConfiguration
         all_results.extend(GlobalSearchService._search_backup_configurations(query))
         
-        # 3. Backup Operations
+        # 3. BackupOperation
         all_results.extend(GlobalSearchService._search_backup_operations(query))
         
-        # 4. System Types
-        all_results.extend(GlobalSearchService._search_system_types(query))
-        
-        # 5. Environments
-        all_results.extend(GlobalSearchService._search_environments(query))
-        
-        # 6. Backup Tools
+        # 4. BackupTool
         all_results.extend(GlobalSearchService._search_backup_tools(query))
         
-        # 7. Information Systems
+        # 5. SystemType
+        all_results.extend(GlobalSearchService._search_system_types(query))
+        
+        # 6. Environment
+        all_results.extend(GlobalSearchService._search_environments(query))
+        
+        # 7. InformationSystem
         all_results.extend(GlobalSearchService._search_information_systems(query))
         
-        # Sort by relevance (simple: exact matches first)
-        all_results.sort(key=lambda x: GlobalSearchService._relevance_score(x, query), reverse=True)
+        # Sort
+        all_results.sort(key=lambda x: (x['type'], x['id']))
         
         # Pagination
-        total_count = len(all_results)
-        start = (page - 1) * page_size
-        end = start + page_size
-        page_results = all_results[start:end]
+        paginator = Paginator(all_results, page_size)
+        try:
+            page_obj = paginator.page(page)
+        except:
+            page_obj = paginator.page(1)
+            page = 1
         
         return {
-            'count': total_count,
-            'next': end < total_count,
-            'results': page_results
+            'count': paginator.count,
+            'page': page,
+            'page_size': page_size,
+            'has_next': page_obj.has_next(),
+            'results': page_obj.object_list,
         }
     
     @staticmethod
-    def _search_target_systems(query):
+    def _search_target_systems(query: str) -> list:
         """Search by TargetSystem"""
-        results = []
-        systems = TargetSystem.objects.filter(
-            Q(name__icontains=query) |
-            Q(description__icontains=query) |
-            Q(api_key__icontains=query)
-        ).select_related('system_type', 'environment')[:100]
+        if query:
+            systems = TargetSystem.objects.filter(
+                Q(name__icontains=query) | 
+                Q(description__icontains=query) |
+                Q(system_type__name__icontains=query) |
+                Q(environment__name__icontains=query) |
+                Q(information_system__name__icontains=query)
+            ).select_related('system_type', 'environment', 'information_system')[:200]
+        else:
+            systems = TargetSystem.objects.all().order_by('-created_at')[:200]
         
-        for system in systems:
+        results = []
+        for sys in systems:
+            subtitle_parts = []
+            if sys.system_type:
+                subtitle_parts.append(sys.system_type.name)
+            if sys.environment:
+                subtitle_parts.append(sys.environment.name)
+            
             results.append({
                 'type': 'target_system',
-                'id': system.id,
-                'title': system.name,
-                'subtitle': f"{system.system_type.name} • {system.environment.name if system.environment else '—'}",
-                'url': f"/target-systems/{system.id}/",
-                'icon': 'bi-server',
-                'color': 'primary'
+                'id': sys.id,
+                'title': sys.name,
+                'subtitle': ' • '.join(subtitle_parts) if subtitle_parts else 'System',
+                'description': sys.description or None,
+                'url': f'/target-systems/{sys.id}/',
             })
-        
         return results
     
     @staticmethod
-    def _search_backup_configurations(query):
+    def _search_backup_configurations(query: str) -> list:
         """Search by BackupConfiguration"""
-        results = []
-        configs = BackupConfiguration.objects.filter(
-            Q(name__icontains=query) |
-            Q(description__icontains=query)
-        ).select_related(
-            'target_system_version__target_system',
-            'target_system_version__target_system__system_type'
-        )[:100]
+        if query:
+            configs = BackupConfiguration.objects.filter(
+                Q(name__icontains=query) | 
+                Q(description__icontains=query) |
+                Q(versions__is_current=True, versions__backup_tool__name__icontains=query) |
+                Q(target_system_version__target_system__name__icontains=query)
+            ).select_related('target_system_version__target_system').distinct()[:200]
+        else:
+            configs = BackupConfiguration.objects.all().order_by('-created_at')[:200]
         
+        results = []
         for config in configs:
-            ts = config.target_system_version.target_system
+            target_system_name = ''
+            if config.target_system_version and config.target_system_version.target_system:
+                target_system_name = config.target_system_version.target_system.name
+            
             results.append({
                 'type': 'backup_configuration',
                 'id': config.id,
                 'title': config.name,
-                'subtitle': f"{ts.name} ({ts.system_type.name})",
-                'url': f"/backup-configuration/{config.id}/",
-                'icon': 'bi-gear',
-                'color': 'success'
+                'subtitle': target_system_name or 'Configuration',
+                'description': config.description or None,
+                'url': f'/backup-configuration/{config.id}/',
             })
-        
         return results
     
     @staticmethod
-    def _search_backup_operations(query):
+    def _search_backup_operations(query: str) -> list:
         """Search by BackupOperation"""
-        results = []
-        operations = BackupOperation.objects.filter(
-            Q(hostname__icontains=query) |
-            Q(external_job_id__icontains=query) |
-            Q(storage_path__icontains=query)
-        ).select_related(
-            'backup_configuration_version__backup_configuration',
-            'backup_configuration_version__backup_configuration__target_system_version__target_system'
-        )[:100]
+        if query:
+            operations = BackupOperation.objects.filter(
+                Q(hostname__icontains=query) | 
+                Q(external_job_id__icontains=query) |
+                Q(storage_path__icontains=query) |
+                Q(status__icontains=query)
+            ).select_related('backup_configuration_version__backup_configuration')[:200]
+        else:
+            operations = BackupOperation.objects.all().order_by('-started_at')[:200]
         
+        results = []
         for op in operations:
-            status_badge = {
-                'success': 'Success',
-                'error': 'Error',
-                'in_progress': 'In Progress',
-                'warning': 'Warning',
-                'cancelled': 'Cancelled'
-            }.get(op.status, op.status)
+            config_name = ''
+            if op.backup_configuration_version and op.backup_configuration_version.backup_configuration:
+                config_name = op.backup_configuration_version.backup_configuration.name
+            
+            title = f"Operation #{op.id}"
+            if op.hostname:
+                title += f" ({op.hostname})"
             
             results.append({
                 'type': 'backup_operation',
                 'id': op.id,
-                'title': op.hostname,
-                'subtitle': f"#{op.id} • {status_badge}",
-                'url': f"/backup-operations/{op.id}/",
-                'icon': 'bi-clock-history',
-                'color': 'dark'
+                'title': title,
+                'subtitle': f"{config_name} • {op.get_status_display()}" if config_name else op.get_status_display(),
+                'description': f"Started: {op.started_at.strftime('%d.%m.%Y %H:%M')}" if op.started_at else None,
+                'url': f'/backup-operations/{op.id}/',
             })
-        
         return results
     
     @staticmethod
-    def _search_system_types(query):
+    def _search_backup_tools(query: str) -> list:
+        """Search by BackupTool"""
+        if query:
+            tools = BackupTool.objects.filter(
+                Q(name__icontains=query) | Q(description__icontains=query)
+            )[:100]
+        else:
+            tools = BackupTool.objects.all().order_by('name')[:100]
+        
+        return [{
+            'type': 'backup_tool',
+            'id': tool.id,
+            'title': tool.name,
+            'subtitle': 'Backup tool',
+            'description': tool.description or None,
+            'url': f'/backup-tools/{tool.id}/edit/',
+        } for tool in tools]
+    
+    @staticmethod
+    def _search_system_types(query: str) -> list:
         """Search by SystemType"""
-        results = []
-        types = SystemType.objects.filter(
-            Q(name__icontains=query) |
-            Q(description__icontains=query)
-        )[:50]
+        if query:
+            system_types = SystemType.objects.filter(
+                Q(name__icontains=query) | Q(description__icontains=query)
+            )[:100]
+        else:
+            system_types = SystemType.objects.all().order_by('name')[:100]
         
-        for st in types:
-            results.append({
-                'type': 'system_type',
-                'id': st.id,
-                'title': st.name,
-                'subtitle': 'System Type',
-                'url': f"/dictionaries/system-types/{st.id}/edit/",
-                'icon': 'bi-diagram-3',
-                'color': 'secondary'
-            })
-        
-        return results
+        return [{
+            'type': 'system_type',
+            'id': st.id,
+            'title': st.name,
+            'subtitle': 'System type',
+            'description': st.description or None,
+            'url': f'/system-types/{st.id}/edit/',
+        } for st in system_types]
     
     @staticmethod
-    def _search_environments(query):
+    def _search_environments(query: str) -> list:
         """Search by Environment"""
-        results = []
-        envs = Environment.objects.filter(
-            Q(name__icontains=query) |
-            Q(description__icontains=query)
-        )[:50]
+        if query:
+            environments = Environment.objects.filter(
+                Q(name__icontains=query) | Q(description__icontains=query)
+            )[:100]
+        else:
+            environments = Environment.objects.all().order_by('name')[:100]
         
-        for env in envs:
-            results.append({
-                'type': 'environment',
-                'id': env.id,
-                'title': env.name,
-                'subtitle': 'Environment',
-                'url': f"/dictionaries/environments/{env.id}/edit/",
-                'icon': 'bi-cloud',
-                'color': 'info'
-            })
-        
-        return results
+        return [{
+            'type': 'environment',
+            'id': env.id,
+            'title': env.name,
+            'subtitle': 'Environment',
+            'description': env.description or None,
+            'url': f'/environments/{env.id}/edit/',
+        } for env in environments]
     
     @staticmethod
-    def _search_backup_tools(query):
-        """Search in BackupTool"""
-        results = []
-        tools = BackupTool.objects.filter(
-            Q(name__icontains=query) |
-            Q(description__icontains=query)
-        )[:50]
+    def _search_information_systems(query: str) -> list:
+        """Search by InformationSystem"""
+        if query:
+            info_systems = InformationSystem.objects.filter(
+                Q(name__icontains=query) | Q(description__icontains=query)
+            )[:100]
+        else:
+            info_systems = InformationSystem.objects.all().order_by('name')[:100]
         
-        for tool in tools:
-            results.append({
-                'type': 'backup_tool',
-                'id': tool.id,
-                'title': tool.name,
-                'subtitle': 'Backup Tool',
-                'url': f"/dictionaries/backup-tools/{tool.id}/edit/",
-                'icon': 'bi-tools',
-                'color': 'warning'
-            })
-        
-        return results
-    
-    @staticmethod
-    def _search_information_systems(query):
-        """Search InformationSystem"""
-        results = []
-        info_systems = InformationSystem.objects.filter(
-            Q(name__icontains=query) |
-            Q(description__icontains=query)
-        )[:50]
-        
-        for info_sys in info_systems:
-            results.append({
-                'type': 'information_system',
-                'id': info_sys.id,
-                'title': info_sys.name,
-                'subtitle': 'Information System',
-                'url': f"/dictionaries/information-systems/{info_sys.id}/edit/",
-                'icon': 'bi-hdd-network',
-                'color': 'purple'
-            })
-        
-        return results
-    
-    @staticmethod
-    def _relevance_score(result, query):
-        """Calculates the relevance of the result (the higher, the better)"""
-        score = 0
-        query_lower = query.lower()
-        
-        # Protection against None values ​​in the title and subtitle fields
-        title_str = str(result.get('title') or '').lower()
-        subtitle_str = str(result.get('subtitle') or '').lower()
-        
-        if title_str == query_lower:
-            score += 100
-        
-        elif title_str.startswith(query_lower):
-            score += 50
-        
-        elif query_lower in title_str:
-            score += 25
-        
-        if query_lower in subtitle_str:
-            score += 10
-        
-        return score
+        return [{
+            'type': 'information_system',
+            'id': info_sys.id,
+            'title': info_sys.name,
+            'subtitle': 'Information system',
+            'description': info_sys.description or None,
+            'url': f'/information-systems/{info_sys.id}/edit/',
+        } for info_sys in info_systems]
