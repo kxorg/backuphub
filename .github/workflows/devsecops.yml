@@ -28,6 +28,10 @@ jobs:
         run: |
           docker build --no-cache -t $REGISTRY_URL/backuphub/app:${{ github.sha }} -f compose/Dockerfile .
 
+      - name: Login to Registry
+        run: |
+          echo "$REGISTRY_PASSWORD" | docker login $REGISTRY_URL -u "$REGISTRY_USER" --password-stdin
+
       - name: SCA Grype Scan
         run: |
           docker compose -f /opt/backuphub/devsecops/docker-compose.yml run --rm \
@@ -39,12 +43,11 @@ jobs:
 
       - name: Push to Registry
         run: |
-          echo "$REGISTRY_PASSWORD" | docker login $REGISTRY_URL -u "$REGISTRY_USER" --password-stdin
           docker push $REGISTRY_URL/backuphub/app:${{ github.sha }}
           docker tag $REGISTRY_URL/backuphub/app:${{ github.sha }} $REGISTRY_URL/backuphub/app:dev-latest
           docker push $REGISTRY_URL/backuphub/app:dev-latest
 
-      - name: Report to DefectDojo
+      - name: Report Build Scans to DefectDojo
         if: always()
         run: |
           SCAN_DATE=$(date +%Y-%m-%d)
@@ -82,12 +85,13 @@ jobs:
 
       - name: DAST Scan (ZAP)
         run: |
-          touch dast.json && chmod 666 dast.json
-          docker compose -f /opt/backuphub/devsecops/docker-compose.yml run --rm --user root -v $(pwd):/zap/wrk/:rw dast-zap zap-baseline.py -t $APP_URL_DEV -J dast.json || true
+          docker compose -f /opt/backuphub/devsecops/docker-compose.yml run --rm --user root \
+            -v ${{ github.workspace }}:/zap/wrk/:rw \
+            dast-zap zap-baseline.py -t $APP_URL_DEV -J dast.json || true
 
       - name: Report DAST to Dojo
         if: always()
         run: |
           SCAN_DATE=$(date +%Y-%m-%d)
-          [ -s dast.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=ZAP Scan" -F "file=@dast.json" -F "product_id=$DOJO_PRODUCT_ID" -F "product_name=BackupHub" -F "engagement_name=Build-${{ github.run_number }}" -F "scan_date=$SCAN_DATE" -F "auto_create_context=true" || true
+          [ -s ${{ github.workspace }}/dast.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=ZAP Scan" -F "file=@${{ github.workspace }}/dast.json" -F "product_id=$DOJO_PRODUCT_ID" -F "product_name=BackupHub" -F "engagement_name=Build-${{ github.run_number }}" -F "scan_date=$SCAN_DATE" -F "auto_create_context=true" || true
           docker system prune -f
