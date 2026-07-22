@@ -23,7 +23,7 @@ jobs:
         run: |
           docker compose -f /opt/backuphub/devsecops/docker-compose.yml run --rm \
             -v ${{ github.workspace }}:/src \
-            sast-semgrep semgrep scan --config=auto --json --output=sast.json /src || true
+            sast-semgrep semgrep scan --config=p/owasp-top-10 --metrics=off --json --output=sast.json /src || true
 
       - name: Build Image
         run: |
@@ -31,10 +31,11 @@ jobs:
 
       - name: SCA Grype Scan
         run: |
-          mkdir -p $HOME/grype-cache
           docker compose -f /opt/backuphub/devsecops/docker-compose.yml run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
-            -v $HOME/grype-cache:/root/.cache/grype \
+            -e GRYPE_DB_AUTO_UPDATE=false \
+            -e GRYPE_DB_VALIDATE_LISTING=false \
+            -e GRYPE_CHECK_FOR_APP_UPDATE=false \
             sca-grype $REGISTRY_URL/backuphub/app:${{ github.sha }} -o json > sca.json || true
 
       - name: Push to Registry
