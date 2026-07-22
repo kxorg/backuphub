@@ -22,7 +22,7 @@ jobs:
         run: |
           docker compose -f /opt/backuphub/devsecops/docker-compose.yml run --rm \
             -v ${{ github.workspace }}:/src \
-            sast-semgrep semgrep scan --config=p/owasp-top-10 --metrics=off --json --output=sast.json /src || true
+            sast-semgrep semgrep scan --config=p/owasp-top-10 --metrics=off --json --output=sast.json --error /src || true
 
       - name: Build Image
         run: |
@@ -48,8 +48,8 @@ jobs:
         if: always()
         run: |
           SCAN_DATE=$(date +%Y-%m-%d)
-          [ -f sast.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=Semgrep JSON Report" -F "file=@sast.json" -F "product_id=$DOJO_PRODUCT_ID" -F "product_name=BackupHub" -F "engagement_name=Build-${{ github.run_number }}" -F "scan_date=$SCAN_DATE" -F "auto_create_context=true" || true
-          [ -f sca.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=Anchore Grype" -F "file=@sca.json" -F "product_id=$DOJO_PRODUCT_ID" -F "product_name=BackupHub" -F "engagement_name=Build-${{ github.run_number }}" -F "scan_date=$SCAN_DATE" -F "auto_create_context=true" || true
+          [ -s sast.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=Semgrep JSON Report" -F "file=@sast.json" -F "product_id=$DOJO_PRODUCT_ID" -F "product_name=BackupHub" -F "engagement_name=Build-${{ github.run_number }}" -F "scan_date=$SCAN_DATE" -F "auto_create_context=true" || true
+          [ -s sca.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=Anchore Grype" -F "file=@sca.json" -F "product_id=$DOJO_PRODUCT_ID" -F "product_name=BackupHub" -F "engagement_name=Build-${{ github.run_number }}" -F "scan_date=$SCAN_DATE" -F "auto_create_context=true" || true
 
       - name: Post-Build Disk Cleanup
         if: always()
@@ -89,5 +89,5 @@ jobs:
         if: always()
         run: |
           SCAN_DATE=$(date +%Y-%m-%d)
-          [ -f dast.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=ZAP Scan" -F "file=@dast.json" -F "product_id=$DOJO_PRODUCT_ID" -F "product_name=BackupHub" -F "engagement_name=Build-${{ github.run_number }}" -F "scan_date=$SCAN_DATE" -F "auto_create_context=true" || true
+          [ -s dast.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=ZAP Scan" -F "file=@dast.json" -F "product_id=$DOJO_PRODUCT_ID" -F "product_name=BackupHub" -F "engagement_name=Build-${{ github.run_number }}" -F "scan_date=$SCAN_DATE" -F "auto_create_context=true" || true
           docker system prune -f
