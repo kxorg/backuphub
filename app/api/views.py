@@ -16,6 +16,7 @@ from operations.models import BackupOperation
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
 from configurations.models import BackupConfiguration
 from django.core.paginator import Paginator
+from django.shortcuts import get_object_or_404
 from search.services import GlobalSearchService
 
 @extend_schema(
@@ -153,8 +154,8 @@ def api_ui_refresh_operations(request):
             'num_pages': paginator.num_pages,
             'has_previous': page_obj.has_previous(),
             'has_next': page_obj.has_next(),
-            'previous_page_number': page_obj.previous_page_number if page_obj.has_previous() else None,
-            'next_page_number': page_obj.next_page_number if page_obj.has_next() else None,
+            'previous_page_number': page_obj.previous_page_number() if page_obj.has_previous() else None,
+            'next_page_number': page_obj.next_page_number() if page_obj.has_next() else None,
         },
         'total_count': paginator.count,
     })
@@ -218,8 +219,6 @@ def api_ui_refresh_operation_detail(request, pk):
 @login_required
 def api_ui_refresh_target_system(request, pk):
     """API для живого обновления страницы детали целевой системы"""
-    from systems.models import TargetSystem
-    from django.shortcuts import get_object_or_404
     
     ts = get_object_or_404(TargetSystem, pk=pk)
     
@@ -229,7 +228,6 @@ def api_ui_refresh_target_system(request, pk):
         'is_active': ts.is_active,
     }
     
-    # Последние операции для этой целевой системы
     recent_ops = BackupOperation.objects.filter(
         backup_configuration_version__backup_configuration__target_system_version__target_system=ts
     ).select_related(
