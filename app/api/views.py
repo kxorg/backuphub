@@ -15,6 +15,7 @@ from operations.models import BackupOperation
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
 from configurations.models import BackupConfiguration
 from django.core.paginator import Paginator
+from django.shortcuts import get_object_or_404
 
 @extend_schema(
     tags=['UI Live Updates'],
@@ -216,8 +217,6 @@ def api_ui_refresh_operation_detail(request, pk):
 @login_required
 def api_ui_refresh_target_system(request, pk):
     """API для живого обновления страницы детали целевой системы"""
-    from systems.models import TargetSystem
-    from django.shortcuts import get_object_or_404
     
     ts = get_object_or_404(TargetSystem, pk=pk)
     
@@ -227,7 +226,6 @@ def api_ui_refresh_target_system(request, pk):
         'is_active': ts.is_active,
     }
     
-    # Последние операции для этой целевой системы
     recent_ops = BackupOperation.objects.filter(
         backup_configuration_version__backup_configuration__target_system_version__target_system=ts
     ).select_related(
