@@ -20,7 +20,7 @@
 | OS | Ubuntu 22.04.5 LTS | Ubuntu 22.04.2 LTS | Ubuntu 24.04 LTS | Ubuntu 22.04 LTS |
 | SSH | `8228` | `8228` | `8228` | `8228` |
 | RAM | 1 GB | 1 GB | 2 GB | 1 GB |
-| Disk | 15 GB ext4 | 15 GB ext4 | 15 GB ext4 | 15 GB ext4 |
+| Disk | 15 GB ext4 | 15 GB ext4 | 15 GB ext4 | 25 GB ext4 |
 | Назначение | DEV-контур приложения | PROD-контур приложения | Monitoring, logs, alerts, MinIO | CI/CD, registry, DevSecOps |
 
 ## 2. Разделение контуров
