@@ -11,13 +11,13 @@ from api.v1.backup_operations.serializers import (
     BackupOperationUpdateSerializer,
     BackupOperationReadSerializer,
 )
+from drf_spectacular.utils import extend_schema # Убедись, что это импортировано
 from api.v1.backup_operations.filters import BackupOperationFilter
 from api.v1.backup_operations.schemas import (
     backup_operation_create_schema,
     backup_operation_update_schema,
     backup_operation_list_schema,
 )
-
 
 class BackupOperationViewSet(
     mixins.CreateModelMixin,
@@ -118,5 +118,6 @@ class BackupOperationViewSet(
         return super().list(request, *args, **kwargs)
 
     # ---------- RETRIEVE ----------
+    @extend_schema(tags=['Backup Operations API'])
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)

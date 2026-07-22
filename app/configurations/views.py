@@ -48,7 +48,7 @@ class BackupConfigurationDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context['current_version'] = self.object.current_version
         
-        # Добавлено для cURL-запросов
+        # Added for cURL requests
         target_system = self.object.target_system_version.target_system
         context['api_key'] = str(target_system.api_key)
         context['config_id'] = self.object.id
@@ -103,8 +103,12 @@ class BackupConfigurationUpdateView(LoginRequiredMixin, UpdateView):
     model = BackupConfiguration
     form_class = BackupConfigurationForm
     template_name = 'backup_configurations/backupconfiguration_form.html'
-    success_url = reverse_lazy('backup_configuration_list')
-
+    # success_url = reverse_lazy('backup_configuration_list')
+    def get_success_url(self):
+        # Возвращаем пользователя на страницу деталей этой же конфигурации бэкапа
+        # Замените 'backup_configuration_detail' на ваше точное имя роута из urls.py
+        return reverse_lazy('backup_configuration_detail', kwargs={'pk': self.object.pk})
+    
     @transaction.atomic
     def form_valid(self, form):
         current_version = self.object.current_version

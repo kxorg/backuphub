@@ -70,7 +70,8 @@ INSTALLED_APPS = [
     'systems',
     'configurations',
     'operations',
-
+    'search',
+    
 ]
 
 REST_FRAMEWORK = {
@@ -109,9 +110,6 @@ SPECTACULAR_SETTINGS = {
             }
         }
     },
-    'TAGS': [
-        {'name': 'backup-operations', 'description': 'Backup operation lifecycle'},
-    ],
 }
 
 MIDDLEWARE = [

@@ -17,7 +17,7 @@
         <h2 class="mb-1">
             <i class="bi bi-server me-2"></i>{{ target_system.name }}
         </h2>
-        <span class="badge {% if target_system.is_active %}badge-success{% else %}badge-secondary{% endif %}">
+        <span id="ts-status-badge" class="badge {% if target_system.is_active %}badge-success{% else %}badge-secondary{% endif %}">
             {% if target_system.is_active %}
                 <i class="bi bi-check-circle me-1"></i>Active
             {% else %}
@@ -68,6 +68,21 @@
                     <div class="col-8">
                         {% if target_system.environment %}
                             <span class="badge badge-info">{{ target_system.environment.name }}</span>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </div>
+                </div>  
+                <div class="row mb-3">
+                    <div class="col-4">
+                        <strong class="text-muted">Information System:</strong>
+                    </div>
+
+                    <div class="col-8">
+                        {% if target_system.information_system %}
+                            <span class="badge badge-primarySys">
+                                {{ target_system.information_system.name }}
+                            </span>
                         {% else %}
                             <span class="text-muted">—</span>
                         {% endif %}
@@ -296,14 +311,18 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="ts-recent-ops-body">
                     {% for op in recent_ops %}
                     <tr>
                         <td>{{ op.started_at|date:"d.m.Y H:i" }}</td>
                         <td>
-                            <a href="{% url 'backup_configuration_detail' op.backup_configuration_version.backup_configuration.id %}">
-                                {{ op.backup_configuration_version.backup_configuration.name }}
-                            </a>
+                            {% if op.backup_configuration_version %}
+                                <a href="{% url 'backup_configuration_detail' op.backup_configuration_version.backup_configuration.id %}">
+                                    {{ op.backup_configuration_version.backup_configuration.name }}
+                                </a>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
                         </td>
                         <td>{{ op.hostname }}</td>
                         <td>
@@ -315,6 +334,8 @@
                                 <span class="badge badge-info"><i class="bi bi-arrow-repeat me-1"></i>In Progress</span>
                             {% elif op.status == 'warning' %}
                                 <span class="badge badge-warning"><i class="bi bi-exclamation-triangle me-1"></i>Warning</span>
+                            {% elif op.status == 'cancelled' %}
+                                <span class="badge badge-secondary"><i class="bi bi-slash-circle me-1"></i>Cancelled</span>
                             {% else %}
                                 <span class="badge badge-secondary">{{ op.status }}</span>
                             {% endif %}
@@ -353,66 +374,141 @@
     </div>
 </div>
 {% endblock %}
+
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // === API Key Show/Hide/Copy ===
     const apiKey = '{{ target_system.api_key }}';
     const apiKeyElement = document.getElementById('apiKey');
     const toggleBtn = document.getElementById('toggleApiKey');
     const copyBtn = document.getElementById('copyApiKey');
     let isHidden = true;
     
-    toggleBtn.addEventListener('click', function() {
-        if (isHidden) {
-            apiKeyElement.textContent = apiKey;
-            toggleBtn.innerHTML = '<i class="bi bi-eye-slash"></i>';
-            toggleBtn.title = 'Hide API Key';
-            toggleBtn.classList.remove('btn-outline-secondary');
-            toggleBtn.classList.add('btn-outline-danger');
-        } else {
-            apiKeyElement.textContent = '••••••••••••••••••••••••';
-            toggleBtn.innerHTML = '<i class="bi bi-eye"></i>';
-            toggleBtn.title = 'Show API Key';
-            toggleBtn.classList.remove('btn-outline-danger');
-            toggleBtn.classList.add('btn-outline-secondary');
-        }
-        isHidden = !isHidden;
-    });
-    
-    copyBtn.addEventListener('click', function() {
-        navigator.clipboard.writeText(apiKey).then(function() {
-            const originalHTML = copyBtn.innerHTML;
-            copyBtn.innerHTML = '<i class="bi bi-check-lg"></i>';
-            copyBtn.classList.remove('btn-outline-primary');
-            copyBtn.classList.add('btn-success');
-            copyBtn.title = 'Copied!';
-            
-            setTimeout(function() {
-                copyBtn.innerHTML = originalHTML;
-                copyBtn.classList.remove('btn-success');
-                copyBtn.classList.add('btn-outline-primary');
-                copyBtn.title = 'Copy to Clipboard';
-            }, 2000);
-        }).catch(function(err) {
-            const textArea = document.createElement('textarea');
-            textArea.value = apiKey;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-            
-            const originalHTML = copyBtn.innerHTML;
-            copyBtn.innerHTML = '<i class="bi bi-check-lg"></i>';
-            copyBtn.classList.remove('btn-outline-primary');
-            copyBtn.classList.add('btn-success');
-            
-            setTimeout(function() {
-                copyBtn.innerHTML = originalHTML;
-                copyBtn.classList.remove('btn-success');
-                copyBtn.classList.add('btn-outline-primary');
-            }, 2000);
+    if (toggleBtn && copyBtn && apiKeyElement) {
+        toggleBtn.addEventListener('click', function() {
+            if (isHidden) {
+                apiKeyElement.textContent = apiKey;
+                toggleBtn.innerHTML = '<i class="bi bi-eye-slash"></i>';
+                toggleBtn.title = 'Hide API Key';
+                toggleBtn.classList.remove('btn-outline-secondary');
+                toggleBtn.classList.add('btn-outline-danger');
+            } else {
+                apiKeyElement.textContent = '••••••••••••••••••••••••';
+                toggleBtn.innerHTML = '<i class="bi bi-eye"></i>';
+                toggleBtn.title = 'Show API Key';
+                toggleBtn.classList.remove('btn-outline-danger');
+                toggleBtn.classList.add('btn-outline-secondary');
+            }
+            isHidden = !isHidden;
         });
-    });
+        
+        copyBtn.addEventListener('click', function() {
+            navigator.clipboard.writeText(apiKey).then(function() {
+                const originalHTML = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<i class="bi bi-check-lg"></i>';
+                copyBtn.classList.remove('btn-outline-primary');
+                copyBtn.classList.add('btn-success');
+                copyBtn.title = 'Copied!';
+                
+                setTimeout(function() {
+                    copyBtn.innerHTML = originalHTML;
+                    copyBtn.classList.remove('btn-success');
+                    copyBtn.classList.add('btn-outline-primary');
+                    copyBtn.title = 'Copy to Clipboard';
+                }, 2000);
+            }).catch(function(err) {
+                const textArea = document.createElement('textarea');
+                textArea.value = apiKey;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                const originalHTML = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<i class="bi bi-check-lg"></i>';
+                copyBtn.classList.remove('btn-outline-primary');
+                copyBtn.classList.add('btn-success');
+                
+                setTimeout(function() {
+                    copyBtn.innerHTML = originalHTML;
+                    copyBtn.classList.remove('btn-success');
+                    copyBtn.classList.add('btn-outline-primary');
+                }, 2000);
+            });
+        });
+    }
+
+    // === Live Update ===
+    const targetSystemId = "{{ target_system.id }}";
+    const apiUrl = `/api/ui/refresh-target-system/${targetSystemId}/`;
+    
+    function refreshData() {
+        fetch(apiUrl)
+            .then(res => {
+                if (!res.ok) throw new Error('Network error');
+                return res.json();
+            })
+            .then(data => {
+                // Обновляем статус системы
+                const statusBadge = document.getElementById('ts-status-badge');
+                if (statusBadge && data.is_active !== undefined) {
+                    const isActive = data.is_active;
+                    statusBadge.className = 'badge ' + (isActive ? 'badge-success' : 'badge-secondary');
+                    statusBadge.innerHTML = isActive ? 
+                        '<i class="bi bi-check-circle me-1"></i>Active' : 
+                        '<i class="bi bi-slash-circle me-1"></i>Inactive';
+                }
+
+                // Обновляем таблицу операций
+                if (data.recent_operations) {
+                    const tbody = document.getElementById('ts-recent-ops-body');
+                    if (tbody) {
+                        let html = '';
+                        if (data.recent_operations.length === 0) {
+                            html = '<tr><td colspan="7" class="text-center text-muted py-4"><i class="bi bi-inbox display-4"></i><p class="mt-2 mb-0">No backup operations yet</p></td></tr>';
+                        } else {
+                            data.recent_operations.forEach(op => {
+                                let badgeClass = 'badge-secondary';
+                                let icon = 'bi-dash-circle';
+                                let text = op.status_display || op.status;
+                                
+                                if (op.status === 'success') { badgeClass = 'badge-success'; icon = 'bi-check-circle'; }
+                                else if (op.status === 'error') { badgeClass = 'badge-error'; icon = 'bi-x-circle'; }
+                                else if (op.status === 'in_progress') { badgeClass = 'badge-info'; icon = 'bi-arrow-repeat'; }
+                                else if (op.status === 'warning') { badgeClass = 'badge-warning'; icon = 'bi-exclamation-triangle'; }
+                                else if (op.status === 'cancelled') { badgeClass = 'badge-secondary'; icon = 'bi-slash-circle'; }
+
+                                const duration = op.duration_seconds ? op.duration_seconds + 's' : '<span class="text-muted">—</span>';
+                                const size = op.size_human !== '—' ? op.size_human : '<span class="text-muted">—</span>';
+                                const configLink = op.configuration_id ? 
+                                    `<a href="/backup-configuration/${op.configuration_id}/">${op.configuration_name}</a>` : 
+                                    '<span class="text-muted">—</span>';
+
+                                html += `
+                                    <tr>
+                                        <td>${op.started_at}</td>
+                                        <td>${configLink}</td>
+                                        <td>${op.hostname}</td>
+                                        <td><span class="badge ${badgeClass}"><i class="bi ${icon} me-1"></i>${text}</span></td>
+                                        <td>${duration}</td>
+                                        <td>${size}</td>
+                                        <td><a href="${op.detail_url}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i> View</a></td>
+                                    </tr>`;
+                            });
+                        }
+                        
+                        if (tbody.innerHTML.trim() !== html.trim()) {
+                            tbody.innerHTML = html;
+                        }
+                    }
+                }
+            })
+            .catch(err => console.error('Target System live update error:', err));
+    }
+
+    refreshData();
+    setInterval(refreshData, 10000);
 });
 </script>
 {% endblock %}
