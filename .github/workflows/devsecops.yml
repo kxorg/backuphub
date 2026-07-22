@@ -48,8 +48,8 @@ jobs:
       - name: Report to DefectDojo
         if: always()
         run: |
-          [ -f sast.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" --user "$DOJO_NGINX_USER:$DOJO_NGINX_PASSWORD" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=Semgrep JSON Report" -F "file=@sast.json" -F "product_id=$DOJO_PRODUCT_ID" -F "engagement_name=Build-${{ github.run_number }}" || true
-          [ -f sca.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" --user "$DOJO_NGINX_USER:$DOJO_NGINX_PASSWORD" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=Anchore Grype" -F "file=@sca.json" -F "product_id=$DOJO_PRODUCT_ID" -F "engagement_name=Build-${{ github.run_number }}" || true
+          [ -f sast.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" --user "${{ env.DOJO_NGINX_USER }}:${{ env.DOJO_NGINX_PASSWORD }}" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=Semgrep JSON Report" -F "file=@sast.json" -F "product_id=$DOJO_PRODUCT_ID" -F "engagement_name=Build-${{ github.run_number }}" || true
+          [ -f sca.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" --user "${{ env.DOJO_NGINX_USER }}:${{ env.DOJO_NGINX_PASSWORD }}" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=Anchore Grype" -F "file=@sca.json" -F "product_id=$DOJO_PRODUCT_ID" -F "engagement_name=Build-${{ github.run_number }}" || true
 
       - name: Post-Build Disk Cleanup
         if: always()
@@ -88,5 +88,5 @@ jobs:
       - name: Report DAST to Dojo
         if: always()
         run: |
-          [ -f dast.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" --user "$DOJO_NGINX_USER:$DOJO_NGINX_PASSWORD" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=ZAP Scan" -F "file=@dast.json" -F "product_id=$DOJO_PRODUCT_ID" -F "engagement_name=Build-${{ github.run_number }}" || true
+          [ -f dast.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" --user "${{ env.DOJO_NGINX_USER }}:${{ env.DOJO_NGINX_PASSWORD }}" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=ZAP Scan" -F "file=@dast.json" -F "product_id=$DOJO_PRODUCT_ID" -F "engagement_name=Build-${{ github.run_number }}" || true
           docker system prune -f
