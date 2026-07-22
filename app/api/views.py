@@ -1,4 +1,5 @@
 from datetime import timedelta
+from django.shortcuts import get_object_or_404
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -14,7 +15,7 @@ from systems.models import TargetSystem
 from operations.models import BackupOperation
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
 from configurations.models import BackupConfiguration
-from django.core.paginator import Paginator
+
 
 @extend_schema(
     tags=['UI Live Updates'],
@@ -65,19 +66,24 @@ def api_ui_refresh_dashboard(request):
             except (ValueError, TypeError):
                 time_display = op.started_at.strftime('%d.%m.%Y %H:%M')
         
+        size = op.size_human
+        if callable(size):
+            size = size()
+        
         ops_data.append({
             'id': op.id,
             'system_name': sys_name,
             'hostname': op.hostname or '',
             'status': op.status,
             'started_at': time_display,  
-            'size_human': op.size_human or '—',
+            'size_human': size or '—',
             'detail_url': f"/backup-operations/{op.id}/",
         })
         
     data['recent_operations'] = ops_data
     
     return JsonResponse(data)
+
 
 @extend_schema(
     tags=['UI Live Updates'],
@@ -129,27 +135,37 @@ def api_ui_refresh_operations(request):
 
     operations_data = []
     for op in page_obj:
-        config = op.backup_configuration_version.backup_configuration
+        config = None
+        if op.backup_configuration_version:
+            config = op.backup_configuration_version.backup_configuration
         
-        duration = op.duration_seconds or 0  
-        size = op.size_human or '—'
+        version_number = None
+        if op.backup_configuration_version:
+            version_number = op.backup_configuration_version.version_number
+        
+        duration = op.duration_seconds
+        if callable(duration):
+            duration = duration()
+        duration = duration or 0
+        
+        size = op.size_human
+        if callable(size):
+            size = size()
+        size = size or '—'
         
         operations_data.append({
             'id': op.id,
             'hostname': op.hostname or '',
             'configuration_name': config.name if config else '—',
             'configuration_id': config.id if config else None,
-            'version_number': op.backup_configuration_version.version_number,
+            'version_number': version_number,
             'status': op.status,
             'started_at': op.started_at.strftime('%d.%m.%Y %H:%M') if op.started_at else '—',
-            
-            'duration_seconds': duration,
-            'size_human': size,
-            
+            'duration_seconds': int(duration) if duration else 0,
+            'size_human': str(size) if size else '—',
             'detail_url': f"/backup-operations/{op.id}/",
-            'config_detail_url': f"/backup-configurations/{config.id}/" if config else '#',
+            'config_detail_url': f"/backup-configuration/{config.id}/" if config else '#',
         })
-
 
     return JsonResponse({
         'operations': operations_data,
@@ -164,6 +180,7 @@ def api_ui_refresh_operations(request):
         'total_count': paginator.count,
     })
 
+
 @extend_schema(
     tags=['UI Live Updates'],
     summary='Refresh Operation Detail',
@@ -173,25 +190,26 @@ def api_ui_refresh_operations(request):
 @login_required
 def api_ui_refresh_operation_detail(request, pk):
     """API для живого обновления всех полей страницы детали операции"""
-    from operations.models import BackupOperation
-    from django.shortcuts import get_object_or_404
-    
     operation = get_object_or_404(BackupOperation, pk=pk)
     
-    # Динамический расчет длительности, если операция еще идет
     duration = operation.duration_seconds
+    if callable(duration):
+        duration = duration()
     if not duration and operation.started_at and operation.status == 'in_progress':
         duration = int((timezone.now() - operation.started_at).total_seconds())
 
-    # Данные конфигурации
+    size = operation.size_human
+    if callable(size):
+        size = size()
+
     config_name = '—'
     config_version = '—'
     config_id = None
     if operation.backup_configuration_version:
         config = operation.backup_configuration_version.backup_configuration
-        config_name = config.name
+        config_name = config.name if config else '—'
         config_version = operation.backup_configuration_version.version_number
-        config_id = config.id
+        config_id = config.id if config else None
 
     data = {
         'status': operation.status,
@@ -201,8 +219,8 @@ def api_ui_refresh_operation_detail(request, pk):
         'external_job_id': operation.external_job_id or '—',
         'started_at': operation.started_at.strftime('%d.%m.%Y %H:%M:%S') if operation.started_at else '—',
         'finished_at': operation.finished_at.strftime('%d.%m.%Y %H:%M:%S') if operation.finished_at else '—',
-        'duration_seconds': duration,
-        'size_human': operation.size_human or '—',
+        'duration_seconds': int(duration) if duration else 0,
+        'size_human': str(size) if size else '—',
         'storage_type': operation.storage_type or '—',
         'storage_path': operation.storage_path or '—',
         'error_message': operation.error_message,
@@ -222,10 +240,6 @@ def api_ui_refresh_operation_detail(request, pk):
 @api_view(['GET'])
 @login_required
 def api_ui_refresh_target_system(request, pk):
-    """API для живого обновления страницы детали целевой системы"""
-    from systems.models import TargetSystem
-    from django.shortcuts import get_object_or_404
-    
     ts = get_object_or_404(TargetSystem, pk=pk)
     
     data = {
@@ -234,7 +248,6 @@ def api_ui_refresh_target_system(request, pk):
         'is_active': ts.is_active,
     }
     
-    # Последние операции для этой целевой системы
     recent_ops = BackupOperation.objects.filter(
         backup_configuration_version__backup_configuration__target_system_version__target_system=ts
     ).select_related(
@@ -244,6 +257,16 @@ def api_ui_refresh_target_system(request, pk):
     operations_data = []
     for op in recent_ops:
         config = op.backup_configuration_version.backup_configuration if op.backup_configuration_version else None
+        
+        # БЕЗОПАСНОЕ получение duration и size
+        duration = op.duration_seconds
+        if callable(duration):
+            duration = duration()
+        
+        size = op.size_human
+        if callable(size):
+            size = size()
+        
         operations_data.append({
             'id': op.id,
             'started_at': op.started_at.strftime('%d.%m.%Y %H:%M') if op.started_at else '—',
@@ -252,8 +275,8 @@ def api_ui_refresh_target_system(request, pk):
             'hostname': op.hostname or '—',
             'status': op.status,
             'status_display': op.get_status_display(),
-            'duration_seconds': op.duration_seconds,
-            'size_human': op.size_human or '—',
+            'duration_seconds': int(duration) if duration else 0,
+            'size_human': str(size) if size else '—',
             'detail_url': f'/backup-operations/{op.id}/',
         })
         
@@ -285,7 +308,6 @@ def api_global_search(request):
     except (ValueError, TypeError):
         page_size = 25
     
-    # Limiting the maximum page size
     page_size = min(page_size, 100)
 
     all_results = []
@@ -300,7 +322,7 @@ def api_global_search(request):
             Q(information_system__name__icontains=query)
         ).select_related(
             'system_type', 'environment', 'information_system'
-        )[:200]  # Limiting for performance
+        )[:200]
     else:
         systems = TargetSystem.objects.all().order_by('-created_at')[:200]
     
@@ -329,23 +351,9 @@ def api_global_search(request):
             Q(target_system_version__target_system__name__icontains=query)
         ).select_related(
             'target_system_version__target_system'
-        ).distinct()[:200] 
+        ).distinct()[:200]
     else:
         configs = BackupConfiguration.objects.all().order_by('-created_at')[:200]
-    
-    for config in configs:
-        target_system_name = ''
-        if config.target_system_version and config.target_system_version.target_system:
-            target_system_name = config.target_system_version.target_system.name
-        
-        all_results.append({
-            'type': 'backup_configuration',
-            'id': config.id,
-            'title': config.name,
-            'subtitle': target_system_name or 'Configuration',
-            'description': config.description or None,
-            'url': f'/backup-configuration/{config.id}/',
-        })
     
     for config in configs:
         target_system_name = ''
@@ -379,7 +387,7 @@ def api_global_search(request):
         if op.backup_configuration_version and op.backup_configuration_version.backup_configuration:
             config_name = op.backup_configuration_version.backup_configuration.name
         
-        title = f"Операция #{op.id}"
+        title = f"Operation #{op.id}"
         if op.hostname:
             title += f" ({op.hostname})"
         
@@ -468,8 +476,6 @@ def api_global_search(request):
             'url': f'/information-systems/{info_sys.id}/edit/',
         })
 
-    # Sorting results: first by relevance (if a query is present), then by ID.
-    # For simplicity, we sort by type and id.
     all_results.sort(key=lambda x: (x['type'], x['id']))
 
     paginator = Paginator(all_results, page_size)
