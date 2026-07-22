@@ -1,4 +1,6 @@
 from django import forms
+
+from systems.models import TargetSystemVersion
 from .models import BackupConfiguration, BackupConfigurationVersion
 from dictionaries.models import BackupTool
 
@@ -83,6 +85,11 @@ class BackupConfigurationForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.fields['target_system_version'].queryset = TargetSystemVersion.objects.filter(
+            is_current=True
+        ).select_related('target_system').order_by('target_system__name')
+
         for field_name, field in self.fields.items():
             if field_name in ['target_system_version', 'name', 'description']:
                 continue

@@ -66,6 +66,15 @@ class BackupConfigurationCreateView(LoginRequiredMixin, CreateView):
 
     @transaction.atomic
     def form_valid(self, form):
+        # Check: the selected Target System version must be up to date.
+        target_system_version = form.cleaned_data.get('target_system_version')
+        if not target_system_version.is_current:
+            messages.error(
+                self.request,
+                'Selected Target System Version is not current. Please select the latest version.'
+            )
+            return self.form_invalid(form)  
+        
         self.object = form.save(commit=False)
         self.object.created_by = self.request.user.username
         self.object.save()
@@ -111,6 +120,15 @@ class BackupConfigurationUpdateView(LoginRequiredMixin, UpdateView):
     
     @transaction.atomic
     def form_valid(self, form):
+        
+        target_system_version = form.cleaned_data.get('target_system_version')
+        if not target_system_version.is_current:
+            messages.error(
+                self.request,
+                'Selected Target System Version is not current. Please select the latest version.'
+            )
+            return self.form_invalid(form)  
+
         current_version = self.object.current_version
         versioned_fields_changed = False
 
