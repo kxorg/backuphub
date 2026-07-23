@@ -8,7 +8,7 @@ jobs:
     runs-on: [self-hosted, secops]
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/actions/checkout@v4
 
       - name: Load Environment
         run: grep -v '^#' /opt/backuphub/.env >> $GITHUB_ENV
@@ -20,9 +20,10 @@ jobs:
 
       - name: SAST Semgrep Scan
         run: |
+          # Исправлено: пишем напрямую в монтируемую папку /src/sast.json
           docker compose -f /opt/backuphub/devsecops/docker-compose.yml run --rm \
             -v ${{ github.workspace }}:/src \
-            sast-semgrep semgrep scan --config=p/owasp-top-10 --metrics=off --json --output=sast.json --error /src || true
+            sast-semgrep semgrep scan --config=p/owasp-top-10 --metrics=off --json --output=/src/sast.json --error /src || true
 
       - name: Build Image
         run: |
@@ -34,7 +35,8 @@ jobs:
 
       - name: SCA Grype Scan
         run: |
-          docker compose -f /opt/backuphub/devsecops/docker-compose.yml run --rm \
+          # Исправлено: добавлен флаг -T, чтобы отключить TTY и убрать мусор из JSON
+          docker compose -f /opt/backuphub/devsecops/docker-compose.yml run -T --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
             -e GRYPE_DB_AUTO_UPDATE=false \
             -e GRYPE_DB_VALIDATE_LISTING=false \
@@ -85,9 +87,10 @@ jobs:
 
       - name: DAST Scan (ZAP)
         run: |
-          docker compose -f /opt/backuphub/devsecops/docker-compose.yml run --rm --user root \
+          # Исправлено: добавлен -T и принудительное изменение прав (chmod 666) внутри контейнера, чтобы хост мог прочесть файл
+          docker compose -f /opt/backuphub/devsecops/docker-compose.yml run -T --rm --user root \
             -v ${{ github.workspace }}:/zap/wrk/:rw \
-            dast-zap zap-baseline.py -t $APP_URL_DEV -J dast.json || true
+            dast-zap bash -c "zap-baseline.py -t $APP_URL_DEV -J dast.json || true; chmod 666 /zap/wrk/dast.json"
 
       - name: Report DAST to Dojo
         if: always()
