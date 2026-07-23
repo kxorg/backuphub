@@ -6,7 +6,6 @@ on:
       - DEV
 
 jobs:
-
   security-and-build:
     runs-on: [self-hosted, secops]
 
@@ -14,7 +13,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Load Environment
-        run: grep -v '^#' /opt/backuphub/.env >> $GITHUB_ENV
+        run: |
+          grep -v '^#' /opt/backuphub/.env >> $GITHUB_ENV
+          echo "ENGAGEMENT_NAME=Build-${{ github.run_number }}" >> $GITHUB_ENV
 
       - name: Cleanup
         run: |
@@ -23,7 +24,9 @@ jobs:
 
       - name: Semgrep Scan
         run: |
-          docker compose -f /opt/backuphub/devsecops/docker-compose.yml run --rm \
+          docker compose \
+            -f /opt/backuphub/devsecops/docker-compose.yml \
+            run --rm \
             -v ${{ github.workspace }}:/src \
             sast-semgrep \
             semgrep scan \
@@ -49,7 +52,9 @@ jobs:
 
       - name: Grype Scan
         run: |
-          docker compose -f /opt/backuphub/devsecops/docker-compose.yml run --rm \
+          docker compose \
+            -f /opt/backuphub/devsecops/docker-compose.yml \
+            run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
             -v ${{ github.workspace }}:/src \
             sca-grype \
@@ -59,61 +64,63 @@ jobs:
 
       - name: Push Image
         run: |
-          docker push $REGISTRY_URL/backuphub/app:${{ github.sha }}
+          docker push \
+            $REGISTRY_URL/backuphub/app:${{ github.sha }}
+
           docker tag \
             $REGISTRY_URL/backuphub/app:${{ github.sha }} \
             $REGISTRY_URL/backuphub/app:dev-latest
-          docker push $REGISTRY_URL/backuphub/app:dev-latest
 
-      - name: Upload Reports to DefectDojo
+          docker push \
+            $REGISTRY_URL/backuphub/app:dev-latest
+
+      - name: Upload SAST SCA Reports
         if: always()
         run: |
-
           SCAN_DATE=$(date +%F)
 
           if [ -f "${{ github.workspace }}/sast.json" ]; then
-            curl --fail \
-              -X POST "$DOJO_URL/api/v2/import-scan/" \
+            curl -sS \
+              -X POST \
+              "$DOJO_URL/api/v2/import-scan/" \
               -H "Authorization: Token $DOJO_TOKEN" \
-              -F scan_type="Semgrep JSON Report" \
-              -F file=@${{ github.workspace }}/sast.json \
-              -F product_id=$DOJO_PRODUCT_ID \
-              -F engagement_name=Build-${{ github.run_number }} \
-              -F scan_date=$SCAN_DATE \
-              -F auto_create_context=true
+              -F "scan_type=Semgrep JSON Report" \
+              -F "file=@${{ github.workspace }}/sast.json" \
+              -F "product_id=$DOJO_PRODUCT_ID" \
+              -F "engagement_name=$ENGAGEMENT_NAME" \
+              -F "scan_date=$SCAN_DATE" \
+              -F "auto_create_context=true" || true
           fi
 
           if [ -f "${{ github.workspace }}/sca.json" ]; then
-            curl --fail \
-              -X POST "$DOJO_URL/api/v2/import-scan/" \
+            curl -sS \
+              -X POST \
+              "$DOJO_URL/api/v2/import-scan/" \
               -H "Authorization: Token $DOJO_TOKEN" \
-              -F scan_type="Anchore Grype" \
-              -F file=@${{ github.workspace }}/sca.json \
-              -F product_id=$DOJO_PRODUCT_ID \
-              -F engagement_name=Build-${{ github.run_number }} \
-              -F scan_date=$SCAN_DATE \
-              -F auto_create_context=true
+              -F "scan_type=Anchore Grype" \
+              -F "file=@${{ github.workspace }}/sca.json" \
+              -F "product_id=$DOJO_PRODUCT_ID" \
+              -F "engagement_name=$ENGAGEMENT_NAME" \
+              -F "scan_date=$SCAN_DATE" \
+              -F "auto_create_context=true" || true
           fi
 
       - name: Cleanup
         if: always()
         run: |
-          docker system prune -af || true
+          docker system prune -af
 
   deploy:
-
     needs: security-and-build
-
     runs-on: [self-hosted, dev]
 
     steps:
-
       - name: Load Environment
-        run: grep -v '^#' /opt/backuphub/.env >> $GITHUB_ENV
+        run: |
+          grep -v '^#' /opt/backuphub/.env >> $GITHUB_ENV
 
       - name: Deploy
         run: |
-
           echo "$REGISTRY_PASSWORD" | docker login \
             $REGISTRY_URL \
             -u "$REGISTRY_USER" \
@@ -125,21 +132,25 @@ jobs:
           "s|image: .*|image: $REGISTRY_URL/backuphub/app:${{ github.sha }}|" \
           deploy.docker-compose.yml
 
-          docker compose -f deploy.docker-compose.yml pull
-          docker compose -f deploy.docker-compose.yml up -d
+          docker compose \
+            -f deploy.docker-compose.yml \
+            pull
+
+          docker compose \
+            -f deploy.docker-compose.yml \
+            up -d
 
           docker image prune -af
 
   dast:
-
     needs: deploy
-
     runs-on: [self-hosted, secops]
 
     steps:
-
       - name: Load Environment
-        run: grep -v '^#' /opt/backuphub/.env >> $GITHUB_ENV
+        run: |
+          grep -v '^#' /opt/backuphub/.env >> $GITHUB_ENV
+          echo "ENGAGEMENT_NAME=Build-${{ github.run_number }}" >> $GITHUB_ENV
 
       - name: Pull ZAP
         run: |
@@ -147,32 +158,30 @@ jobs:
 
       - name: Run ZAP Baseline
         run: |
-
           docker run --rm \
             -v ${{ github.workspace }}:/zap/wrk \
             ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py \
             -t $APP_URL_DEV \
-            -J /zap/wrk/dast.json || true
+            -J /zap/wrk/dast.json \
+            --timeout 300 || true
 
-      - name: Upload ZAP Report
+      - name: Upload DAST Report
         if: always()
         run: |
-
           SCAN_DATE=$(date +%F)
 
           if [ -f "${{ github.workspace }}/dast.json" ]; then
-
-            curl --fail \
-              -X POST "$DOJO_URL/api/v2/import-scan/" \
+            curl -sS \
+              -X POST \
+              "$DOJO_URL/api/v2/import-scan/" \
               -H "Authorization: Token $DOJO_TOKEN" \
-              -F scan_type="ZAP Scan" \
-              -F file=@${{ github.workspace }}/dast.json \
-              -F product_id=$DOJO_PRODUCT_ID \
-              -F engagement_name=Build-${{ github.run_number }} \
-              -F scan_date=$SCAN_DATE \
-              -F auto_create_context=true
-
+              -F "scan_type=ZAP JSON Report" \
+              -F "file=@${{ github.workspace }}/dast.json" \
+              -F "product_id=$DOJO_PRODUCT_ID" \
+              -F "engagement_name=$ENGAGEMENT_NAME" \
+              -F "scan_date=$SCAN_DATE" \
+              -F "auto_create_context=true" || true
           fi
 
       - name: Cleanup
