@@ -1,205 +1,295 @@
 # BackupHub. Backups
 
-Документ описывает backup/restore стратегию внутренних данных BackupHub.
+Документ описывает, как устроены резервные копии внутренних PostgreSQL-баз BackupHub с помощью WAL-G.
 
-Аудитория: DevOps, лид, ответственные за эксплуатацию.
+## 1. Что мы бэкапим
 
-## 1. Что такое MinIO
+BackupHub не выполняет backup внешних систем и не хранит архивы внешних серверов. Его задача - учитывать операции резервного копирования и показывать их статус.
 
-MinIO - S3-compatible object storage. Для BackupHub это внутреннее объектное хранилище файловых backup.
+Отдельно от этого у нас есть технические backup собственных PostgreSQL-баз проекта:
 
-BackupHub не хранит архивы внешних систем. MinIO используется для технических backup наших внутренних PostgreSQL-баз.
+| Контур | Что бэкапится | Хранилище |
+| --- | --- | --- |
+| `dev` | PostgreSQL BackupHub dev | MinIO bucket `backuphub-postgres-dev` |
+| `prod` | PostgreSQL BackupHub prod | MinIO bucket `backuphub-postgres-prod` |
 
-В MinIO должны попадать:
+## 2. Где хранятся backup
 
-- backup PostgreSQL с `dev`;
-- backup PostgreSQL с `prod`;
-- backup PostgreSQL от DefectDojo в `secops`-контуре.
+Целевое хранилище - MinIO на `infra.backuphub.spb.ru`.
 
-## 2. Что бэкапится
-
-Обязательно:
-
-| Объект | Причина |
+| Endpoint | Назначение |
 | --- | --- |
-| PostgreSQL `dev` | Проверка restore и сохранение тестовых данных |
-| PostgreSQL `prod` | Основные production-данные BackupHub |
-| PostgreSQL DefectDojo | Security findings и history сканирований |
-| Nginx configs | Быстрое восстановление reverse proxy |
-| Prometheus/Grafana/Loki configs | Восстановление observability |
-| GitHub Actions workflows | История хранится в git, но изменения должны проходить review |
+| `https://minio.backuphub.spb.ru` | Web UI MinIO |
+| `https://s3.backuphub.spb.ru` | S3 API для WAL-G и backup jobs |
 
-Опционально:
+MinIO S3 API используется как S3-compatible storage. В переменных WAL-G он выглядит как обычный S3 endpoint:
 
-| Объект | Комментарий |
+```bash
+AWS_ENDPOINT=https://s3.backuphub.spb.ru
+AWS_S3_FORCE_PATH_STYLE=true
+WALG_S3_PREFIX=s3://backuphub-postgres-prod/walg
+```
+
+`AWS_ACCESS_KEY_ID` и `AWS_SECRET_ACCESS_KEY` в этом контексте - это не ключи Amazon AWS, а MinIO access key и secret key. Они должны храниться только на сервере в закрытом env-файле.
+
+## 3. Текущий подход
+
+Для PostgreSQL используется WAL-G.
+
+Сейчас WAL-G установлен на хосте `dev` и `prod`, а PostgreSQL работает в Docker-контейнере. Чтобы WAL-G на хосте видел тот же путь, который PostgreSQL видит внутри контейнера, на хосте создан symlink:
+
+```text
+/var/lib/postgresql/data -> /var/lib/docker/volumes/database_postgres_data/_data
+```
+
+Внутри контейнера PostgreSQL этот же volume примонтирован как:
+
+```text
+/var/lib/docker/volumes/database_postgres_data/_data -> /var/lib/postgresql/data
+```
+
+Это важно: WAL-G сравнивает путь, переданный в `backup-push`, с тем, что PostgreSQL возвращает через `show data_directory`. Поэтому на хосте используется путь `/var/lib/postgresql/data`, а не прямой путь `/var/lib/docker/volumes/.../_data`.
+
+## 4. Что делает WAL-G
+
+WAL-G делает физический backup PostgreSQL data directory и отправляет результат в MinIO.
+
+Поток выглядит так:
+
+```text
+cron
+  -> /usr/local/sbin/backuphub-postgres-walg-backup.sh
+  -> POST /api/v1/backup-operations/ в BackupHub
+  -> wal-g backup-push /var/lib/postgresql/data
+  -> MinIO S3 API https://s3.backuphub.spb.ru
+  -> PATCH /api/v1/backup-operations/{id}/ в BackupHub
+```
+
+Backup состоит из объектов WAL-G в bucket. Имена вида:
+
+```text
+base_000000010000000000000009
+base_000000010000000000000009_backup_stop_sentinel.json
+```
+
+Это нормальные технические имена WAL-G. Они строятся вокруг timeline/LSN PostgreSQL. Человекочитаемое имя отдельно не добавляем: смотреть удобнее через BackupHub, где в metadata записывается `backup_name`, размер, статус и S3 path.
+
+## 5. Что сейчас не настроено
+
+Point-in-time recovery сейчас не является целевой схемой.
+
+На `dev` и `prod` `archive_mode` сейчас выключен:
+
+```sql
+show archive_mode;
+-- off
+```
+
+Это означает:
+
+- restore возможен на границу последнего успешного base backup;
+- восстановление на произвольную минуту между backup не поддерживается;
+- WAL-G может выводить warning про `archive_mode is not enabled`.
+
+Если появится требование PITR, нужно будет включить WAL archiving в PostgreSQL:
+
+```conf
+archive_mode = on
+archive_command = 'wal-g wal-push %p'
+```
+
+При текущем требовании "допустима потеря данных до периода между backup" достаточно регулярных физических backup, но restore test все равно обязателен.
+
+## 6. Где лежат файлы на серверах
+
+На `dev` и `prod` используется одинаковая структура.
+
+| Путь | Назначение |
 | --- | --- |
-| Redis | Не является основным бизнес-хранилищем, но может ускорить восстановление фоновых очередей |
-| Grafana dashboards | Если dashboards не provisioned из git, нужен backup `grafana_data` |
-| Vaultwarden data | Критично для секретов команды, backup должен быть шифрован |
+| `/usr/local/bin/wal-g` | бинарник WAL-G |
+| `/usr/local/sbin/backuphub-postgres-walg-backup.sh` | wrapper-скрипт backup |
+| `/etc/wal-g/dev.env` | настройки WAL-G для dev |
+| `/etc/wal-g/prod.env` | настройки WAL-G для prod |
+| `/etc/backuphub/dev.env` | настройки отправки результата dev backup в BackupHub API |
+| `/etc/backuphub/prod.env` | настройки отправки результата prod backup в BackupHub API |
+| `/etc/cron.d/backuphub-postgres-walg` | cron-задание регулярного backup, создается при включении расписания |
+| `/var/log/backuphub-postgres-walg-backup.log` | лог запуска backup, появляется после ручного или cron-запуска |
+| `/var/lib/postgresql/data` | symlink на Docker volume PostgreSQL |
 
-## 3. Инструмент backup
+## 7. WAL-G env
 
-Стартовый инструмент: `pg_dump` в custom format.
-
-Обоснование:
-
-- базы небольшие;
-- проще эксплуатация и restore;
-- backup легко проверить локально;
-- не требуется сложная WAL-инфраструктура на первом этапе.
-
-Формат:
+Пример `/etc/wal-g/prod.env`:
 
 ```bash
-pg_dump -Fc -h postgres -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f backup.dump
+AWS_ACCESS_KEY_ID=CHANGE_ME
+AWS_SECRET_ACCESS_KEY=CHANGE_ME
+AWS_ENDPOINT=https://s3.backuphub.spb.ru
+AWS_REGION=us-east-1
+AWS_S3_FORCE_PATH_STYLE=true
+
+WALG_S3_PREFIX=s3://backuphub-postgres-prod/walg
+WALG_COMPRESSION_METHOD=zstd
+WALG_UPLOAD_CONCURRENCY=4
+WALG_DOWNLOAD_CONCURRENCY=4
+
+PGHOST=127.0.0.1
+PGPORT=5432
+PGUSER=backuphub_app
+PGPASSWORD=CHANGE_ME
+PGDATABASE=backuphub_prod
+PGDATA=/var/lib/postgresql/data
 ```
 
-Если появится требование point-in-time recovery, стратегия должна быть пересмотрена в сторону WAL-G/WAL archiving.
+Для `dev` меняются bucket и параметры подключения к dev PostgreSQL:
 
-## 4. Целевое хранилище
-
-Backup складываются в MinIO через S3 API:
-
-```text
-backup job
-  -> pg_dump
-  -> compressed dump
-  -> MinIO S3 API
-  -> bucket
+```bash
+WALG_S3_PREFIX=s3://backuphub-postgres-dev/walg
+PGUSER=postgres_user
+PGDATABASE=postgres_db
+PGDATA=/var/lib/postgresql/data
 ```
 
-Рекомендуемые buckets:
+Так как WAL-G запускается на хосте, PostgreSQL должен быть доступен с хоста. В database compose порт PostgreSQL публикуется только на localhost:
 
-```text
-backuphub-postgres-dev
-backuphub-postgres-prod
-defectdojo-postgres
+```yaml
+ports:
+  - "127.0.0.1:5432:5432"
 ```
 
-Credentials для backup job:
+Так порт не торчит наружу, но backup job на хосте может подключиться к базе через `127.0.0.1:5432`.
 
-- отдельный MinIO access key;
-- минимальные права только на нужный bucket;
-- секреты не хранятся в git;
-- ключи ротируются при смене ответственных или подозрении на компрометацию.
+## 8. BackupHub env
 
-## 5. Расписание
+Пример `/etc/backuphub/prod.env`:
 
-Минимальная политика:
+```bash
+BACKUPHUB_API_URL=https://prod.backuphub.spb.ru
+BACKUPHUB_API_KEY=CHANGE_ME
+BACKUPHUB_BACKUP_CONFIGURATION_ID=1
 
-| Контур | Расписание |
+BACKUPHUB_HOSTNAME=prod.backuphub.spb.ru
+BACKUPHUB_IP_ADDRESS=153.80.184.132
+BACKUPHUB_STORAGE_TYPE=s3
+```
+
+Пример `/etc/backuphub/dev.env`:
+
+```bash
+BACKUPHUB_API_URL=https://prod.backuphub.spb.ru
+BACKUPHUB_API_KEY=CHANGE_ME
+BACKUPHUB_BACKUP_CONFIGURATION_ID=2
+
+BACKUPHUB_HOSTNAME=dev.backuphub.spb.ru
+BACKUPHUB_IP_ADDRESS=130.49.129.180
+BACKUPHUB_STORAGE_TYPE=s3
+```
+
+Смысл этих переменных:
+
+| Переменная | Назначение |
 | --- | --- |
-| `dev` PostgreSQL | 1 раз в сутки |
-| `prod` PostgreSQL | 1 раз в сутки + перед миграциями |
-| DefectDojo PostgreSQL | 1 раз в сутки |
-| configs | при изменении через git/repo infrastructure |
+| `BACKUPHUB_API_URL` | куда отправлять информацию о backup operation |
+| `BACKUPHUB_API_KEY` | API key системы/конфигурации BackupHub |
+| `BACKUPHUB_BACKUP_CONFIGURATION_ID` | ID backup configuration в BackupHub |
+| `BACKUPHUB_HOSTNAME` | hostname сервера, который делает backup |
+| `BACKUPHUB_IP_ADDRESS` | IP сервера |
+| `BACKUPHUB_STORAGE_TYPE` | тип хранилища, сейчас `s3` |
 
-Перед production deploy с миграциями backup PostgreSQL обязателен.
+## 9. Как работает wrapper-скрипт
 
-## 6. Retention
+Скрипт `/usr/local/sbin/backuphub-postgres-walg-backup.sh` делает не просто `wal-g backup-push`, а полный цикл учета backup в BackupHub.
 
-Рекомендуемая политика:
+Шаги:
 
-| Backup | Retention |
-| --- | --- |
-| Daily | 14 дней |
-| Weekly | 8 недель |
-| Before migration | 30 дней |
+1. Загружает `/etc/wal-g/<stage>.env`.
+2. Загружает `/etc/backuphub/<stage>.env`.
+3. Проверяет обязательные переменные и наличие `wal-g`, `curl`, `python3`.
+4. Создает backup operation в BackupHub:
 
-Retention должен учитывать размер MinIO volume и свободное место на `infra`.
-
-## 7. Именование backup
-
-Формат имени:
-
-```text
-<system>/<environment>/<database>/<yyyy-mm-dd>/<timestamp>_<commit_sha>.dump
+```http
+POST /api/v1/backup-operations/
 ```
 
-Пример:
-
-```text
-backuphub/prod/postgres/2026-07-16/20260716_030000_9cda7b5.dump
-```
-
-Для backup вне deploy можно использовать `manual` вместо commit sha.
-
-## 8. Restore test
-
-Backup без проверки restore нельзя считать рабочим.
-
-Минимальная проверка:
+5. Запускает:
 
 ```bash
-createdb restore_check
-pg_restore -d restore_check backup.dump
-psql -d restore_check -c "select count(*) from django_migrations;"
-dropdb restore_check
+wal-g backup-push "$PGDATA"
 ```
 
-Частота проверки:
+6. Если backup упал, отправляет в BackupHub:
 
-- `dev` - еженедельно;
-- `prod` - после настройки регулярных backup, затем не реже 1 раза в месяц;
-- DefectDojo - не реже 1 раза в месяц.
+```json
+{
+  "status": "failed",
+  "error_message": "tail of backup log"
+}
+```
 
-## 9. Процедура восстановления PostgreSQL
-
-1. Остановить приложение, которое пишет в БД:
+7. Если backup успешен, получает список backup:
 
 ```bash
-cd /opt/backuphub/app
-docker compose -f deploy.docker-compose.yml down
+wal-g backup-list --json --detail
 ```
 
-2. Скачать нужный dump из MinIO.
+8. Отправляет в BackupHub:
 
-3. Создать пустую базу или очистить целевую БД по согласованию с ответственным.
+```json
+{
+  "status": "success",
+  "size_bytes": 2127058,
+  "storage_type": "s3",
+  "storage_path": "s3://backuphub-postgres-prod/walg/basebackups_005/base_...",
+  "metadata": {
+    "tool": "wal-g",
+    "backup_name": "base_..."
+  }
+}
+```
 
-4. Восстановить:
+## 10. Как запустить backup вручную
+
+На `prod`:
 
 ```bash
-pg_restore -h postgres -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists backup.dump
+sudo WALG_ENV_FILE=/etc/wal-g/prod.env \
+     BACKUPHUB_ENV_FILE=/etc/backuphub/prod.env \
+     /usr/local/sbin/backuphub-postgres-walg-backup.sh
 ```
 
-5. Запустить приложение:
+На `dev`:
 
 ```bash
-docker compose -f deploy.docker-compose.yml up -d
+sudo WALG_ENV_FILE=/etc/wal-g/dev.env \
+     BACKUPHUB_ENV_FILE=/etc/backuphub/dev.env \
+     /usr/local/sbin/backuphub-postgres-walg-backup.sh
 ```
 
-6. Проверить:
+Посмотреть список backup в MinIO через WAL-G:
 
 ```bash
-curl -fsS https://dev.backuphub.spb.ru/ >/dev/null
-docker logs --tail=200 app_DEV
+sudo bash -lc 'set -a; . /etc/wal-g/prod.env; set +a; wal-g backup-list --detail'
 ```
 
-Для `prod` вместо `dev.backuphub.spb.ru` использовать production endpoint.
+Для `dev` заменить файл на `/etc/wal-g/dev.env`.
 
-## 10. Restore DefectDojo
+## 11. Cron
 
-Порядок аналогичный PostgreSQL BackupHub:
+Пример cron-задания:
 
-```text
-stop DefectDojo app
-restore PostgreSQL dump
-start DefectDojo app
-check UI and reports
+```cron
+15 3 * * * root WALG_ENV_FILE=/etc/wal-g/prod.env BACKUPHUB_ENV_FILE=/etc/backuphub/prod.env /usr/local/sbin/backuphub-postgres-walg-backup.sh >> /var/log/backuphub-postgres-walg-backup.log 2>&1
 ```
 
-Перед восстановлением DefectDojo нужно сохранить текущую БД в отдельный emergency backup.
+Для `dev`:
 
-## 11. Ответственность
+```cron
+30 3 * * * root WALG_ENV_FILE=/etc/wal-g/dev.env BACKUPHUB_ENV_FILE=/etc/backuphub/dev.env /usr/local/sbin/backuphub-postgres-walg-backup.sh >> /var/log/backuphub-postgres-walg-backup.log 2>&1
+```
 
-Порядок эскалации:
+Проверка cron:
 
-1. Ответственный за инфраструктуру.
-2. Backend/DevOps lead.
-3. Руководитель проекта.
+```bash
+sudo cat /etc/cron.d/backuphub-postgres-walg
+sudo tail -f /var/log/backuphub-postgres-walg-backup.log
+```
 
-Актуальные контакты должны быть в закрепленном сообщении командного Telegram-чата.
-
-## 12. Правило обновления
-
-PR, меняющий backup job, MinIO buckets, retention, restore procedure или структуру PostgreSQL deploy, должен обновлять этот документ.
