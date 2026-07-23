@@ -1,136 +1,181 @@
 name: DevSecOps Pipeline
+
 on:
   push:
-    branches: [ DEV ]
+    branches:
+      - DEV
 
 jobs:
+
   security-and-build:
     runs-on: [self-hosted, secops]
+
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Load Environment
         run: grep -v '^#' /opt/backuphub/.env >> $GITHUB_ENV
 
-      - name: Pre-Build Disk Cleanup
+      - name: Cleanup
         run: |
-          docker system prune -f
-          docker builder prune -f
+          docker system prune -af || true
+          docker builder prune -af || true
 
-      - name: SAST Semgrep Scan
+      - name: Semgrep Scan
         run: |
           docker compose -f /opt/backuphub/devsecops/docker-compose.yml run --rm \
             -v ${{ github.workspace }}:/src \
-            sast-semgrep semgrep scan --config=p/owasp-top-10 --metrics=off --json --output=/src/sast.json --error /src || true
+            sast-semgrep \
+            semgrep scan \
+            --config=p/owasp-top-10 \
+            --metrics=off \
+            --json \
+            --output=/src/sast.json \
+            /src || true
 
       - name: Build Image
         run: |
-          docker build --no-cache -t $REGISTRY_URL/backuphub/app:${{ github.sha }} -f compose/Dockerfile .
+          docker build \
+            --no-cache \
+            -t $REGISTRY_URL/backuphub/app:${{ github.sha }} \
+            -f compose/Dockerfile .
 
-      - name: Login to Registry
+      - name: Docker Login
         run: |
-          echo "$REGISTRY_PASSWORD" | docker login $REGISTRY_URL -u "$REGISTRY_USER" --password-stdin
+          echo "$REGISTRY_PASSWORD" | docker login \
+            $REGISTRY_URL \
+            -u "$REGISTRY_USER" \
+            --password-stdin
 
-      - name: SCA Grype Scan
+      - name: Grype Scan
         run: |
           docker compose -f /opt/backuphub/devsecops/docker-compose.yml run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
             -v ${{ github.workspace }}:/src \
-            -e GRYPE_DB_AUTO_UPDATE=false \
-            -e GRYPE_DB_VALIDATE_LISTING=false \
-            -e GRYPE_CHECK_FOR_APP_UPDATE=false \
-            -e GRYPE_DB_CACHE_DIR=/tmp \
-            sca-grype $REGISTRY_URL/backuphub/app:${{ github.sha }} -o json --file /src/sca.json || true
+            sca-grype \
+            $REGISTRY_URL/backuphub/app:${{ github.sha }} \
+            -o json \
+            --file /src/sca.json || true
 
-      - name: Push to Registry
+      - name: Push Image
         run: |
           docker push $REGISTRY_URL/backuphub/app:${{ github.sha }}
-          docker tag $REGISTRY_URL/backuphub/app:${{ github.sha }} $REGISTRY_URL/backuphub/app:dev-latest
+          docker tag \
+            $REGISTRY_URL/backuphub/app:${{ github.sha }} \
+            $REGISTRY_URL/backuphub/app:dev-latest
           docker push $REGISTRY_URL/backuphub/app:dev-latest
 
-      - name: Report Build Scans to DefectDojo
+      - name: Upload Reports to DefectDojo
         if: always()
         run: |
-          SCAN_DATE=$(date +%Y-%m-%d)
-          
-          if [ -s sast.json ]; then
-            curl -X POST "$DOJO_URL/api/v2/import-scan/" \
-              --retry 3 --retry-delay 10 --retry-connrefused \
+
+          SCAN_DATE=$(date +%F)
+
+          if [ -f "${{ github.workspace }}/sast.json" ]; then
+            curl --fail \
+              -X POST "$DOJO_URL/api/v2/import-scan/" \
               -H "Authorization: Token $DOJO_TOKEN" \
-              -F "scan_type=Semgrep JSON Report" \
-              -F "file=@sast.json" \
-              -F "product_id=$DOJO_PRODUCT_ID" \
-              -F "product_name=BackupHub" \
-              -F "engagement_name=Build-${{ github.run_number }}" \
-              -F "scan_date=$SCAN_DATE" \
-              -F "auto_create_context=true" || true
-          fi
-          
-          if [ -s sca.json ]; then
-            curl -X POST "$DOJO_URL/api/v2/import-scan/" \
-              --retry 3 --retry-delay 10 --retry-connrefused \
-              -H "Authorization: Token $DOJO_TOKEN" \
-              -F "scan_type=Anchore Grype" \
-              -F "file=@sca.json" \
-              -F "product_id=$DOJO_PRODUCT_ID" \
-              -F "product_name=BackupHub" \
-              -F "engagement_name=Build-${{ github.run_number }}" \
-              -F "scan_date=$SCAN_DATE" \
-              -F "auto_create_context=true" || true
+              -F scan_type="Semgrep JSON Report" \
+              -F file=@${{ github.workspace }}/sast.json \
+              -F product_id=$DOJO_PRODUCT_ID \
+              -F engagement_name=Build-${{ github.run_number }} \
+              -F scan_date=$SCAN_DATE \
+              -F auto_create_context=true
           fi
 
-      - name: Post-Build Disk Cleanup
+          if [ -f "${{ github.workspace }}/sca.json" ]; then
+            curl --fail \
+              -X POST "$DOJO_URL/api/v2/import-scan/" \
+              -H "Authorization: Token $DOJO_TOKEN" \
+              -F scan_type="Anchore Grype" \
+              -F file=@${{ github.workspace }}/sca.json \
+              -F product_id=$DOJO_PRODUCT_ID \
+              -F engagement_name=Build-${{ github.run_number }} \
+              -F scan_date=$SCAN_DATE \
+              -F auto_create_context=true
+          fi
+
+      - name: Cleanup
         if: always()
         run: |
-          docker system prune -f
-          docker builder prune -f
+          docker system prune -af || true
 
   deploy:
+
     needs: security-and-build
+
     runs-on: [self-hosted, dev]
+
     steps:
+
       - name: Load Environment
         run: grep -v '^#' /opt/backuphub/.env >> $GITHUB_ENV
 
-      - name: Pull and Restart App
+      - name: Deploy
         run: |
-          echo "$REGISTRY_PASSWORD" | docker login $REGISTRY_URL -u "$REGISTRY_USER" --password-stdin
+
+          echo "$REGISTRY_PASSWORD" | docker login \
+            $REGISTRY_URL \
+            -u "$REGISTRY_USER" \
+            --password-stdin
+
           cd /opt/backuphub/app
-          sed -i "s|image: $REGISTRY_URL/backuphub/app:.*|image: $REGISTRY_URL/backuphub/app:${{ github.sha }}|g" deploy.docker-compose.yml
+
+          sed -i \
+          "s|image: .*|image: $REGISTRY_URL/backuphub/app:${{ github.sha }}|" \
+          deploy.docker-compose.yml
+
           docker compose -f deploy.docker-compose.yml pull
           docker compose -f deploy.docker-compose.yml up -d
-          docker image prune -f
+
+          docker image prune -af
 
   dast:
+
     needs: deploy
+
     runs-on: [self-hosted, secops]
+
     steps:
+
       - name: Load Environment
         run: grep -v '^#' /opt/backuphub/.env >> $GITHUB_ENV
 
-      - name: DAST Scan (ZAP)
+      - name: Pull ZAP
         run: |
-          docker pull zaproxy/zap-stable:stable
-          docker compose -f /opt/backuphub/devsecops/docker-compose.yml run --rm --user root \
-            -v ${{ github.workspace }}:/zap/wrk/:rw \
-            zaproxy/zap-stable:stable bash -c "zap-baseline.py -t $APP_URL_DEV -J dast.json || true; chmod 666 /zap/wrk/dast.json"
+          docker pull ghcr.io/zaproxy/zaproxy:stable
 
-      - name: Report DAST to Dojo
+      - name: Run ZAP Baseline
+        run: |
+
+          docker run --rm \
+            -v ${{ github.workspace }}:/zap/wrk \
+            ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py \
+            -t $APP_URL_DEV \
+            -J /zap/wrk/dast.json || true
+
+      - name: Upload ZAP Report
         if: always()
         run: |
-          SCAN_DATE=$(date +%Y-%m-%d)
-          
-          if [ -s ${{ github.workspace }}/dast.json ]; then
-            curl -X POST "$DOJO_URL/api/v2/import-scan/" \
-              --retry 3 --retry-delay 10 --retry-connrefused \
+
+          SCAN_DATE=$(date +%F)
+
+          if [ -f "${{ github.workspace }}/dast.json" ]; then
+
+            curl --fail \
+              -X POST "$DOJO_URL/api/v2/import-scan/" \
               -H "Authorization: Token $DOJO_TOKEN" \
-              -F "scan_type=ZAP Scan" \
-              -F "file=@${{ github.workspace }}/dast.json" \
-              -F "product_id=$DOJO_PRODUCT_ID" \
-              -F "product_name=BackupHub" \
-              -F "engagement_name=Build-${{ github.run_number }}" \
-              -F "scan_date=$SCAN_DATE" \
-              -F "auto_create_context=true" || true
+              -F scan_type="ZAP Scan" \
+              -F file=@${{ github.workspace }}/dast.json \
+              -F product_id=$DOJO_PRODUCT_ID \
+              -F engagement_name=Build-${{ github.run_number }} \
+              -F scan_date=$SCAN_DATE \
+              -F auto_create_context=true
+
           fi
-          docker system prune -f
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker system prune -af
