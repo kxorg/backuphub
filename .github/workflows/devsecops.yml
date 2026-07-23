@@ -8,7 +8,7 @@ jobs:
     runs-on: [self-hosted, secops]
     steps:
       - name: Checkout Code
-        uses: actions/actions/checkout@v4
+        uses: actions/checkout@v4
 
       - name: Load Environment
         run: grep -v '^#' /opt/backuphub/.env >> $GITHUB_ENV
