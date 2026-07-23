@@ -40,6 +40,7 @@ jobs:
             -e GRYPE_DB_AUTO_UPDATE=false \
             -e GRYPE_DB_VALIDATE_LISTING=false \
             -e GRYPE_CHECK_FOR_APP_UPDATE=false \
+            -e GRYPE_DB_CACHE_DIR=/tmp \
             sca-grype $REGISTRY_URL/backuphub/app:${{ github.sha }} -o json --file /src/sca.json || true
 
       - name: Push to Registry
@@ -52,8 +53,32 @@ jobs:
         if: always()
         run: |
           SCAN_DATE=$(date +%Y-%m-%d)
-          [ -s sast.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=Semgrep JSON Report" -F "file=@sast.json" -F "product_id=$DOJO_PRODUCT_ID" -F "product_name=BackupHub" -F "engagement_name=Build-${{ github.run_number }}" -F "scan_date=$SCAN_DATE" -F "auto_create_context=true" || true
-          [ -s sca.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=Anchore Grype" -F "file=@sca.json" -F "product_id=$DOJO_PRODUCT_ID" -F "product_name=BackupHub" -F "engagement_name=Build-${{ github.run_number }}" -F "scan_date=$SCAN_DATE" -F "auto_create_context=true" || true
+          
+          if [ -s sast.json ]; then
+            curl -X POST "$DOJO_URL/api/v2/import-scan/" \
+              --retry 3 --retry-delay 10 --retry-connrefused \
+              -H "Authorization: Token $DOJO_TOKEN" \
+              -F "scan_type=Semgrep JSON Report" \
+              -F "file=@sast.json" \
+              -F "product_id=$DOJO_PRODUCT_ID" \
+              -F "product_name=BackupHub" \
+              -F "engagement_name=Build-${{ github.run_number }}" \
+              -F "scan_date=$SCAN_DATE" \
+              -F "auto_create_context=true" || true
+          fi
+          
+          if [ -s sca.json ]; then
+            curl -X POST "$DOJO_URL/api/v2/import-scan/" \
+              --retry 3 --retry-delay 10 --retry-connrefused \
+              -H "Authorization: Token $DOJO_TOKEN" \
+              -F "scan_type=Anchore Grype" \
+              -F "file=@sca.json" \
+              -F "product_id=$DOJO_PRODUCT_ID" \
+              -F "product_name=BackupHub" \
+              -F "engagement_name=Build-${{ github.run_number }}" \
+              -F "scan_date=$SCAN_DATE" \
+              -F "auto_create_context=true" || true
+          fi
 
       - name: Post-Build Disk Cleanup
         if: always()
@@ -86,13 +111,26 @@ jobs:
 
       - name: DAST Scan (ZAP)
         run: |
+          docker pull zaproxy/zap-stable:stable
           docker compose -f /opt/backuphub/devsecops/docker-compose.yml run --rm --user root \
             -v ${{ github.workspace }}:/zap/wrk/:rw \
-            dast-zap bash -c "zap-baseline.py -t $APP_URL_DEV -J dast.json || true; chmod 666 /zap/wrk/dast.json"
+            zaproxy/zap-stable:stable bash -c "zap-baseline.py -t $APP_URL_DEV -J dast.json || true; chmod 666 /zap/wrk/dast.json"
 
       - name: Report DAST to Dojo
         if: always()
         run: |
           SCAN_DATE=$(date +%Y-%m-%d)
-          [ -s ${{ github.workspace }}/dast.json ] && curl -X POST "$DOJO_URL/api/v2/import-scan/" -H "Authorization: Token $DOJO_TOKEN" -F "scan_type=ZAP Scan" -F "file=@${{ github.workspace }}/dast.json" -F "product_id=$DOJO_PRODUCT_ID" -F "product_name=BackupHub" -F "engagement_name=Build-${{ github.run_number }}" -F "scan_date=$SCAN_DATE" -F "auto_create_context=true" || true
+          
+          if [ -s ${{ github.workspace }}/dast.json ]; then
+            curl -X POST "$DOJO_URL/api/v2/import-scan/" \
+              --retry 3 --retry-delay 10 --retry-connrefused \
+              -H "Authorization: Token $DOJO_TOKEN" \
+              -F "scan_type=ZAP Scan" \
+              -F "file=@${{ github.workspace }}/dast.json" \
+              -F "product_id=$DOJO_PRODUCT_ID" \
+              -F "product_name=BackupHub" \
+              -F "engagement_name=Build-${{ github.run_number }}" \
+              -F "scan_date=$SCAN_DATE" \
+              -F "auto_create_context=true" || true
+          fi
           docker system prune -f
